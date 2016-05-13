@@ -1,0 +1,40 @@
+From cd25e08b778f0bc44872121cb9ed07534d4367f5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
+Date: Fri, 13 May 2016 11:29:03 +0200
+Subject: [PATCH] Always include locale_win32.h for win32 builds, including
+ mingw
+
+---
+ include/ctype.h  | 2 +-
+ include/stdlib.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/ctype.h b/include/ctype.h
+index 22d6c49..bf57a25 100644
+--- a/include/ctype.h
++++ b/include/ctype.h
+@@ -40,7 +40,7 @@ int toupper(int c);
+ 
+ #ifdef __cplusplus
+ 
+-#if defined(_LIBCPP_MSVCRT)
++#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+ // We support including .h headers inside 'extern "C"' contexts, so switch
+ // back to C++ linkage before including these C++ headers.
+ extern "C++" {
+diff --git a/include/stdlib.h b/include/stdlib.h
+index 12fd676..9308c73 100644
+--- a/include/stdlib.h
++++ b/include/stdlib.h
+@@ -97,7 +97,7 @@ void *aligned_alloc(size_t alignment, size_t size);                       // C11
+ 
+ extern "C++" {
+ 
+-#ifdef _LIBCPP_MSVCRT
++#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+ #include "support/win32/locale_win32.h"
+ #endif // _LIBCPP_MSVCRT
+ 
+-- 
+2.8.1
+

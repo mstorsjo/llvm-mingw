@@ -1,18 +1,25 @@
-Index: include/type_traits
-===================================================================
---- include/type_traits
-+++ include/type_traits
-@@ -1147,10 +1147,10 @@
- _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x800);
+From ab3797f34376ddbf35d4a5eed8af1aa1209727c1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
+Date: Thu, 12 May 2016 20:57:05 +0200
+Subject: [PATCH] Fix win32 build
+
+---
+ include/type_traits | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/type_traits b/include/type_traits
+index b7adfeb..f7cef9d 100644
+--- a/include/type_traits
++++ b/include/type_traits
+@@ -1630,7 +1630,7 @@ _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x800);
  _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x1000);
  _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x2000);
--// MSDN says that MSVC does not support alignment beyond 8192 (=0x2000)
+ // MSDN says that MSVC does not support alignment beyond 8192 (=0x2000)
 -#if !defined(_LIBCPP_MSVC)
-+// PE COFF does not support alignment beyond 8192 (=0x2000)
 +#if !defined(_WIN32)
  _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x4000);
--#endif // !_LIBCPP_MSVC
-+#endif // !_WIN32
+ #endif // !_LIBCPP_MSVC
  
- #undef _CREATE_ALIGNED_STORAGE_SPECIALIZATION
- 
+-- 
+2.8.1
+

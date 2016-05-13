@@ -2,9 +2,11 @@ FROM videolan-base-sid:latest
 
 MAINTAINER Hugo Beauzée-Luyssen <hugo@beauzee.fr>
 
+#FIXME: Remove vim once debuging is complete
 RUN apt-get update -qq && apt-get install -qqy \
     git wget bzip2 file libwine-dev unzip libtool pkg-config cmake \
-    build-essential automake texinfo ragel yasm p7zip-full gettext autopoint
+    build-essential automake texinfo ragel yasm p7zip-full gettext autopoint \
+    vim
 
 
 RUN git config --global user.name "VideoLAN Buildbot" && \
@@ -25,18 +27,17 @@ RUN cd llvm/projects && \
     git clone https://github.com/llvm-mirror/libunwind.git -b release_38 --depth=1
 
 RUN cd llvm/tools/clang && \
-    git am /build/patches/clang-0001.patch && \
-    git am /build/patches/clang-0002.patch
+    git am /build/patches/clang-*.patch
 
 RUN cd llvm/tools/lld && \
-    git am /build/patches/lld-0001.patch
+    git am /build/patches/lld-*.patch
 
-RUN cd llvm/projects/libcxx && git am /build/patches/libcxx-0001.patch
+RUN cd llvm/projects/libcxx && \
+    git am /build/patches/libcxx-*.patch
 
 RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64
 RUN cd mingw-w64 && \
-    git am /build/patches/mingw-0001.patch && \
-    git am /build/patches/mingw-0002.patch
+    git am /build/patches/mingw-*.patch
 
 RUN git clone -b release_38 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
 
@@ -75,7 +76,8 @@ RUN cd mingw-w64/mingw-w64-tools/genlib && \
     make install
 
 RUN cd mingw-w64/mingw-w64-headers && mkdir build && cd build && \
-    ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX && \
+    ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
+        --enable-secure-api && \
     make install
 
 # Install the usual $TUPLE-clang binary
@@ -94,7 +96,6 @@ RUN cd mingw-w64/mingw-w64-crt && \
     mkdir build && cd build && \
     ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
         --disable-lib32 --disable-lib64 --enable-libarm32 \
-        --enable-secure-api \
         --with-genlib && \
     make -j4 && \
     make install
@@ -123,8 +124,38 @@ RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
     make -j4 && \
     make install 
 
+RUN git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
+    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libunwind.git
+
+RUN cd libcxx && \
+    git am /build/patches/libcxx-*.patch
+
+RUN cd libunwind && \
+    git am /build/patches/libunwind-*.patch
+
 #RUN cd libunwind && mkdir build && cd build && \
 #    CXXFLAGS="-nodefaultlibs" \
 #    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.8.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
-#    cmake -DCMAKE_CXX_COMPILER_WORKS=TRUE -DLLVM_ENABLE_LIBCXX=TRUE ..
-#
+#    cmake \
+#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+#        -DLLVM_ENABLE_LIBCXX=TRUE \
+#        -DCMAKE_BUILD_TYPE=Release \
+#        -DLIBUNWIND_ENABLE_SHARED=OFF \
+#        .. && \
+#    make -j4 && \
+#    make install
+
+RUN cd libcxx && mkdir build && cd build && \
+    CXXFLAGS="-nodefaultlibs -D_GNU_SOURCE -D_LIBCPP_HAS_NO_CONSTEXPR" \
+    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.8.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
+    cmake \
+        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+        -DLIBCXX_ENABLE_SHARED=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="/build/prefix" \
+        .. && \
+    make -j8 && \
+    make install
+
+

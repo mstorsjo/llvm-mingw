@@ -1,0 +1,34 @@
+From 2062557696978b361b40717ed8e4cf84765c95ab Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
+Date: Fri, 13 May 2016 13:20:17 +0200
+Subject: [PATCH] Don't build debug code
+
+---
+ src/debug.cpp | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/debug.cpp b/src/debug.cpp
+index b1a16e6..dfdbbdb 100644
+--- a/src/debug.cpp
++++ b/src/debug.cpp
+@@ -7,8 +7,10 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
+-#define _LIBCPP_DEBUG 1
+ #include "__config"
++
++#ifdef _LIBCPP_DEBUG
++
+ #include "__debug"
+ #include "functional"
+ #include "algorithm"
+@@ -568,3 +570,5 @@ __c_node::__remove(__i_node* p)
+ }
+ 
+ _LIBCPP_END_NAMESPACE_STD
++
++#endif
+-- 
+2.8.1
+

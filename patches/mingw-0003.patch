@@ -1,0 +1,43 @@
+From 9a11fcabc10601818896b63f3ac54fa6df58d70e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
+Date: Fri, 13 May 2016 12:40:30 +0200
+Subject: [PATCH] math.h: Fix arm build
+
+---
+ mingw-w64-headers/crt/math.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/mingw-w64-headers/crt/math.h b/mingw-w64-headers/crt/math.h
+index 171208f..d855a0f 100644
+--- a/mingw-w64-headers/crt/math.h
++++ b/mingw-w64-headers/crt/math.h
+@@ -431,7 +431,7 @@ typedef long double double_t;
+     __mingw_fp_types_t hlp;
+     unsigned int l, h;
+ 
+-    hlp.d = &x;
++    hlp.ld = &x;
+     h = hlp.ldt->lh.high;
+     l = hlp.ldt->lh.low | (h & 0xfffff);
+     h &= 0x7ff00000;
+@@ -591,7 +591,7 @@ __mingw_choose_expr (                                         \
+     __mingw_fp_types_t hlp;
+     int l, h;
+ 
+-    hlp.d = &_x;
++    hlp.ld = &_x;
+     l = hlp.dt->lh.low;
+     h = hlp.dt->lh.high & 0x7fffffff;
+     h |= (unsigned int) (l | -l) >> 31;
+@@ -662,7 +662,7 @@ __mingw_choose_expr (                                         \
+ #elif defined(__arm__) || defined(_ARM_)
+     __mingw_fp_types_t hlp;
+ 
+-    hlp.d = &x;
++    hlp.ld = &x;
+     return ((hlp.dt->lh.high & 0x80000000) != 0);
+ #elif defined(__i386__) || defined(_X86_)
+     unsigned short stw;
+-- 
+2.8.1
+
