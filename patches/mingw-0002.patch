@@ -1,0 +1,95 @@
+From df4015f5dff1d2baa8fa3b258ea1c2866d1667a2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
+Date: Tue, 3 May 2016 17:43:59 +0200
+Subject: [PATCH] crt: Add libruntimeobject to arm lib
+
+---
+ mingw-w64-crt/Makefile.am                          |  6 ++++++
+ .../libarm32/api-ms-win-core-winrt-l1-1-0.def      |  9 ++++++++
+ .../api-ms-win-core-winrt-string-l1-1-0.def        | 25 ++++++++++++++++++++++
+ mingw-w64-crt/libarm32/runtimeobject.mri           |  5 +++++
+ 4 files changed, 45 insertions(+)
+ create mode 100644 mingw-w64-crt/libarm32/api-ms-win-core-winrt-l1-1-0.def
+ create mode 100644 mingw-w64-crt/libarm32/api-ms-win-core-winrt-string-l1-1-0.def
+ create mode 100644 mingw-w64-crt/libarm32/runtimeobject.mri
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index daf25b0..aa198bd 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -1426,9 +1426,15 @@ libarm32/libvfw32.a: libarm32/vfw32.mri libarm32/libmsvfw32.a libarm32/libavifil
+ 	$(AR) -M < $<
+ 	$(RANLIB) $@
+ 
++libarm32/libruntimeobject.a: libarm32/runtimeobject.mri libarm32/libapi-ms-win-core-winrt-string-l1-1-0.a libarm32/libapi-ms-win-core-winrt-l1-1-0.a
++	rm -f $@
++	$(AR) -M < $<
++	$(RANLIB) $@
++
+ dx32_DATA =
+ dx32_DATA += libarm32/libxinput.a
+ dx32_DATA += libarm32/libd3dcompiler.a
++libarm32_DATA += libarm32/libruntimeobject.a
+ 
+ libarm32/libxinput.a: libarm32/xinput1_4.def
+ 	$(DTDEFARM32) $<
+diff --git a/mingw-w64-crt/libarm32/api-ms-win-core-winrt-l1-1-0.def b/mingw-w64-crt/libarm32/api-ms-win-core-winrt-l1-1-0.def
+new file mode 100644
+index 0000000..3c66e9b
+--- /dev/null
++++ b/mingw-w64-crt/libarm32/api-ms-win-core-winrt-l1-1-0.def
+@@ -0,0 +1,9 @@
++LIBRARY "api-ms-win-core-winrt-l1-1-0.dll"
++EXPORTS
++RoActivateInstance@8
++RoGetActivationFactory@12
++RoGetApartmentIdentifier@4
++RoInitialize@4
++RoRegisterActivationFactories@16
++RoRevokeActivationFactories@4
++RoUninitialize
+diff --git a/mingw-w64-crt/libarm32/api-ms-win-core-winrt-string-l1-1-0.def b/mingw-w64-crt/libarm32/api-ms-win-core-winrt-string-l1-1-0.def
+new file mode 100644
+index 0000000..c49fc51
+--- /dev/null
++++ b/mingw-w64-crt/libarm32/api-ms-win-core-winrt-string-l1-1-0.def
+@@ -0,0 +1,25 @@
++LIBRARY "api-ms-win-core-winrt-string-l1-1-0.dll"
++EXPORTS
++HSTRING_UserFree@8
++HSTRING_UserMarshal@12
++HSTRING_UserSize@12
++HSTRING_UserUnmarshal@12
++WindowsCompareStringOrdinal@12
++WindowsConcatString@12
++WindowsCreateString@12
++WindowsCreateStringReference@16
++WindowsDeleteString@4
++WindowsDeleteStringBuffer@4
++WindowsDuplicateString@8
++WindowsGetStringLen@4
++WindowsGetStringRawBuffer@8
++WindowsInspectString@24
++WindowsIsStringEmpty@4
++WindowsPreallocateStringBuffer@12
++WindowsPromoteStringBuffer@8
++WindowsReplaceString@16
++WindowsStringHasEmbeddedNull@8
++WindowsSubstring@12
++WindowsSubstringWithSpecifiedLength@16
++WindowsTrimStringEnd@12
++WindowsTrimStringStart@12
+diff --git a/mingw-w64-crt/libarm32/runtimeobject.mri b/mingw-w64-crt/libarm32/runtimeobject.mri
+new file mode 100644
+index 0000000..73c6bce
+--- /dev/null
++++ b/mingw-w64-crt/libarm32/runtimeobject.mri
+@@ -0,0 +1,5 @@
++CREATE libarm32/libruntimeobject.a
++ADDLIB libarm32/libapi-ms-win-core-winrt-string-l1-1-0.a
++ADDLIB libarm32/libapi-ms-win-core-winrt-l1-1-0.a
++SAVE
++END
+-- 
+2.8.1
+
