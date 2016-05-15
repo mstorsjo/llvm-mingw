@@ -131,23 +131,26 @@ RUN git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxx.git 
     git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
     git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
+COPY libunwind-0002.patch /build/patches/
+
 RUN cd libcxx && \
     git am /build/patches/libcxx-*.patch
 
 RUN cd libunwind && \
     git am /build/patches/libunwind-*.patch
 
-#RUN cd libunwind && mkdir build && cd build && \
-#    CXXFLAGS="-nodefaultlibs" \
-#    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.8.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
-#    cmake \
-#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-#        -DLLVM_ENABLE_LIBCXX=TRUE \
-#        -DCMAKE_BUILD_TYPE=Release \
-#        -DLIBUNWIND_ENABLE_SHARED=OFF \
-#        .. && \
-#    make -j4 && \
-#    make install
+RUN cd libunwind && mkdir build && cd build && \
+    CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
+    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.8.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
+    cmake \
+        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+        -DLLVM_ENABLE_LIBCXX=TRUE \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DLIBUNWIND_ENABLE_SHARED=OFF \
+        ..
+
+RUN cd libunwind/build && make -j4 
+RUN cd libunwind/build && make install
 
 RUN cd libcxx && mkdir build && cd build && \
     CXXFLAGS="-nodefaultlibs -D_GNU_SOURCE -D_LIBCPP_HAS_NO_CONSTEXPR" \
