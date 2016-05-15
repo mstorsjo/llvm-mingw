@@ -75,6 +75,9 @@ RUN cd mingw-w64/mingw-w64-tools/genlib && \
     make -j4 && \
     make install
 
+COPY mingw-0004.patch /build/patches/
+RUN cd mingw-w64 && git am /build/patches/mingw-0004.patch
+
 RUN cd mingw-w64/mingw-w64-headers && mkdir build && cd build && \
     ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
         --enable-secure-api && \
