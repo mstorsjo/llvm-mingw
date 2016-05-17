@@ -89,6 +89,7 @@ ENV AR=llvm-ar
 ENV RANLIB=llvm-ranlib 
 ENV LD=lld
 ENV AS=llvm-as
+ENV NM=llvm-nm
 
 # Build mingw with our freshly built cross compiler
 RUN cd mingw-w64/mingw-w64-crt && \
