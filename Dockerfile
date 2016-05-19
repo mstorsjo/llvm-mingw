@@ -70,8 +70,7 @@ RUN ln -s $MINGW_PREFIX $TOOLCHAIN_PREFIX/mingw
 
 RUN cd mingw-w64/mingw-w64-tools/genlib && \
     mkdir build && cd build && \
-    ../configure --prefix=$TOOLCHAIN_PREFIX \
-        --target=$TARGET_TUPLE && \
+    ../configure --prefix=$TOOLCHAIN_PREFIX && \
     make -j4 && \
     make install
 
