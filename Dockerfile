@@ -161,4 +161,14 @@ RUN cd libcxx && mkdir build && cd build && \
     make -j8 && \
     make install
 
+RUN mkdir gaspp && cd gaspp && \
+    wget -q https://raw.githubusercontent.com/yuvi/gas-preprocessor/master/gas-preprocessor.pl && \
+    chmod +x gas-preprocessor.pl
+
+ENV PATH=/build/gaspp:$PATH
+
+ENV AS="gas-preprocessor.pl ${CC}"
+ENV ASCPP="gas-preprocessor.pl ${CC}"
+ENV CCAS="gas-preprocessor.pl ${CC}"
+ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
 
