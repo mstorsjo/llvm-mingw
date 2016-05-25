@@ -128,8 +128,6 @@ RUN git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxx.git 
     git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
     git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
-COPY libunwind-0002.patch /build/patches/
-
 RUN cd libcxx && \
     git am /build/patches/libcxx-*.patch
 
