@@ -1,0 +1,64 @@
+From 13f5a9ac209dd87b8e3c22151a139954a49a0674 Mon Sep 17 00:00:00 2001
+From: Saleem Abdulrasool <compnerd@compnerd.org>
+Date: Fri, 5 Aug 2016 17:33:24 +0000
+Subject: [PATCH 4/5] COFF ARM: Error out if 24 bit thumb branches are out of
+ range
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+In the ELF linker, the same situation already errors out with "relocation
+R_ARM_THM_CALL out of range".
+
+Patch by Martin Storsjö!
+
+Cherry-picked from SVN trunk commit 277838, git mirror commit
+97497d40eee0.
+---
+ COFF/Chunks.cpp                      |  2 ++
+ test/COFF/Inputs/far-arm-thumb-abs.s |  2 ++
+ test/COFF/arm-thumb-branch-error.s   | 10 ++++++++++
+ 3 files changed, 14 insertions(+)
+ create mode 100644 test/COFF/Inputs/far-arm-thumb-abs.s
+ create mode 100644 test/COFF/arm-thumb-branch-error.s
+
+diff --git a/COFF/Chunks.cpp b/COFF/Chunks.cpp
+index 2e6f535..fb60a8b 100644
+--- a/COFF/Chunks.cpp
++++ b/COFF/Chunks.cpp
+@@ -99,6 +99,8 @@ static void applyBranch20T(uint8_t *Off, int32_t V) {
+ }
+ 
+ static void applyBranch24T(uint8_t *Off, int32_t V) {
++  if (!isInt<25>(V))
++    fatal("relocation out of range");
+   uint32_t S = V < 0 ? 1 : 0;
+   uint32_t J1 = ((~V >> 23) & 1) ^ S;
+   uint32_t J2 = ((~V >> 22) & 1) ^ S;
+diff --git a/test/COFF/Inputs/far-arm-thumb-abs.s b/test/COFF/Inputs/far-arm-thumb-abs.s
+new file mode 100644
+index 0000000..9f1b59a
+--- /dev/null
++++ b/test/COFF/Inputs/far-arm-thumb-abs.s
+@@ -0,0 +1,2 @@
++.global too_far1
++too_far1 = 0x1401004
+diff --git a/test/COFF/arm-thumb-branch-error.s b/test/COFF/arm-thumb-branch-error.s
+new file mode 100644
+index 0000000..00b835c
+--- /dev/null
++++ b/test/COFF/arm-thumb-branch-error.s
+@@ -0,0 +1,10 @@
++// RUN: llvm-mc -filetype=obj -triple=thumbv7a-windows-gnu %s -o %t
++// RUN: llvm-mc -filetype=obj -triple=thumbv7a-windows-gnu %S/Inputs/far-arm-thumb-abs.s -o %tfar
++// RUN: not lld-link -entry:_start -subsystem:console %t %tfar -out:%t2 2>&1 | FileCheck %s
++// REQUIRES: arm
++ .syntax unified
++ .globl _start
++_start:
++ bl  too_far1
++
++// CHECK: relocation out of range
+-- 
+2.7.4
+

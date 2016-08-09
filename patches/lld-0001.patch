@@ -1,29 +1,35 @@
-From 38ed8e461edd6df0c7f2ba2d0e8d36f6288d231e Mon Sep 17 00:00:00 2001
+From 808dcadd650fd54174a0c033547a6668bf77e4f1 Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
 Date: Wed, 28 Oct 2015 19:32:16 +0000
-Subject: [PATCH] add support for gnu arguments in lld coff
+Subject: [PATCH 1/5] add support for gnu arguments in lld coff
 
+---
+ COFF/Driver.cpp      | 31 ++++++++++++++++++++++++++++++-
+ COFF/Driver.h        |  3 +++
+ COFF/DriverUtils.cpp |  2 +-
+ COFF/Options.td      | 20 ++++++++++++++++++++
+ tools/lld/lld.cpp    | 21 +++++++++++++++++++++
+ 5 files changed, 75 insertions(+), 2 deletions(-)
 
 diff --git a/COFF/Driver.cpp b/COFF/Driver.cpp
-index f528daf..34f422c 100644
+index bb6a60e..0821591 100644
 --- a/COFF/Driver.cpp
 +++ b/COFF/Driver.cpp
-@@ -119,6 +119,7 @@ void LinkerDriver::parseDirectives(StringRef S) {
-     case OPT_editandcontinue:
+@@ -125,6 +125,7 @@ void LinkerDriver::parseDirectives(StringRef S) {
+     case OPT_fastfail:
      case OPT_guardsym:
      case OPT_throwingnew:
 +    case OPT_aligncomm:
        break;
      default:
-       error(Twine(Arg->getSpelling()) + " is not allowed in .drectve");
-@@ -147,6 +148,31 @@ StringRef LinkerDriver::doFindFile(StringRef Filename) {
+       fatal(Arg->getSpelling() + " is not allowed in .drectve");
+@@ -153,6 +154,31 @@ StringRef LinkerDriver::doFindFile(StringRef Filename) {
    return Filename;
  }
  
 +// Searches a given library from input search paths, which are filled
 +// from -L command line switches. Returns a path to an existent library file.
 +StringRef LinkerDriver::searchLibrary(StringRef Filename) {
-+//  error("Unable to find library -l" + Filename);
 +
 +  std::vector<std::string> Names;
 +  if (Filename[0] == ':') {
@@ -42,13 +48,14 @@ index f528daf..34f422c 100644
 +        return Alloc.save(Path.str());
 +    }
 +  }
-+  error("Unable to find library -l" + Filename);
++  fatal("Unable to find library -l" + Filename);
++  return "";
 +}
 +
  // Resolves a file path. This never returns the same path
  // (in that case, it returns None).
  Optional<StringRef> LinkerDriver::findFile(StringRef Filename) {
-@@ -438,6 +464,9 @@ void LinkerDriver::link(llvm::ArrayRef<const char *> ArgsArr) {
+@@ -452,6 +478,9 @@ void LinkerDriver::link(llvm::ArrayRef<const char *> ArgsArr) {
    // for /defaultlib option.
    std::vector<StringRef> Paths;
    std::vector<MemoryBufferRef> MBs;
@@ -58,7 +65,7 @@ index f528daf..34f422c 100644
    for (auto *Arg : Args.filtered(OPT_INPUT))
      if (Optional<StringRef> Path = findFile(Arg->getValue()))
        Paths.push_back(*Path);
-@@ -559,7 +588,7 @@ void LinkerDriver::link(llvm::ArrayRef<const char *> ArgsArr) {
+@@ -573,7 +602,7 @@ void LinkerDriver::link(llvm::ArrayRef<const char *> ArgsArr) {
    if (Config->ImageBase == uint64_t(-1))
      Config->ImageBase = getDefaultImageBase();
  
@@ -68,10 +75,10 @@ index f528daf..34f422c 100644
      Config->SEHTable = Symtab.addRelative("___safe_se_handler_table", 0);
      Config->SEHCount = Symtab.addAbsolute("___safe_se_handler_count", 0);
 diff --git a/COFF/Driver.h b/COFF/Driver.h
-index e50da20..c716678 100644
+index 23969ee..230ec35 100644
 --- a/COFF/Driver.h
 +++ b/COFF/Driver.h
-@@ -87,6 +87,9 @@ private:
+@@ -84,6 +84,9 @@ private:
    StringRef doFindFile(StringRef Filename);
    StringRef doFindLib(StringRef Filename);
  
@@ -82,10 +89,10 @@ index e50da20..c716678 100644
    void addLibSearchPaths();
  
 diff --git a/COFF/DriverUtils.cpp b/COFF/DriverUtils.cpp
-index 391a8ab..e876de3 100644
+index 5d7dc2b..e2f1f2d 100644
 --- a/COFF/DriverUtils.cpp
 +++ b/COFF/DriverUtils.cpp
-@@ -650,7 +650,7 @@ static const llvm::opt::OptTable::Info infoTable[] = {
+@@ -591,7 +591,7 @@ static const llvm::opt::OptTable::Info infoTable[] = {
  
  class COFFOptTable : public llvm::opt::OptTable {
  public:
@@ -95,10 +102,10 @@ index 391a8ab..e876de3 100644
  
  // Parses a given list of options.
 diff --git a/COFF/Options.td b/COFF/Options.td
-index a21b8de..3418de5 100644
+index e5c9c5b..322b162 100644
 --- a/COFF/Options.td
 +++ b/COFF/Options.td
-@@ -92,6 +92,26 @@ def nosymtab : F<"nosymtab">;
+@@ -93,6 +93,26 @@ def nosymtab : F<"nosymtab">;
  // Flags for debugging
  def lldmap : Joined<["/", "-"], "lldmap:">;
  
@@ -125,60 +132,45 @@ index a21b8de..3418de5 100644
  //==============================================================================
  // The flags below do nothing. They are defined only for link.exe compatibility.
  //==============================================================================
-diff --git a/lib/Driver/UniversalDriver.cpp b/lib/Driver/UniversalDriver.cpp
-index 3dea7eb..268dafb 100644
---- a/lib/Driver/UniversalDriver.cpp
-+++ b/lib/Driver/UniversalDriver.cpp
-@@ -95,6 +95,21 @@ static Flavor strToFlavor(StringRef str) {
-       .Default(Flavor::invalid);
+diff --git a/tools/lld/lld.cpp b/tools/lld/lld.cpp
+index 8805e02..68c8735 100644
+--- a/tools/lld/lld.cpp
++++ b/tools/lld/lld.cpp
+@@ -51,6 +51,24 @@ static Flavor getFlavor(StringRef S) {
+       .Default(Invalid);
  }
  
-+//std::pair<llvm::Triple::ObjectFileFormat, IMAGE_FILE_MACHINE_TYPE> getTargetFromEmulation
-+
-+static bool isPETarget(const llvm::opt::InputArgList &parsedArgs) {
-+  llvm::opt::Arg *argMachine = parsedArgs.getLastArg(OPT_m);
-+  if (!argMachine)
-+    return false;
-+  if (argMachine->containsValue("i386pe"))
-+    return true;
-+  if (argMachine->containsValue("i386pep"))
-+    return true;
-+  if (argMachine->containsValue("thumb2pe"))
-+    return true;
++static bool isPETarget(const std::vector<const char *> &V) {
++  for (auto It = V.begin(); It != V.end(); It++) {
++    if (*It == StringRef("-m")) {
++      It++;
++      if (It == V.end())
++        return false;
++      if (*It == StringRef("i386pe"))
++        return true;
++      if (*It == StringRef("i386pep"))
++        return true;
++      if (*It == StringRef("thumb2pe"))
++        return true;
++      return false;
++    }
++  }
 +  return false;
 +}
 +
- static ProgramNameParts parseProgramName(StringRef programName) {
-   SmallVector<StringRef, 3> components;
-   llvm::SplitString(programName, components, "-");
-@@ -198,6 +213,12 @@ bool UniversalDriver::link(llvm::MutableArrayRef<const char *> args,
-     return true;
-   }
+ static Flavor parseProgname(StringRef Progname) {
+ #if __APPLE__
+   // Use Darwin driver for "ld" on Darwin.
+@@ -101,6 +119,9 @@ int main(int Argc, const char **Argv) {
+   llvm_shutdown_obj Shutdown;
  
-+  //Override gnu for pe targets to use coff
-+  if(isPETarget(parsedArgs)) {
-+    coff::link(args);
-+    return true;
-+  }
+   std::vector<const char *> Args(Argv, Argv + Argc);
++  if (isPETarget(Args))
++    return !coff::link(Args);
 +
-   Flavor flavor = getFlavor(args, parsedArgs);
- 
-   // Switch to appropriate driver.
-diff --git a/lib/Driver/UniversalDriverOptions.td b/lib/Driver/UniversalDriverOptions.td
-index 14abc9c..38e620b 100644
---- a/lib/Driver/UniversalDriverOptions.td
-+++ b/lib/Driver/UniversalDriverOptions.td
-@@ -11,6 +11,10 @@ def core : Flag<["-"], "core">,
- def target: Separate<["-"], "target">,
-      HelpText<"Select the target">;
- 
-+// Used to override gnu pe targets
-+def m : Separate<["-"], "m">, MetaVarName<"<emulation>">,
-+     HelpText<"Select target emulation">;
-+
- def version: Flag<["-"], "version">,
-      HelpText<"Display the version">;
- 
+   switch (parseFlavor(Args)) {
+   case Gnu:
+     return !elf::link(Args);
 -- 
-2.6.3
+2.7.4
 
