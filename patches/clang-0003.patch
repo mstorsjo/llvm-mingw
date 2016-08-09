@@ -1,0 +1,48 @@
+From 80b3c6d7fd1cd993de4454e869fadbae8a456ac1 Mon Sep 17 00:00:00 2001
+From: Renato Golin <renato.golin@linaro.org>
+Date: Wed, 27 Jul 2016 14:12:20 +0000
+Subject: [PATCH 3/4] [ARM] Pass thumb as architecture to the underlying tools,
+ when targeting windows
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This makes sure that the thumb section flag gets set by the assembler.
+
+Patch by Martin Storsjö.
+
+Cherry-picked from SVN trunk commit 276869, git mirror commit
+3f38d952361bac.
+---
+ lib/Driver/ToolChain.cpp    | 4 +++-
+ test/Driver/windows-thumb.s | 2 ++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+ create mode 100644 test/Driver/windows-thumb.s
+
+diff --git a/lib/Driver/ToolChain.cpp b/lib/Driver/ToolChain.cpp
+index e96688c..d586350 100644
+--- a/lib/Driver/ToolChain.cpp
++++ b/lib/Driver/ToolChain.cpp
+@@ -487,8 +487,10 @@ std::string ToolChain::ComputeLLVMTriple(const ArgList &Args,
+       ArchName = "arm";
+ 
+     // Assembly files should start in ARM mode, unless arch is M-profile.
++    // Windows is always thumb.
+     if ((InputType != types::TY_PP_Asm && Args.hasFlag(options::OPT_mthumb,
+-         options::OPT_mno_thumb, ThumbDefault)) || IsMProfile) {
++         options::OPT_mno_thumb, ThumbDefault)) || IsMProfile ||
++         getTriple().isOSWindows()) {
+       if (IsBigEndian)
+         ArchName = "thumbeb";
+       else
+diff --git a/test/Driver/windows-thumb.s b/test/Driver/windows-thumb.s
+new file mode 100644
+index 0000000..afe5b2d
+--- /dev/null
++++ b/test/Driver/windows-thumb.s
+@@ -0,0 +1,2 @@
++; RUN: %clang -target armv7-windows -c -### %s 2>&1 | FileCheck %s
++; CHECK: "-triple" "thumbv7-
+-- 
+2.7.4
+

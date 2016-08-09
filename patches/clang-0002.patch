@@ -1,7 +1,7 @@
-From a6ab1bd3b1a1f1e4eb8b8490dac5f1b5b4b72e6a Mon Sep 17 00:00:00 2001
+From 4139cf38b1a16aa49a7b9eed79b0cccec1a70ec8 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
 Date: Mon, 2 May 2016 15:58:31 +0200
-Subject: [PATCH] Manually revert 0e2452f3055e2e2cad06a55c5ca9c2be13404781
+Subject: [PATCH 2/4] Manually revert 0e2452f3055e2e2cad06a55c5ca9c2be13404781
 
 This re-enables mingw detection
 ---
@@ -41,5 +41,5 @@ index 938440b..a1dc25b 100644
    Base += llvm::sys::path::get_separator();
    findGccLibDir();
 -- 
-2.8.1
+2.7.4
 

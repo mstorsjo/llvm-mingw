@@ -1,14 +1,18 @@
-From de8c959c54b4591b13d7ab0c348bac8d25cc856a Mon Sep 17 00:00:00 2001
+From 6e83e00fb6c9b858b9ccb1cbeb30198ec85d190d Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
 Date: Wed, 16 Dec 2015 02:07:06 -0800
-Subject: [PATCH] use lld and compiler-rt by default
+Subject: [PATCH 1/4] use lld and compiler-rt by default
 
+---
+ lib/Driver/ToolChains.h | 4 ++++
+ lib/Driver/Tools.cpp    | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/lib/Driver/ToolChains.h b/lib/Driver/ToolChains.h
-index 257750e..831b7ab 100644
+index 4e5c3f7..c06f695 100644
 --- a/lib/Driver/ToolChains.h
 +++ b/lib/Driver/ToolChains.h
-@@ -649,6 +649,10 @@ public:
+@@ -680,6 +680,10 @@ public:
        const llvm::opt::ArgList &DriverArgs,
        llvm::opt::ArgStringList &CC1Args) const override;
  
@@ -20,10 +24,10 @@ index 257750e..831b7ab 100644
    Tool *getTool(Action::ActionClass AC) const override;
    Tool *buildLinker() const override;
 diff --git a/lib/Driver/Tools.cpp b/lib/Driver/Tools.cpp
-index 20a1035..ec3e42d 100644
+index 95f2850..3fff6d2 100644
 --- a/lib/Driver/Tools.cpp
 +++ b/lib/Driver/Tools.cpp
-@@ -9600,7 +9600,7 @@ void MinGW::Linker::ConstructJob(Compilation &C, const JobAction &JA,
+@@ -10376,7 +10376,7 @@ void MinGW::Linker::ConstructJob(Compilation &C, const JobAction &JA,
    // handled somewhere else.
    Args.ClaimAllArgs(options::OPT_w);
  
@@ -33,5 +37,5 @@ index 20a1035..ec3e42d 100644
      CmdArgs.push_back("-flavor");
      CmdArgs.push_back("gnu");
 -- 
-2.6.3
+2.7.4
 
