@@ -105,7 +105,8 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
 
-#Work around upstream issue with capital W windows.h
+#Work around upstream issue with capital W windows.h - this is required
+#by compiler-rt, see e.g. https://reviews.llvm.org/D23308.
 RUN ln -s /build/prefix/armv7-w64-mingw32/include/windows.h /build/prefix/armv7-w64-mingw32/include/Windows.h
 
 RUN cd compiler-rt && \
