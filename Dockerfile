@@ -16,15 +16,15 @@ WORKDIR /build
 
 COPY patches/ /build/patches
 
-RUN git clone -b release_38 https://github.com/llvm-mirror/llvm.git --depth=1
+RUN git clone -b release_39 https://github.com/llvm-mirror/llvm.git --depth=1
 RUN cd llvm/tools && \
-    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/clang.git && \
-    git clone --depth=1 -b release_38 https://github.com/llvm-mirror/lld.git --depth=1
+    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/clang.git && \
+    git clone --depth=1 -b release_39 https://github.com/llvm-mirror/lld.git --depth=1
 
 #RUN cd llvm/projects && \
-#    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-#    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
-#    git clone https://github.com/llvm-mirror/libunwind.git -b release_38 --depth=1
+#    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
+#    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+#    git clone https://github.com/llvm-mirror/libunwind.git -b release_39 --depth=1
 
 RUN cd llvm && \
     git am /build/patches/llvm-*.patch
@@ -42,7 +42,7 @@ RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64
 RUN cd mingw-w64 && \
     git am /build/patches/mingw-*.patch
 
-RUN git clone -b release_38 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
+RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
 
 RUN mkdir /build/prefix
 
@@ -112,8 +112,8 @@ RUN ln -s /build/prefix/armv7-w64-mingw32/include/windows.h /build/prefix/armv7-
 RUN cd compiler-rt && \
     make clang_mingw-builtins-arm
 
-RUN mkdir -p /build/prefix/lib/clang/3.8.1/lib/windows && \
-    cp /build/compiler-rt/clang_mingw/builtins-arm/libcompiler_rt.a /build/prefix/lib/clang/3.8.1/lib/windows/libclang_rt.builtins-arm.a
+RUN mkdir -p /build/prefix/lib/clang/3.9.0/lib/windows && \
+    cp /build/compiler-rt/clang_mingw/builtins-arm/libcompiler_rt.a /build/prefix/lib/clang/3.9.0/lib/windows/libclang_rt.builtins-arm.a
 
 RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
     autoreconf -vif && \
@@ -127,9 +127,9 @@ RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
     make -j4 && \
     make install 
 
-#RUN git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-#    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
-#    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libunwind.git
+#RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
+#    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+#    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
 #RUN cd libcxx && \
 #    git am /build/patches/libcxx-*.patch
