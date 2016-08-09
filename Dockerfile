@@ -1,12 +1,12 @@
-FROM videolan-base-sid:latest
+FROM ubuntu:16.04
 
 MAINTAINER Hugo Beauzée-Luyssen <hugo@beauzee.fr>
 
 #FIXME: Remove vim once debuging is complete
 RUN apt-get update -qq && apt-get install -qqy \
-    git wget bzip2 file libwine-dev unzip libtool pkg-config cmake \
+    git wget bzip2 file libwine-development-dev unzip libtool pkg-config cmake \
     build-essential automake texinfo ragel yasm p7zip-full gettext autopoint \
-    vim
+    vim python
 
 
 RUN git config --global user.name "VideoLAN Buildbot" && \
