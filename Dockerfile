@@ -108,6 +108,9 @@ RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/
 #Work around upstream issue with capital W windows.h
 RUN ln -s /build/prefix/armv7-w64-mingw32/include/windows.h /build/prefix/armv7-w64-mingw32/include/Windows.h
 
+RUN cd compiler-rt && \
+    git am /build/patches/compiler-rt-*.patch
+
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
     make clang_mingw-builtins-arm
