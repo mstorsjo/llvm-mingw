@@ -50,7 +50,6 @@ RUN mkdir /build/prefix
 RUN cd llvm && mkdir build && cd build && cmake \
     -DCMAKE_INSTALL_PREFIX="/build/prefix" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_TARGETS_TO_BUILD="ARM;CppBackend;X86" \
     -DLLVM_ENABLE_ASSERTIONS=OFF \
     -DLLVM_ENABLE_EH=ON \
     -DLLVM_ENABLE_THREADS=ON \
