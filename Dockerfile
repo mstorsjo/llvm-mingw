@@ -160,7 +160,7 @@ RUN cd libcxx && mkdir build && cd build && \
     make install
 
 RUN mkdir gaspp && cd gaspp && \
-    wget -q https://raw.githubusercontent.com/yuvi/gas-preprocessor/master/gas-preprocessor.pl && \
+    wget -q https://raw.githubusercontent.com/libav/gas-preprocessor/master/gas-preprocessor.pl && \
     chmod +x gas-preprocessor.pl
 
 ENV PATH=/build/gaspp:$PATH
