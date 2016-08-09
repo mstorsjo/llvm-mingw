@@ -14,8 +14,6 @@ RUN git config --global user.name "VideoLAN Buildbot" && \
 
 WORKDIR /build
 
-COPY patches/ /build/patches
-
 RUN git clone -b release_39 https://github.com/llvm-mirror/llvm.git --depth=1
 RUN cd llvm/tools && \
     git clone -b release_39 --depth=1 https://github.com/llvm-mirror/clang.git && \
@@ -25,6 +23,10 @@ RUN cd llvm/tools && \
 #    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
 #    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
 #    git clone https://github.com/llvm-mirror/libunwind.git -b release_39 --depth=1
+
+RUN mkdir /build/patches
+
+COPY patches/llvm-*.patch patches/clang-*.patch patches/lld-*.patch patches/libcxx-*.patch /build/patches/
 
 RUN cd llvm && \
     git am /build/patches/llvm-*.patch
@@ -39,6 +41,7 @@ RUN cd llvm/tools/lld && \
 #    git am /build/patches/libcxx-*.patch
 
 RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64
+COPY patches/mingw-*.patch /build/patches/
 RUN cd mingw-w64 && \
     git am /build/patches/mingw-*.patch
 
@@ -113,6 +116,7 @@ RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/
 #by compiler-rt, see e.g. https://reviews.llvm.org/D23308.
 RUN ln -s /build/prefix/armv7-w64-mingw32/include/windows.h /build/prefix/armv7-w64-mingw32/include/Windows.h
 
+COPY patches/compiler-rt-*.patch /build/patches/
 RUN cd compiler-rt && \
     git am /build/patches/compiler-rt-*.patch
 
@@ -139,9 +143,11 @@ RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
 #    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
 #    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
+# libcxx-*.patch were already copied earlier
 #RUN cd libcxx && \
 #    git am /build/patches/libcxx-*.patch
 
+# COPY patches/libunwind-*.patch /build/patches/
 #RUN cd libunwind && \
 #    git am /build/patches/libunwind-*.patch
 
