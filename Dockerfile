@@ -26,6 +26,9 @@ RUN cd llvm/tools && \
 #    git clone -b release_38 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
 #    git clone https://github.com/llvm-mirror/libunwind.git -b release_38 --depth=1
 
+RUN cd llvm && \
+    git am /build/patches/llvm-*.patch
+
 RUN cd llvm/tools/clang && \
     git am /build/patches/clang-*.patch
 

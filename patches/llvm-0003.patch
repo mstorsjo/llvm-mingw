@@ -1,0 +1,70 @@
+From 3b940b64588ea7df1c473021abe3ee3bf32a8294 Mon Sep 17 00:00:00 2001
+From: Renato Golin <renato.golin@linaro.org>
+Date: Wed, 27 Jul 2016 12:31:58 +0000
+Subject: [PATCH 3/3] [ARM] Set a non-conflicting comment character for
+ assembly in MSVC mode
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Currently, for ARMCOFFMCAsmInfoMicrosoft, no comment character is set, thus the
+idefault, '#', is used.
+
+The hash character doesn't work as comment character in ARM assembly, since '#'
+is used for immediate values.
+
+The comment character is set to ';', which is the comment character used by MS
+armasm.exe. (The microsoft armasm.exe uses a different directive syntax than
+what LLVM currently supports though, similar to ARM's armasm.)
+
+This allows inline assembly with immediate constants to be built (and brings the
+assembly output from clang -S closer to being possible to assemble).
+
+A test is added that verifies that ';' is correctly interpreted as comments in
+this mode, and verifies that assembling code that includes literal constants
+with a '#' works.
+
+Patch by Martin Storsjö.
+
+Cherry-picked from SVN trunk commit 276859, git mirror commit
+b9c61f0c0404.
+---
+ lib/Target/ARM/MCTargetDesc/ARMMCAsmInfo.cpp |  1 +
+ test/MC/ARM/Windows/literals-comments.s      | 13 +++++++++++++
+ 2 files changed, 14 insertions(+)
+ create mode 100644 test/MC/ARM/Windows/literals-comments.s
+
+diff --git a/lib/Target/ARM/MCTargetDesc/ARMMCAsmInfo.cpp b/lib/Target/ARM/MCTargetDesc/ARMMCAsmInfo.cpp
+index 53cd29a..1e062ad 100644
+--- a/lib/Target/ARM/MCTargetDesc/ARMMCAsmInfo.cpp
++++ b/lib/Target/ARM/MCTargetDesc/ARMMCAsmInfo.cpp
+@@ -90,6 +90,7 @@ ARMCOFFMCAsmInfoMicrosoft::ARMCOFFMCAsmInfoMicrosoft() {
+ 
+   PrivateGlobalPrefix = "$M";
+   PrivateLabelPrefix = "$M";
++  CommentString = ";";
+ }
+ 
+ void ARMCOFFMCAsmInfoGNU::anchor() { }
+diff --git a/test/MC/ARM/Windows/literals-comments.s b/test/MC/ARM/Windows/literals-comments.s
+new file mode 100644
+index 0000000..be98874
+--- /dev/null
++++ b/test/MC/ARM/Windows/literals-comments.s
+@@ -0,0 +1,13 @@
++; RUN: llvm-mc -triple armv7-windows-msvc -filetype obj -o - %s
++
++  .syntax unified
++  .thumb
++
++  .text
++
++  .global function
++  .thumb_func
++function:
++  ; this is a comment
++  mov r0, #42 ; this # was not
++  bx lr
+-- 
+2.7.4
+
