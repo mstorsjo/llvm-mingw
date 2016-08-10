@@ -238,3 +238,11 @@ RUN mkdir -p /build/hello
 COPY hello.c /build/hello/
 RUN cd /build/hello && armv7-w64-mingw32-clang hello.c -o hello.exe
 
+RUN git clone --depth=1 git://git.libav.org/libav.git
+
+# Clear LDFLAGS, lld seems to fail with msvcr120_app for some reason (recheck this)
+RUN cd /build/libav && \
+    mkdir build && cd build && \
+    LDFLAGS="" ../configure --arch=arm --cpu=armv7-a --target-os=mingw32 --cc=armv7-w64-mingw32-clang --ar=llvm-ar --nm=llvm-nm --enable-cross-compile --enable-gpl && \
+    make -j4 all testprogs
+
