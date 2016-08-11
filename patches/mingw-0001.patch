@@ -1,61 +1,36 @@
-From ca451a7a45d4876065edc6755f8aab8095914b04 Mon Sep 17 00:00:00 2001
+From 077f2318a219db191588d0ab00df58bb694c2931 Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
-Date: Sat, 21 Nov 2015 18:43:46 -0800
-Subject: [PATCH] Handle __CTOR_LIST__ internally within mingw-w64
+Date: Fri, 5 Aug 2016 20:09:41 -0700
+Subject: [PATCH] Handle __CTOR_LIST__ for clang
 
----
- mingw-w64-crt/crt/gccmain.c | 19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/mingw-w64-crt/crt/gccmain.c b/mingw-w64-crt/crt/gccmain.c
-index fc0e350..ba50691 100644
---- a/mingw-w64-crt/crt/gccmain.c
-+++ b/mingw-w64-crt/crt/gccmain.c
-@@ -9,8 +9,15 @@
- #include <setjmp.h>
+diff --git a/mingw-w64-crt/crt/crtbegin.c b/mingw-w64-crt/crt/crtbegin.c
+index 39c0d85..231dafc 100644
+--- a/mingw-w64-crt/crt/crtbegin.c
++++ b/mingw-w64-crt/crt/crtbegin.c
+@@ -4,3 +4,7 @@
+  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+  */
  
- typedef void (*func_ptr) (void);
--extern func_ptr __CTOR_LIST__[];
--extern func_ptr __DTOR_LIST__[];
-+#define STATIC static
++#ifdef __clang__
++__attribute__ (( __section__ (".ctors"), __used__ , aligned(sizeof(void *)))) const void * __CTOR_LIST__ = (void *) -1;
++__attribute__ (( __section__ (".dtors"), __used__ , aligned(sizeof(void *)))) const void * __DTOR_LIST__ = (void *) -1;
++#endif
+diff --git a/mingw-w64-crt/crt/crtexe.c b/mingw-w64-crt/crt/crtexe.c
+index ae37e0f..ad91f25 100644
+--- a/mingw-w64-crt/crt/crtexe.c
++++ b/mingw-w64-crt/crt/crtexe.c
+@@ -60,6 +60,11 @@ extern _CRTALLOC(".CRT$XIZ") _PIFV __xi_z[];
+ extern _CRTALLOC(".CRT$XCA") _PVFV __xc_a[];
+ extern _CRTALLOC(".CRT$XCZ") _PVFV __xc_z[];
+ 
++#ifdef __clang__
++extern _CRTALLOC(".ctors$zzz") void *__CTOR_END__[] = {(void*)0};
++extern _CRTALLOC(".dtors$zzz") void *__DTOR_END__[] = {(void*)0};
++#endif
 +
-+STATIC func_ptr __MINGW_CTOR_LIST__[1]
-+  __attribute__ ((__used__, section(".ctors"), aligned(sizeof(func_ptr))))
-+  = { (func_ptr) (-1) };
-+
-+STATIC func_ptr __MINGW_DTOR_LIST__[1]
-+  __attribute__((section(".dtors"), aligned(sizeof(func_ptr))))
-+  = { (func_ptr) (-1) };
+ /* TLS initialization hook.  */
+ extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback;
  
- void __do_global_dtors (void);
- void __do_global_ctors (void);
-@@ -19,7 +26,7 @@ void __main (void);
- void
- __do_global_dtors (void)
- {
--  static func_ptr *p = __DTOR_LIST__ + 1;
-+  static func_ptr *p = __MINGW_DTOR_LIST__ + 1;
- 
-   while (*p)
-     {
-@@ -31,17 +38,17 @@ __do_global_dtors (void)
- void
- __do_global_ctors (void)
- {
--  unsigned long nptrs = (unsigned long) (ptrdiff_t) __CTOR_LIST__[0];
-+  unsigned long nptrs = (unsigned long) (ptrdiff_t) __MINGW_CTOR_LIST__[0];
-   unsigned long i;
- 
-   if (nptrs == (unsigned long) -1)
-     {
--      for (nptrs = 0; __CTOR_LIST__[nptrs + 1] != 0; nptrs++);
-+      for (nptrs = 0; __MINGW_CTOR_LIST__[nptrs + 1] != 0; nptrs++);
-     }
- 
-   for (i = nptrs; i >= 1; i--)
-     {
--      __CTOR_LIST__[i] ();
-+      __MINGW_CTOR_LIST__[i] ();
-     }
- 
-   atexit (__do_global_dtors);
+-- 
+2.8.3
