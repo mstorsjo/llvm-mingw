@@ -234,3 +234,7 @@ ENV ASCPP="gas-preprocessor.pl ${CC}"
 ENV CCAS="gas-preprocessor.pl ${CC}"
 ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
 
+RUN mkdir -p /build/hello
+COPY hello.c /build/hello/
+RUN cd /build/hello && armv7-w64-mingw32-clang hello.c -o hello.exe
+
