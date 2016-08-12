@@ -122,7 +122,7 @@ RUN cd compiler-rt && \
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
-    make clang_mingw-builtins-arm
+    make clang_mingw-builtins-arm RANLIB=llvm-ranlib AR=llvm-ar
 
 RUN mkdir -p /build/prefix/lib/clang/3.9.0/lib/windows && \
     cp /build/compiler-rt/clang_mingw/builtins-arm/libcompiler_rt.a /build/prefix/lib/clang/3.9.0/lib/windows/libclang_rt.builtins-arm.a
