@@ -1,0 +1,1446 @@
+From e809b3e41dd5d4ba55c1b941f2b4f72b408b4c2e Mon Sep 17 00:00:00 2001
+From: Martell Malone <martellmalone@gmail.com>
+Date: Tue, 9 Aug 2016 17:52:46 -0700
+Subject: [PATCH 4/6] genlib: named as llvm-dlltool
+
+A PE COFF spec compliant import library generator.
+Intended to be used with mingw-w64.
+
+Supports:
+PE COFF spec (section 8, Import Library Format)
+PE COFF spec (Aux Format 3: Weak Externals)
+---
+ include/llvm/DllDriver/DllDriver.h |  24 ++
+ lib/CMakeLists.txt                 |   1 +
+ lib/DLLDriver/CMakeLists.txt       |  11 +
+ lib/DLLDriver/Config.h             | 119 ++++++++
+ lib/DLLDriver/DllDriver.cpp        | 185 ++++++++++++
+ lib/DLLDriver/LLVMBuild.txt        |  22 ++
+ lib/DLLDriver/Librarian.cpp        | 603 +++++++++++++++++++++++++++++++++++++
+ lib/DLLDriver/ModuleDef.cpp        | 321 ++++++++++++++++++++
+ lib/DLLDriver/Options.td           |   5 +
+ lib/Object/ArchiveWriter.cpp       |   3 +-
+ tools/llvm-ar/CMakeLists.txt       |   2 +
+ tools/llvm-ar/llvm-ar.cpp          |   6 +-
+ 12 files changed, 1300 insertions(+), 2 deletions(-)
+ create mode 100644 include/llvm/DllDriver/DllDriver.h
+ create mode 100644 lib/DLLDriver/CMakeLists.txt
+ create mode 100644 lib/DLLDriver/Config.h
+ create mode 100644 lib/DLLDriver/DllDriver.cpp
+ create mode 100644 lib/DLLDriver/LLVMBuild.txt
+ create mode 100644 lib/DLLDriver/Librarian.cpp
+ create mode 100644 lib/DLLDriver/ModuleDef.cpp
+ create mode 100644 lib/DLLDriver/Options.td
+
+diff --git a/include/llvm/DllDriver/DllDriver.h b/include/llvm/DllDriver/DllDriver.h
+new file mode 100644
+index 0000000..79fb7b7
+--- /dev/null
++++ b/include/llvm/DllDriver/DllDriver.h
+@@ -0,0 +1,24 @@
++//===- llvm/DLLDriver/DLLDriver.h - dlltool.exe-compatible driver ---*- C++ -*-===//
++//
++//                     The LLVM Compiler Infrastructure
++//
++// This file is distributed under the University of Illinois Open Source
++// License. See LICENSE.TXT for details.
++//
++//===----------------------------------------------------------------------===//
++//
++// Defines an interface to a dlltool.exe-compatible driver that also understands
++// bitcode files. Used by llvm-dlltool and lld.
++//
++//===----------------------------------------------------------------------===//
++
++#ifndef LLVM_DLLDRIVER_DLLDRIVER_H
++#define LLVM_DLLDRIVER_DLLDRIVER_H
++
++namespace llvm {
++template <typename T> class ArrayRef;
++
++int dllToolDriverMain(ArrayRef<const char *> ARgs);
++}
++
++#endif
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index 9449421..03988a6 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -20,4 +20,5 @@ add_subdirectory(LineEditor)
+ add_subdirectory(ProfileData)
+ add_subdirectory(Fuzzer)
+ add_subdirectory(Passes)
++add_subdirectory(DLLDriver)
+ add_subdirectory(LibDriver)
+diff --git a/lib/DLLDriver/CMakeLists.txt b/lib/DLLDriver/CMakeLists.txt
+new file mode 100644
+index 0000000..91fb2f0
+--- /dev/null
++++ b/lib/DLLDriver/CMakeLists.txt
+@@ -0,0 +1,11 @@
++set(LLVM_TARGET_DEFINITIONS Options.td)
++tablegen(LLVM Options.inc -gen-opt-parser-defs)
++add_public_tablegen_target(DllOptionsTableGen)
++
++add_llvm_library(LLVMDllDriver
++  DllDriver.cpp
++  ModuleDef.cpp
++  Librarian.cpp
++  )
++
++add_dependencies(LLVMDllDriver DllOptionsTableGen)
+diff --git a/lib/DLLDriver/Config.h b/lib/DLLDriver/Config.h
+new file mode 100644
+index 0000000..d5a3d26
+--- /dev/null
++++ b/lib/DLLDriver/Config.h
+@@ -0,0 +1,119 @@
++#ifndef LLVM_COFF_CONFIG_H
++#define LLVM_COFF_CONFIG_H
++
++#include "llvm/ADT/StringRef.h"
++#include "llvm/Object/COFF.h"
++#include <cstdint>
++#include <map>
++#include <set>
++#include <string>
++
++namespace llvm {
++
++using llvm::COFF::IMAGE_FILE_MACHINE_UNKNOWN;
++using llvm::COFF::WindowsSubsystem;
++using llvm::StringRef;
++
++// Short aliases.
++static const auto AMD64 = llvm::COFF::IMAGE_FILE_MACHINE_AMD64;
++static const auto ARMNT = llvm::COFF::IMAGE_FILE_MACHINE_ARMNT;
++static const auto I386 = llvm::COFF::IMAGE_FILE_MACHINE_I386;
++
++struct Export {
++  StringRef Name;       // N in N or E=N
++  StringRef ExtName;    // E in E=N
++
++  uint16_t Ordinal = 0;
++  bool Noname = false;
++  bool Data = false;
++  bool Private = false;
++
++  // True if this /export option was in .drectves section.
++  bool Directives = false;
++  StringRef SymbolName;
++  StringRef ExportName; // Name in DLL
++
++  bool isWeak() {
++    if(ExtName.size() && Name != ExtName)
++      return true;
++    return false;
++  }
++};
++
++// Global configuration.
++struct Configuration {
++  enum ManifestKind { SideBySide, Embed, No };
++  bool is64() { return Machine == AMD64; }
++  std::vector<Export> Exports;
++
++  llvm::COFF::MachineTypes Machine = IMAGE_FILE_MACHINE_UNKNOWN;
++  bool Verbose = false;
++  WindowsSubsystem Subsystem = llvm::COFF::IMAGE_SUBSYSTEM_UNKNOWN;
++  bool NoEntry = false;
++  std::string OutputFile;
++  bool DoGC = true;
++  bool DoICF = true;
++  bool Relocatable = true;
++  bool Force = false;
++  bool Debug = false;
++  bool WriteSymtab = true;
++
++  std::set<StringRef> NoDefaultLibs;
++  bool NoDefaultLibAll = false;
++
++  // True if we are creating a DLL.
++  bool DLL = false;
++  StringRef Implib;
++  std::set<std::string> DelayLoads;
++  std::map<std::string, int> DLLOrder;
++
++  // Used for /opt:lldlto=N
++  unsigned LTOOptLevel = 2;
++
++  // Used for /opt:lldltojobs=N
++  unsigned LTOJobs = 1;
++
++  // Used for /merge:from=to (e.g. /merge:.rdata=.text)
++  std::map<StringRef, StringRef> Merge;
++
++  // Used for /section=.name,{DEKPRSW} to set section attributes.
++  std::map<StringRef, uint32_t> Section;
++
++  // Options for manifest files.
++  ManifestKind Manifest = SideBySide;
++  int ManifestID = 1;
++  StringRef ManifestDependency;
++  bool ManifestUAC = true;
++  std::vector<std::string> ManifestInput;
++  StringRef ManifestLevel = "'asInvoker'";
++  StringRef ManifestUIAccess = "'false'";
++  StringRef ManifestFile;
++
++  // Used for /failifmismatch.
++  std::map<StringRef, StringRef> MustMatch;
++
++  // Used for /alternatename.
++  std::map<StringRef, StringRef> AlternateNames;
++
++  uint64_t ImageBase = -1;
++  uint64_t StackReserve = 1024 * 1024;
++  uint64_t StackCommit = 4096;
++  uint64_t HeapReserve = 1024 * 1024;
++  uint64_t HeapCommit = 4096;
++  uint32_t MajorImageVersion = 0;
++  uint32_t MinorImageVersion = 0;
++  uint32_t MajorOSVersion = 6;
++  uint32_t MinorOSVersion = 0;
++  bool DynamicBase = true;
++  bool AllowBind = true;
++  bool NxCompat = true;
++  bool AllowIsolation = true;
++  bool TerminalServerAware = true;
++  bool LargeAddressAware = false;
++  bool HighEntropyVA = false;
++};
++
++extern Configuration *Config;
++} // namespace llvm
++
++#endif
+\ No newline at end of file
+diff --git a/lib/DLLDriver/DllDriver.cpp b/lib/DLLDriver/DllDriver.cpp
+new file mode 100644
+index 0000000..aa9adc8
+--- /dev/null
++++ b/lib/DLLDriver/DllDriver.cpp
+@@ -0,0 +1,185 @@
++//===- DllDriver.cpp - dlltool.exe-compatible driver --------------------------===//
++//
++//                     The LLVM Compiler Infrastructure
++//
++// This file is distributed under the University of Illinois Open Source
++// License. See LICENSE.TXT for details.
++//
++//===----------------------------------------------------------------------===//
++//
++// Defines an interface to a dlltool.exe-compatible driver that also understands
++// bitcode files.
++//
++//===----------------------------------------------------------------------===//
++
++#include "llvm/DllDriver/DllDriver.h"
++#include "llvm/ADT/STLExtras.h"
++#include "llvm/Object/ArchiveWriter.h"
++#include "llvm/Option/Arg.h"
++#include "llvm/Option/ArgList.h"
++#include "llvm/Object/COFF.h"
++#include "llvm/Option/Option.h"
++#include "llvm/Support/CommandLine.h"
++#include "llvm/Support/StringSaver.h"
++#include "llvm/Support/Path.h"
++#include "llvm/Support/Process.h"
++#include "llvm/Support/raw_ostream.h"
++
++#include <cstdint>
++#include <map>
++#include <set>
++#include <string>
++#include <vector>
++
++#include "Config.h"
++
++using namespace llvm;
++
++namespace llvm{
++Configuration *Config;
++void parseModuleDefs(MemoryBufferRef MB, StringSaver *Alloc);
++}
++
++namespace {
++
++enum {
++  OPT_INVALID = 0,
++#define OPTION(_1, _2, ID, _4, _5, _6, _7, _8, _9, _10, _11) OPT_##ID,
++#include "Options.inc"
++#undef OPTION
++};
++
++#define PREFIX(NAME, VALUE) const char *const NAME[] = VALUE;
++#include "Options.inc"
++#undef PREFIX
++
++static const llvm::opt::OptTable::Info infoTable[] = {
++#define OPTION(X1, X2, ID, KIND, GROUP, ALIAS, X6, X7, X8, X9, X10)    \
++  {                                                                    \
++    X1, X2, X9, X10, OPT_##ID, llvm::opt::Option::KIND##Class, X8, X7, \
++    OPT_##GROUP, OPT_##ALIAS, X6                                       \
++  },
++#include "Options.inc"
++#undef OPTION
++};
++
++class DllOptTable : public llvm::opt::OptTable {
++public:
++  DllOptTable() : OptTable(infoTable, false) {}
++};
++
++}
++
++std::vector<std::unique_ptr<MemoryBuffer>> OwningMBs;
++
++// Opens a file. Path has to be resolved already.
++// Newly created memory buffers are owned by this driver.
++MemoryBufferRef openFile(StringRef Path) {
++  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> MB =
++    MemoryBuffer::getFile(Path);
++
++  if (std::error_code EC = MB.getError())
++    llvm::errs() << "fail openFile: " << EC.message() << "\n";
++
++  MemoryBufferRef MBRef = MB.get()->getMemBufferRef();
++  OwningMBs.push_back(std::move(MB.get())); // take ownership
++  return MBRef;
++}
++
++#include "llvm/Support/raw_ostream.h"
++
++#include "llvm/ADT/StringSwitch.h"
++#include "llvm/Option/Arg.h"
++#include "llvm/Option/ArgList.h"
++#include "llvm/Support/StringSaver.h"
++
++static llvm::COFF::MachineTypes getEmulation(StringRef S) {
++  return StringSwitch<llvm::COFF::MachineTypes>(S)
++      .Case("x86", llvm::COFF::IMAGE_FILE_MACHINE_I386)
++      .Case("x86_64", llvm::COFF::IMAGE_FILE_MACHINE_AMD64)
++      .Case("arm", llvm::COFF::IMAGE_FILE_MACHINE_ARMNT)
++      .Default(llvm::COFF::IMAGE_FILE_MACHINE_UNKNOWN);
++}
++
++static std::string getImplibPath() {
++  if (!Config->Implib.empty())
++    return Config->Implib;
++  SmallString<128> Out = StringRef(Config->OutputFile);
++  sys::path::replace_extension(Out, ".lib");
++  return Out.str();
++}
++
++int writeImportLibrary(std::string &Path);
++
++int llvm::dllToolDriverMain(llvm::ArrayRef<const char*> ArgsArr) {
++  SmallVector<const char *, 20> NewArgs(ArgsArr.begin(), ArgsArr.end());
++  BumpPtrAllocator Alloc;
++  StringSaver Saver(Alloc);
++  cl::ExpandResponseFiles(Saver, cl::TokenizeWindowsCommandLine, NewArgs);
++  ArgsArr = NewArgs;
++
++  Configuration C;
++  Config = &C;
++
++  DllOptTable Table;
++  unsigned MissingIndex;
++  unsigned MissingCount;
++  llvm::opt::InputArgList Args =
++      Table.ParseArgs(ArgsArr.slice(1), MissingIndex, MissingCount);
++  if (MissingCount) {
++    llvm::errs() << "missing arg value for \""
++                 << Args.getArgString(MissingIndex) << "\", expected "
++                 << MissingCount
++                 << (MissingCount == 1 ? " argument.\n" : " arguments.\n");
++    return 1;
++  }
++  for (auto *Arg : Args.filtered(OPT_UNKNOWN))
++    llvm::errs() << "ignoring unknown argument: " << Arg->getSpelling() << "\n";
++
++  if (Args.filtered_begin(OPT_INPUT) == Args.filtered_end()) {
++    llvm::outs() << "NO ARGS" << "\n";
++    return 0;
++  }
++
++  if (Args.filtered_begin(OPT_emu) == Args.filtered_end()) {
++    llvm::outs() << "Need to set an emulation mode" << "\n";
++    return -1;
++  }
++
++  std::string Path;
++  MemoryBufferRef MB;
++  int i=0;
++  for (auto *Arg : Args.filtered(OPT_INPUT)) {
++    if(i==0)
++      MB = openFile(Arg->getValue());
++    if(i==1)
++      Path = Arg->getValue();
++    i++;
++  }
++
++  if (auto *Arg = Args.getLastArg(OPT_out))
++    Path = Arg->getValue();
++
++  if(!Path.length())
++    Path = getImplibPath();
++
++  llvm::outs() << Path << "\n";
++
++  Config->Machine = IMAGE_FILE_MACHINE_UNKNOWN;
++  if (auto *Arg = Args.getLastArg(OPT_emu))
++    Config->Machine = getEmulation(Arg->getValue());
++
++  if(Config->Machine == IMAGE_FILE_MACHINE_UNKNOWN) {
++    llvm::outs() << "Need to set a valid emulation mode" << "\n";
++    return -2;
++  }
++
++  llvm::parseModuleDefs(MB, &Saver);
++
++  // has to happen after the parser
++  if (auto *Arg = Args.getLastArg(OPT_dll))
++    Config->OutputFile = Arg->getValue();
++
++  return writeImportLibrary(Path);
++
++}
+diff --git a/lib/DLLDriver/LLVMBuild.txt b/lib/DLLDriver/LLVMBuild.txt
+new file mode 100644
+index 0000000..8e2b1d65
+--- /dev/null
++++ b/lib/DLLDriver/LLVMBuild.txt
+@@ -0,0 +1,22 @@
++;===- ./lib/LibDriver/LLVMBuild.txt ----------------------------*- Conf -*--===;
++;
++;                     The LLVM Compiler Infrastructure
++;
++; This file is distributed under the University of Illinois Open Source
++; License. See LICENSE.TXT for details.
++;
++;===------------------------------------------------------------------------===;
++;
++; This is an LLVMBuild description file for the components in this subdirectory.
++;
++; For more information on the LLVMBuild system, please see:
++;
++;   http://llvm.org/docs/LLVMBuild.html
++;
++;===------------------------------------------------------------------------===;
++
++[component_0]
++type = Library
++name = DllDriver
++parent = Libraries
++required_libraries = Object Option Support
+diff --git a/lib/DLLDriver/Librarian.cpp b/lib/DLLDriver/Librarian.cpp
+new file mode 100644
+index 0000000..486733e
+--- /dev/null
++++ b/lib/DLLDriver/Librarian.cpp
+@@ -0,0 +1,603 @@
++//===- Librarian.cpp ------------------------------------------------------===//
++//
++//                             The LLVM Linker
++//
++// This file is distributed under the University of Illinois Open Source
++// License. See LICENSE.TXT for details.
++//
++//===----------------------------------------------------------------------===//
++//
++// This file contains functions for the Librarian.  The librarian creates and
++// manages libraries of the Common Object File Format (COFF) object files.  It
++// primarily is used for creating static libraries and import libraries.
++//
++//===----------------------------------------------------------------------===//
++
++#include "llvm/Object/Archive.h"
++#include "llvm/Object/ArchiveWriter.h"
++#include "llvm/Object/COFF.h"
++#include "llvm/Support/Error.h"
++#include "llvm/Support/Path.h"
++
++#include <cstdint>
++#include <map>
++#include <set>
++#include <string>
++#include <vector>
++
++#include "Config.h"
++
++using namespace llvm;
++using namespace llvm::COFF;
++using namespace llvm::object;
++
++static bool is32bit() {
++  switch (Config->Machine) {
++  default:
++    llvm_unreachable("unsupported machine");
++  case IMAGE_FILE_MACHINE_AMD64:
++    return false;
++  case IMAGE_FILE_MACHINE_ARMNT:
++  case IMAGE_FILE_MACHINE_I386:
++    return true;
++  }
++}
++
++static uint16_t getImgRelRelocation() {
++  switch (Config->Machine) {
++  default:
++    llvm_unreachable("unsupported machine");
++  case IMAGE_FILE_MACHINE_AMD64:
++    return IMAGE_REL_AMD64_ADDR32NB;
++  case IMAGE_FILE_MACHINE_ARMNT:
++    return IMAGE_REL_ARM_ADDR32NB;
++  case IMAGE_FILE_MACHINE_I386:
++    return IMAGE_REL_I386_DIR32NB;
++  }
++}
++
++template <class T> static void append(std::vector<uint8_t> &B, const T &Data) {
++  size_t S = B.size();
++  B.resize(S + sizeof(T));
++  memcpy(&B[S], &Data, sizeof(T));
++}
++
++static void writeStringTable(std::vector<uint8_t> &B,
++                             ArrayRef<const std::string> Strings) {
++  // The COFF string table consists of a 4-byte value which is the size of the
++  // table, including the length field itself.  This value is followed by the
++  // string content itself, which is an array of null-terminated C-style
++  // strings.  The termination is important as they are referenced to by offset
++  // by the symbol entity in the file format.
++
++  std::vector<uint8_t>::size_type Pos = B.size();
++  std::vector<uint8_t>::size_type Offset = B.size();
++
++  // Skip over the length field, we will fill it in later as we will have
++  // computed the length while emitting the string content itself.
++  Pos += sizeof(uint32_t);
++
++  for (const auto &S : Strings) {
++    B.resize(Pos + S.length() + 1);
++    strcpy(reinterpret_cast<char *>(&B[Pos]), S.c_str());
++    Pos += S.length() + 1;
++  }
++
++  // Backfill the length of the table now that it has been computed.
++  support::ulittle32_t Length(B.size() - Offset);
++  memcpy(&B[Offset], &Length, sizeof(Length));
++}
++
++static ImportNameType getNameType(StringRef Sym, StringRef ExtName) {
++  if (Sym != ExtName)
++    return IMPORT_NAME_UNDECORATE;
++  if (Config->Machine == I386 && Sym.startswith("_"))
++    return IMPORT_NAME_NOPREFIX;
++  return IMPORT_NAME;
++}
++
++static const std::string NullImportDescriptorSymbolName =
++    "__NULL_IMPORT_DESCRIPTOR";
++
++namespace {
++// This class constructs various small object files necessary to support linking
++// symbols imported from a DLL.  The contents are pretty strictly defined and
++// nearly entirely static.  The details of the structures files are defined in
++// WINNT.h and the PE/COFF specification.
++class ObjectFactory {
++  using u16 = support::ulittle16_t;
++  using u32 = support::ulittle32_t;
++
++  BumpPtrAllocator Alloc;
++  StringRef DLLName;
++  StringRef Library;
++  std::string ImportDescriptorSymbolName;
++  std::string NullThunkSymbolName;
++
++public:
++  ObjectFactory(StringRef S)
++      : DLLName(S), Library(S.drop_back(4)),
++        ImportDescriptorSymbolName(("__IMPORT_DESCRIPTOR_" + Library).str()),
++        NullThunkSymbolName(("\x7f" + Library + "_NULL_THUNK_DATA").str()) {}
++
++  // Creates an Import Descriptor.  This is a small object file which contains a
++  // reference to the terminators and contains the library name (entry) for the
++  // import name table.  It will force the linker to construct the necessary
++  // structure to import symbols from the DLL.
++  NewArchiveMember createImportDescriptor(std::vector<uint8_t> &Buffer);
++
++  // Creates a NULL import descriptor.  This is a small object file whcih
++  // contains a NULL import descriptor.  It is used to terminate the imports
++  // from a specific DLL.
++  NewArchiveMember createNullImportDescriptor(std::vector<uint8_t> &Buffer);
++
++  // Create a NULL Thunk Entry.  This is a small object file which contains a
++  // NULL Import Address Table entry and a NULL Import Lookup Table Entry.  It
++  // is used to terminate the IAT and ILT.
++  NewArchiveMember createNullThunk(std::vector<uint8_t> &Buffer);
++
++  // Create a short import file which is described in PE/COFF spec 7. Import
++  // Library Format.
++  NewArchiveMember createShortImport(StringRef Sym, uint16_t Ordinal,
++                                     ImportNameType NameType, bool isData);
++
++  // Create a weak external file which is described in PE/COFF Aux Format 3.
++  NewArchiveMember createWeakExternal(std::vector<uint8_t> &Buffer, StringRef Sym, StringRef Weak, bool imp);
++};
++}
++
++NewArchiveMember
++ObjectFactory::createImportDescriptor(std::vector<uint8_t> &Buffer) {
++  static const uint32_t NumberOfSections = 2;
++  static const uint32_t NumberOfSymbols = 8;
++  static const uint32_t NumberOfRelocations = 3;
++
++  // COFF Header
++  coff_file_header Header{
++      u16(Config->Machine), u16(NumberOfSections), u32(0),
++      u32(sizeof(Header) + (NumberOfSections * sizeof(coff_section)) +
++          // .idata$2
++          sizeof(coff_import_directory_table_entry) +
++          NumberOfRelocations * sizeof(coff_relocation) +
++          // .idata$6
++          (DLLName.size() + 1)),
++      u32(NumberOfSymbols), u16(0),
++      u16(is32bit() ? IMAGE_FILE_32BIT_MACHINE : 0),
++  };
++  append(Buffer, Header);
++
++  // Section Header Table
++  static const coff_section SectionTable[NumberOfSections] = {
++      {{'.', 'i', 'd', 'a', 't', 'a', '$', '2'},
++       u32(0),
++       u32(0),
++       u32(sizeof(coff_import_directory_table_entry)),
++       u32(sizeof(coff_file_header) + NumberOfSections * sizeof(coff_section)),
++       u32(sizeof(coff_file_header) + NumberOfSections * sizeof(coff_section) +
++           sizeof(coff_import_directory_table_entry)),
++       u32(0),
++       u16(NumberOfRelocations),
++       u16(0),
++       u32(IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_CNT_INITIALIZED_DATA |
++           IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE)},
++      {{'.', 'i', 'd', 'a', 't', 'a', '$', '6'},
++       u32(0),
++       u32(0),
++       u32(DLLName.size() + 1),
++       u32(sizeof(coff_file_header) + NumberOfSections * sizeof(coff_section) +
++           sizeof(coff_import_directory_table_entry) +
++           NumberOfRelocations * sizeof(coff_relocation)),
++       u32(sizeof(coff_file_header) + NumberOfSections * sizeof(coff_section) +
++           sizeof(coff_import_directory_table_entry)),
++       u32(0),
++       u16(0),
++       u16(0),
++       u32(IMAGE_SCN_ALIGN_2BYTES | IMAGE_SCN_CNT_INITIALIZED_DATA |
++           IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE)},
++  };
++  append(Buffer, SectionTable);
++
++  // .idata$2
++  static const coff_import_directory_table_entry ImportDescriptor{
++      u32(0), u32(0), u32(0), u32(0), u32(0),
++  };
++  append(Buffer, ImportDescriptor);
++
++  static const coff_relocation RelocationTable[NumberOfRelocations] = {
++      {u32(offsetof(coff_import_directory_table_entry, NameRVA)), u32(3),
++       u16(getImgRelRelocation())},
++      {u32(offsetof(coff_import_directory_table_entry, ImportLookupTableRVA)),
++       u32(4), u16(getImgRelRelocation())},
++      {u32(offsetof(coff_import_directory_table_entry, ImportAddressTableRVA)),
++       u32(5), u16(getImgRelRelocation())},
++  };
++  append(Buffer, RelocationTable);
++
++  // .idata$6
++  auto S = Buffer.size();
++  Buffer.resize(S + DLLName.size() + 1);
++  memcpy(&Buffer[S], DLLName.data(), DLLName.size());
++  Buffer[S + DLLName.size()] = '\0';
++
++  // Symbol Table
++  coff_symbol16 SymbolTable[NumberOfSymbols] = {
++    {{{'@', 'c', 'o', 'm', 'p', '.', 'i', 'd'}},
++       u32(0),
++       u16(0xFFFF),
++       u16(0),
++       IMAGE_SYM_CLASS_STATIC,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(2),
++       u16(0),
++       IMAGE_SYM_CLASS_EXTERNAL,
++       0},
++      {{{'.', 'i', 'd', 'a', 't', 'a', '$', '2'}},
++       u32(0),
++       u16(2),
++       u16(0),
++       IMAGE_SYM_CLASS_SECTION,
++       0},
++      {{{'.', 'i', 'd', 'a', 't', 'a', '$', '6'}},
++       u32(0),
++       u16(3),
++       u16(0),
++       IMAGE_SYM_CLASS_STATIC,
++       0},
++      {{{'.', 'i', 'd', 'a', 't', 'a', '$', '4'}},
++       u32(0),
++       u16(0),
++       u16(0),
++       IMAGE_SYM_CLASS_SECTION,
++       0},
++      {{{'.', 'i', 'd', 'a', 't', 'a', '$', '5'}},
++       u32(0),
++       u16(0),
++       u16(0),
++       IMAGE_SYM_CLASS_SECTION,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(2),
++       u16(0),
++       IMAGE_SYM_CLASS_NULL,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(2),
++       u16(0),
++       IMAGE_SYM_CLASS_NULL,
++       0},
++  };
++  reinterpret_cast<StringTableOffset &>(SymbolTable[1].Name).Offset =
++      sizeof(uint32_t);
++  reinterpret_cast<StringTableOffset &>(SymbolTable[6].Name).Offset =
++      sizeof(uint32_t) + ImportDescriptorSymbolName.length() + 1;
++  reinterpret_cast<StringTableOffset &>(SymbolTable[7].Name).Offset =
++      sizeof(uint32_t) + ImportDescriptorSymbolName.length() + 1 +
++      NullImportDescriptorSymbolName.length() + 1;
++  append(Buffer, SymbolTable);
++
++  // String Table
++  writeStringTable(Buffer,
++                   {ImportDescriptorSymbolName, NullImportDescriptorSymbolName,
++                    NullThunkSymbolName});
++
++  StringRef F{reinterpret_cast<const char *>(Buffer.data()), Buffer.size()};
++  return {MemoryBufferRef(F, DLLName)};
++}
++
++NewArchiveMember
++ObjectFactory::createNullImportDescriptor(std::vector<uint8_t> &Buffer) {
++  static const uint32_t NumberOfSections = 1;
++  static const uint32_t NumberOfSymbols = 2;
++
++  // COFF Header
++  coff_file_header Header{
++      u16(Config->Machine), u16(NumberOfSections), u32(0),
++      u32(sizeof(Header) + (NumberOfSections * sizeof(coff_section)) +
++          // .idata$3
++          sizeof(coff_import_directory_table_entry)),
++      u32(NumberOfSymbols), u16(0),
++      u16(is32bit() ? IMAGE_FILE_32BIT_MACHINE : 0),
++  };
++  append(Buffer, Header);
++
++  // Section Header Table
++  static const coff_section SectionTable[NumberOfSections] = {
++      {{'.', 'i', 'd', 'a', 't', 'a', '$', '3'},
++       u32(0),
++       u32(0),
++       u32(sizeof(coff_import_directory_table_entry)),
++       u32(sizeof(coff_file_header) +
++           (NumberOfSections * sizeof(coff_section))),
++       u32(0),
++       u32(0),
++       u16(0),
++       u16(0),
++       u32(IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_CNT_INITIALIZED_DATA |
++           IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE)},
++  };
++  append(Buffer, SectionTable);
++
++  // .idata$3
++  static const coff_import_directory_table_entry ImportDescriptor{
++      u32(0), u32(0), u32(0), u32(0), u32(0),
++  };
++  append(Buffer, ImportDescriptor);
++
++  // Symbol Table
++  coff_symbol16 SymbolTable[NumberOfSymbols] = {
++      {{{'@', 'c', 'o', 'm', 'p', '.', 'i', 'd'}},
++       u32(0),
++       u16(0xFFFF),
++       u16(0),
++       IMAGE_SYM_CLASS_STATIC,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(2),
++       u16(0),
++       IMAGE_SYM_CLASS_EXTERNAL,
++       0},
++  };
++  reinterpret_cast<StringTableOffset &>(SymbolTable[1].Name).Offset =
++      sizeof(uint32_t);
++  append(Buffer, SymbolTable);
++
++  // String Table
++  writeStringTable(Buffer, {NullImportDescriptorSymbolName});
++
++  StringRef F{reinterpret_cast<const char *>(Buffer.data()), Buffer.size()};
++  return {MemoryBufferRef(F, DLLName)};
++}
++
++NewArchiveMember ObjectFactory::createNullThunk(std::vector<uint8_t> &Buffer) {
++  static const uint32_t NumberOfSections = 2;
++  static const uint32_t NumberOfSymbols = 2;
++
++  // COFF Header
++  coff_file_header Header{
++      u16(Config->Machine), u16(NumberOfSections), u32(0),
++      u32(sizeof(Header) + (NumberOfSections * sizeof(coff_section)) +
++          // .idata$5
++          sizeof(export_address_table_entry) +
++          // .idata$4
++          sizeof(export_address_table_entry)),
++      u32(NumberOfSymbols), u16(0),
++      u16(is32bit() ? IMAGE_FILE_32BIT_MACHINE : 0),
++  };
++  append(Buffer, Header);
++
++  // Section Header Table
++  static const coff_section SectionTable[NumberOfSections] = {
++      {{'.', 'i', 'd', 'a', 't', 'a', '$', '5'},
++       u32(0),
++       u32(0),
++       u32(sizeof(export_address_table_entry)),
++       u32(sizeof(coff_file_header) + NumberOfSections * sizeof(coff_section)),
++       u32(0),
++       u32(0),
++       u16(0),
++       u16(0),
++       u32(IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_CNT_INITIALIZED_DATA |
++           IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE)},
++      {{'.', 'i', 'd', 'a', 't', 'a', '$', '4'},
++       u32(0),
++       u32(0),
++       u32(sizeof(export_address_table_entry)),
++       u32(sizeof(coff_file_header) + NumberOfSections * sizeof(coff_section) +
++           sizeof(export_address_table_entry)),
++       u32(0),
++       u32(0),
++       u16(0),
++       u16(0),
++       u32(IMAGE_SCN_ALIGN_4BYTES | IMAGE_SCN_CNT_INITIALIZED_DATA |
++           IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE)},
++  };
++  append(Buffer, SectionTable);
++
++  // .idata$5
++  static const export_address_table_entry ILT{u32(0)};
++  append(Buffer, ILT);
++
++  // .idata$4
++  static const export_address_table_entry IAT{u32(0)};
++  append(Buffer, IAT);
++
++  // Symbol Table
++  coff_symbol16 SymbolTable[NumberOfSymbols] = {
++    {{{'@', 'c', 'o', 'm', 'p', '.', 'i', 'd'}},
++       u32(0),
++       u16(0xFFFF),
++       u16(0),
++       IMAGE_SYM_CLASS_STATIC,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(2),
++       u16(0),
++       IMAGE_SYM_CLASS_EXTERNAL,
++       0},
++  };
++  reinterpret_cast<StringTableOffset &>(SymbolTable[1].Name).Offset =
++      sizeof(uint32_t);
++  append(Buffer, SymbolTable);
++
++  // String Table
++  writeStringTable(Buffer, {NullThunkSymbolName});
++
++  StringRef F{reinterpret_cast<const char *>(Buffer.data()), Buffer.size()};
++  return {MemoryBufferRef{F, DLLName}};
++}
++
++NewArchiveMember ObjectFactory::createShortImport(StringRef Sym,
++                                                  uint16_t Ordinal,
++                                                  ImportNameType NameType,
++                                                  bool isData) {
++  size_t ImpSize = DLLName.size() + Sym.size() + 2; // +2 for NULs
++  size_t Size = sizeof(coff_import_header) + ImpSize;
++  char *Buf = Alloc.Allocate<char>(Size);
++  memset(Buf, 0, Size);
++  char *P = Buf;
++
++  // Write short import library.
++  auto *Imp = reinterpret_cast<coff_import_header *>(P);
++  P += sizeof(*Imp);
++  Imp->Sig2 = 0xFFFF;
++  Imp->Machine = Config->Machine;
++  Imp->SizeOfData = ImpSize;
++  if (Ordinal > 0)
++    Imp->OrdinalHint = Ordinal;
++  Imp->TypeInfo = (isData ? IMPORT_DATA : IMPORT_CODE);
++
++  if(Config->Machine == IMAGE_FILE_MACHINE_I386) {
++    if(Sym.find('@') != StringRef::npos)
++      Imp->TypeInfo |= IMPORT_NAME_UNDECORATE << 2;
++    else
++      Imp->TypeInfo |= IMPORT_NAME_NOPREFIX << 2;
++  }
++  else
++    Imp->TypeInfo |= IMPORT_NAME << 2;
++
++  // Write symbol name and DLL name.
++  memcpy(P, Sym.data(), Sym.size());
++  P += Sym.size() + 1;
++  memcpy(P, DLLName.data(), DLLName.size());
++
++  return {MemoryBufferRef(StringRef(Buf, Size), DLLName)};
++}
++
++NewArchiveMember ObjectFactory::createWeakExternal(std::vector<uint8_t> &Buffer,
++                                                   StringRef Sym, StringRef Weak, bool imp) {
++  static const uint32_t NumberOfSections = 1;
++  static const uint32_t NumberOfSymbols = 5;
++
++  // COFF Header
++  coff_file_header Header{
++      u16(0), u16(NumberOfSections), u32(0),
++      u32(sizeof(Header) + (NumberOfSections * sizeof(coff_section))),
++      u32(NumberOfSymbols), u16(0),
++      u16(0),
++  };
++  append(Buffer, Header);
++
++  // Section Header Table
++  static const coff_section SectionTable[NumberOfSections] = {
++      {{'.', 'd', 'r', 'e', 'c', 't', 'v', 'e'},
++       u32(0),
++       u32(0),
++       u32(0),
++       u32(0),
++       u32(0),
++       u32(0),
++       u16(0),
++       u16(0),
++       u32(IMAGE_SCN_LNK_INFO  | IMAGE_SCN_LNK_REMOVE)}
++     };
++  append(Buffer, SectionTable);
++
++  // Symbol Table
++  coff_symbol16 SymbolTable[NumberOfSymbols] = {
++       {{{'@', 'c', 'o', 'm', 'p', '.', 'i', 'd'}},
++       u32(0),
++       u16(0xFFFF),
++       u16(0),
++       IMAGE_SYM_CLASS_STATIC,
++       0},
++       {{{'@', 'f', 'e', 'a', 't', '.', '0', '0'}},
++       u32(0),
++       u16(0xFFFF),
++       u16(0),
++       IMAGE_SYM_CLASS_STATIC,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(0),
++       u16(0),
++       IMAGE_SYM_CLASS_EXTERNAL,
++       0},
++      {{{0, 0, 0, 0, 0, 0, 0, 0}},
++       u32(0),
++       u16(0),
++       u16(0),
++       IMAGE_SYM_CLASS_WEAK_EXTERNAL,
++       1},
++      {{{2, 0, 0, 0, 3, 0, 0, 0}},
++       u32(0),
++       u16(0),
++       u16(0),
++       uint8_t(0),
++       0},
++  };
++  reinterpret_cast<StringTableOffset &>(SymbolTable[2].Name).Offset =
++      sizeof(uint32_t);
++
++  if(imp)
++    reinterpret_cast<StringTableOffset &>(SymbolTable[3].Name).Offset =
++      sizeof(uint32_t) + Sym.size() + 1 + 6; //__imp_
++  else
++    reinterpret_cast<StringTableOffset &>(SymbolTable[3].Name).Offset =
++      sizeof(uint32_t) + Sym.size() + 1;// + 6; //__imp_
++
++  append(Buffer, SymbolTable);
++
++  // String Table
++  if(imp)
++    writeStringTable(Buffer, {std::string("__imp_").append(Sym), std::string("__imp_").append(Weak)});
++  else
++    writeStringTable(Buffer, {Sym, Weak});
++
++  StringRef F{reinterpret_cast<const char *>(Buffer.data()), Buffer.size()};
++  return {MemoryBufferRef{F, DLLName}};
++
++}
++
++// Creates an import library for a DLL. In this function, we first
++// create an empty import library using lib.exe and then adds short
++// import files to that file.
++int writeImportLibrary(std::string &Path) {
++
++  std::vector<NewArchiveMember> Members;
++
++  ObjectFactory OF(llvm::sys::path::filename(Config->OutputFile));
++
++  std::vector<uint8_t> ImportDescriptor;
++  Members.push_back(OF.createImportDescriptor(ImportDescriptor));
++
++  std::vector<uint8_t> NullImportDescriptor;
++  Members.push_back(OF.createNullImportDescriptor(NullImportDescriptor));
++
++  std::vector<uint8_t> NullThunk;
++  Members.push_back(OF.createNullThunk(NullThunk));
++
++  for (Export &E : Config->Exports) {
++    if (E.Private)
++      continue;
++
++    if (E.isWeak()) {
++      std::vector<uint8_t> *WeakBuffer1 = new std::vector<uint8_t>();
++      std::vector<uint8_t> *WeakBuffer2 = new std::vector<uint8_t>();
++      Members.push_back(OF.createWeakExternal(*WeakBuffer1, E.Name, E.ExtName, false));
++      Members.push_back(OF.createWeakExternal(*WeakBuffer2, E.Name, E.ExtName, true));
++      continue;
++    }
++
++    if(E.ExtName.size() == 0) {
++      E.ExtName = E.Name;
++    }
++
++    ImportNameType Type = getNameType(E.SymbolName, E.Name);
++    Members.push_back(OF.createShortImport(E.Name, E.Ordinal, Type, E.Data));
++  }
++
++  std::pair<StringRef, std::error_code> Result =
++      writeArchive(Path, Members, /*WriteSymtab*/ true, object::Archive::K_GNU,
++                   /*Deterministic*/ true, /*Thin*/ false);
++
++  if (Result.second)
++    return -1;
++
++  return 0;
++}
+diff --git a/lib/DLLDriver/ModuleDef.cpp b/lib/DLLDriver/ModuleDef.cpp
+new file mode 100644
+index 0000000..428049a
+--- /dev/null
++++ b/lib/DLLDriver/ModuleDef.cpp
+@@ -0,0 +1,321 @@
++//===- COFF/ModuleDef.cpp -------------------------------------------------===//
++//
++//                             The LLVM Linker
++//
++// This file is distributed under the University of Illinois Open Source
++// License. See LICENSE.TXT for details.
++//
++//===----------------------------------------------------------------------===//
++//
++// Windows-specific.
++// A parser for the module-definition file (.def file).
++// Parsed results are directly written to Config global variable.
++//
++// The format of module-definition files are described in this document:
++// https://msdn.microsoft.com/en-us/library/28d6s79h.aspx
++//
++//===----------------------------------------------------------------------===//
++
++#include "Config.h"
++//#include "Error.h"
++#include "llvm/ADT/StringRef.h"
++#include "llvm/ADT/StringSwitch.h"
++#include "llvm/Object/COFF.h"
++#include "llvm/Support/StringSaver.h"
++#include "llvm/Support/raw_ostream.h"
++
++#include <cstdint>
++#include <map>
++#include <set>
++#include <string>
++#include <vector>
++#include <system_error>
++
++using llvm::COFF::IMAGE_FILE_MACHINE_UNKNOWN;
++using llvm::COFF::WindowsSubsystem;
++using llvm::StringRef;
++
++using namespace llvm::COFF;
++using namespace llvm::object;
++using namespace llvm;
++
++#include "llvm/Support/Error.h"
++
++void fatal(const Twine &Msg) {
++  llvm::errs() << Msg << "\n";
++  exit(1);
++}
++
++void fatal(std::error_code EC, const Twine &Msg) {
++  fatal(Msg + ": " + EC.message());
++}
++
++void fatal(llvm::Error &Err, const Twine &Msg) {
++  fatal(errorToErrorCode(std::move(Err)), Msg);
++}
++
++namespace llvm {
++namespace {
++
++enum Kind {
++  Unknown,
++  Eof,
++  Identifier,
++  Comma,
++  Equal,
++  KwBase,
++  KwData,
++  KwExports,
++  KwHeapsize,
++  KwLibrary,
++  KwName,
++  KwNoname,
++  KwPrivate,
++  KwStacksize,
++  KwVersion,
++};
++
++struct Token {
++  explicit Token(Kind T = Unknown, StringRef S = "") : K(T), Value(S) {}
++  Kind K;
++  StringRef Value;
++};
++
++static bool isDecorated(StringRef Sym) {
++  // Disable Sym.startswith("_") because mingw-w64 is weird about this
++  return Sym.startswith("@") || Sym.startswith("?");
++}
++
++class Lexer {
++public:
++  explicit Lexer(StringRef S) : Buf(S) {}
++
++  Token lex() {
++    Buf = Buf.trim();
++    if (Buf.empty())
++      return Token(Eof);
++
++    switch (Buf[0]) {
++    case '\0':
++      return Token(Eof);
++    case ';': {
++      size_t End = Buf.find('\n');
++      Buf = (End == Buf.npos) ? "" : Buf.drop_front(End);
++      return lex();
++    }
++    case '=':
++      // TODO: Fix HACK TO WORK AROUND "==" in mingw-w64
++      if(Buf[1] == '=')
++        Buf = Buf.drop_front();
++      Buf = Buf.drop_front();
++      return Token(Equal, "=");
++    case ',':
++      Buf = Buf.drop_front();
++      return Token(Comma, ",");
++    case '"': {
++      StringRef S;
++      std::tie(S, Buf) = Buf.substr(1).split('"');
++      return Token(Identifier, S);
++    }
++    default: {
++      size_t End = Buf.find_first_of("=,\r\n \t\v");
++      StringRef Word = Buf.substr(0, End);
++      Kind K = llvm::StringSwitch<Kind>(Word)
++                   .Case("BASE", KwBase)
++                   .Case("DATA", KwData)
++                   .Case("EXPORTS", KwExports)
++                   .Case("HEAPSIZE", KwHeapsize)
++                   .Case("LIBRARY", KwLibrary)
++                   .Case("NAME", KwName)
++                   .Case("NONAME", KwNoname)
++                   .Case("PRIVATE", KwPrivate)
++                   .Case("STACKSIZE", KwStacksize)
++                   .Case("VERSION", KwVersion)
++                   .Default(Identifier);
++      Buf = (End == Buf.npos) ? "" : Buf.drop_front(End);
++      return Token(K, Word);
++    }
++    }
++  }
++
++private:
++  StringRef Buf;
++};
++
++class Parser {
++public:
++  explicit Parser(StringRef S, StringSaver *A) : Lex(S), Alloc(A) {}
++
++  void parse() {
++    do {
++      parseOne();
++    } while (Tok.K != Eof);
++  }
++
++private:
++  void read() {
++    if (Stack.empty()) {
++      Tok = Lex.lex();
++      return;
++    }
++    Tok = Stack.back();
++    Stack.pop_back();
++  }
++
++  void readAsInt(uint64_t *I) {
++    read();
++    if (Tok.K != Identifier || Tok.Value.getAsInteger(10, *I))
++      fatal("integer expected");
++  }
++
++  void expect(Kind Expected, StringRef Msg) {
++    read();
++    if (Tok.K != Expected)
++      fatal(Msg);
++  }
++
++  void unget() { Stack.push_back(Tok); }
++
++  void parseOne() {
++    read();
++    switch (Tok.K) {
++    case Eof:
++      return;
++    case KwExports:
++      for (;;) {
++        read();
++        if (Tok.K != Identifier) {
++          unget();
++          return;
++        }
++        parseExport();
++      }
++    case KwHeapsize:
++      parseNumbers(&Config->HeapReserve, &Config->HeapCommit);
++      return;
++    case KwLibrary:
++      parseName(&Config->OutputFile, &Config->ImageBase);
++      if (!StringRef(Config->OutputFile).endswith_lower(".dll"))
++        Config->OutputFile += ".dll";
++      return;
++    case KwStacksize:
++      parseNumbers(&Config->StackReserve, &Config->StackCommit);
++      return;
++    case KwName:
++      parseName(&Config->OutputFile, &Config->ImageBase);
++      return;
++    case KwVersion:
++      parseVersion(&Config->MajorImageVersion, &Config->MinorImageVersion);
++      return;
++    default:
++      fatal("unknown directive: " + Tok.Value);
++    }
++  }
++
++  void parseExport() {
++    Export E;
++    E.Name = Tok.Value;
++    read();
++    if (Tok.K == Equal) {
++      read();
++      if (Tok.K != Identifier)
++        fatal("identifier expected, but got " + Tok.Value);
++      E.ExtName = E.Name;
++      E.Name = Tok.Value;
++    } else {
++      unget();
++    }
++
++    if (Config->Machine == I386) {
++      if (!isDecorated(E.Name))
++        E.Name = Alloc->save("_" + E.Name);
++      if (!E.ExtName.empty() && !isDecorated(E.ExtName))
++        E.ExtName = Alloc->save("_" + E.ExtName);
++    }
++
++    for (;;) {
++      read();
++      if (Tok.K == Identifier && Tok.Value[0] == '@') {
++        Tok.Value.drop_front().getAsInteger(10, E.Ordinal);
++        read();
++        if (Tok.K == KwNoname) {
++          E.Noname = true;
++        } else {
++          unget();
++        }
++        continue;
++      }
++      if (Tok.K == KwData) {
++        E.Data = true;
++        continue;
++      }
++      if (Tok.K == KwPrivate) {
++        E.Private = true;
++        continue;
++      }
++      unget();
++      Config->Exports.push_back(E);
++      return;
++    }
++  }
++
++  // HEAPSIZE/STACKSIZE reserve[,commit]
++  void parseNumbers(uint64_t *Reserve, uint64_t *Commit) {
++    readAsInt(Reserve);
++    read();
++    if (Tok.K != Comma) {
++      unget();
++      Commit = nullptr;
++      return;
++    }
++    readAsInt(Commit);
++  }
++
++  // NAME outputPath [BASE=address]
++  void parseName(std::string *Out, uint64_t *Baseaddr) {
++    read();
++    if (Tok.K == Identifier) {
++      *Out = Tok.Value;
++    } else {
++      *Out = "";
++      unget();
++      return;
++    }
++    read();
++    if (Tok.K == KwBase) {
++      expect(Equal, "'=' expected");
++      readAsInt(Baseaddr);
++    } else {
++      unget();
++      *Baseaddr = 0;
++    }
++  }
++
++  // VERSION major[.minor]
++  void parseVersion(uint32_t *Major, uint32_t *Minor) {
++    read();
++    if (Tok.K != Identifier)
++      fatal("identifier expected, but got " + Tok.Value);
++    StringRef V1, V2;
++    std::tie(V1, V2) = Tok.Value.split('.');
++    if (V1.getAsInteger(10, *Major))
++      fatal("integer expected, but got " + Tok.Value);
++    if (V2.empty())
++      *Minor = 0;
++    else if (V2.getAsInteger(10, *Minor))
++      fatal("integer expected, but got " + Tok.Value);
++  }
++
++  Lexer Lex;
++  Token Tok;
++  std::vector<Token> Stack;
++  StringSaver *Alloc;
++};
++
++} // anonymous namespace
++
++void parseModuleDefs(MemoryBufferRef MB, StringSaver *Alloc) {
++  Parser(MB.getBuffer(), Alloc).parse();
++}
++
++} // namespace llvm
+diff --git a/lib/DLLDriver/Options.td b/lib/DLLDriver/Options.td
+new file mode 100644
+index 0000000..62f33f3
+--- /dev/null
++++ b/lib/DLLDriver/Options.td
+@@ -0,0 +1,5 @@
++include "llvm/Option/OptParser.td"
++
++def emu: JoinedOrSeparate<["-"], "a">, HelpText<"Set target arch">;
++def out: JoinedOrSeparate<["-"], "o">, HelpText<"Set output file">;
++def dll: JoinedOrSeparate<["-"], "d">, HelpText<"Set dll name">;
+diff --git a/lib/Object/ArchiveWriter.cpp b/lib/Object/ArchiveWriter.cpp
+index 5357326..46b9d97 100644
+--- a/lib/Object/ArchiveWriter.cpp
++++ b/lib/Object/ArchiveWriter.cpp
+@@ -273,7 +273,8 @@ writeSymbolTable(raw_fd_ostream &Out, object::Archive::Kind Kind,
+         continue;
+       if (!(Symflags & object::SymbolRef::SF_Global))
+         continue;
+-      if (Symflags & object::SymbolRef::SF_Undefined)
++      if (Symflags & object::SymbolRef::SF_Undefined &&
++          !(Symflags & object::SymbolRef::SF_Weak))
+         continue;
+ 
+       unsigned NameOffset = NameOS.tell();
+diff --git a/tools/llvm-ar/CMakeLists.txt b/tools/llvm-ar/CMakeLists.txt
+index 86233df..94cc205 100644
+--- a/tools/llvm-ar/CMakeLists.txt
++++ b/tools/llvm-ar/CMakeLists.txt
+@@ -1,6 +1,7 @@
+ set(LLVM_LINK_COMPONENTS
+   ${LLVM_TARGETS_TO_BUILD}
+   Core
++  DllDriver
+   LibDriver
+   Object
+   Support
+@@ -12,3 +13,4 @@ add_llvm_tool(llvm-ar
+ 
+ add_llvm_tool_symlink(llvm-ranlib llvm-ar)
+ add_llvm_tool_symlink(llvm-lib llvm-ar)
++add_llvm_tool_symlink(llvm-dlltool llvm-ar)
+diff --git a/tools/llvm-ar/llvm-ar.cpp b/tools/llvm-ar/llvm-ar.cpp
+index 865152b..936c417 100644
+--- a/tools/llvm-ar/llvm-ar.cpp
++++ b/tools/llvm-ar/llvm-ar.cpp
+@@ -16,6 +16,7 @@
+ #include "llvm/ADT/Triple.h"
+ #include "llvm/IR/LLVMContext.h"
+ #include "llvm/IR/Module.h"
++#include "llvm/DllDriver/DllDriver.h"
+ #include "llvm/LibDriver/LibDriver.h"
+ #include "llvm/Object/Archive.h"
+ #include "llvm/Object/ArchiveWriter.h"
+@@ -827,6 +828,9 @@ int main(int argc, char **argv) {
+   llvm::InitializeAllAsmParsers();
+ 
+   StringRef Stem = sys::path::stem(ToolName);
++  if (Stem.find("dlltool") != StringRef::npos)
++    return dllToolDriverMain(makeArrayRef(argv, argc));
++
+   if (Stem.find("ranlib") == StringRef::npos &&
+       Stem.find("lib") != StringRef::npos)
+     return libDriverMain(makeArrayRef(argv, argc));
+@@ -842,5 +846,5 @@ int main(int argc, char **argv) {
+     return ranlib_main();
+   if (Stem.find("ar") != StringRef::npos)
+     return ar_main();
+-  fail("Not ranlib, ar or lib!");
++  fail("Not ranlib, ar, lib or dlltool!");
+ }
+-- 
+2.7.4
+

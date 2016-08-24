@@ -1,0 +1,96 @@
+From 3de4f391131ab56e03622bf3bbb152c29bdc293e Mon Sep 17 00:00:00 2001
+From: Martell Malone <martellmalone@gmail.com>
+Date: Tue, 16 Aug 2016 13:05:23 -0700
+Subject: [PATCH 5/6] COFF: Fix short import lib import name type bitshift
+
+llvm-readobj: Support short import objects from within an archive
+The import magic was previous just checked against the archive as a whole
+
+As per the PE COFF spec (section 8.3, Import Name Type)
+Offset: 18 Size 2 bits Name: Type
+Offset: 20 Size 3 bits Name: Name Type
+
+Offset: 20 added based on 18+2
+---
+ include/llvm/Support/COFF.h                            |   2 +-
+ .../llvm-readobj/Inputs/imports.mangle.coff-x86_64     | Bin 0 -> 2108 bytes
+ test/tools/llvm-readobj/imports-mangle.test            |  17 +++++++++++++++++
+ tools/llvm-readobj/llvm-readobj.cpp                    |   2 ++
+ 4 files changed, 20 insertions(+), 1 deletion(-)
+ create mode 100644 test/tools/llvm-readobj/Inputs/imports.mangle.coff-x86_64
+ create mode 100644 test/tools/llvm-readobj/imports-mangle.test
+
+diff --git a/include/llvm/Support/COFF.h b/include/llvm/Support/COFF.h
+index 7dad3e8..1ca781b9 100644
+--- a/include/llvm/Support/COFF.h
++++ b/include/llvm/Support/COFF.h
+@@ -657,7 +657,7 @@ namespace COFF {
+     }
+ 
+     ImportNameType getNameType() const {
+-      return static_cast<ImportNameType>((TypeInfo & 0x1C) >> 3);
++      return static_cast<ImportNameType>((TypeInfo & 0x1C) >> 2);
+     }
+   };
+ 
+diff --git a/test/tools/llvm-readobj/Inputs/imports.mangle.coff-x86_64 b/test/tools/llvm-readobj/Inputs/imports.mangle.coff-x86_64
+new file mode 100644
+index 0000000000000000000000000000000000000000..af6e583a31b953d1c9451266b09bee50093b8d54
+GIT binary patch
+literal 2108
+zcmb_d&2JJ>5dX1!Db|LlF)`5wn<nZ7VRs80{8+RmU@2`V9Q3k9)>@hpnzkM|G&UYM
+z`7e0zkMPE!S8sYU9@>AzL!H_8-m)OpZqrTX&6^Kq-uu0o;qIg6PHW>y;$dp^%bG^c
+zDC9Dk{HQ)7MLna--C6>`6+oK-A_XA23B(U19TR7o6%-o)v4L%umsXZ*b$j8(>hoH8
+zrM_IV*SlTVcC}Hd{B6VsvI<+h)Tl1n3&nboyxW~^d$-rg!d*OBXIYnab}%5;r?fXM
+z>s7H-vR+I3s4g%H*&zyXf?-Aj3K3v43LKE)m}r)05OX0y93g15#t=bNu3?OxAuu}P
+z;^RRW99vv|2$T;aVIv0@K7BIAgnQcA+VWueUsafSRW54@rys`8kDnXi5O9gG;V<pH
+zee?d^+^Ud($F%vR1j#KVpQYPQbFVq4E7J|yd?PxNiZF2tnM3K9lWI55Z=WCQEu;?V
+zSul;uEFvy1br08*{AS->EigrVzjtk^-P-BycGve(_iGPQm2!1a+D8~W^C6h1?A=|G
+zR(f~R$qcYs-Oe_haldzjlM}x;xlti7sjFImd&~``aW5ruNFS4Z=tuB;=7$>A-{wVr
+z937aK5;F}iX$@Rn6Pqs)v@&!v=gkYJuep`+)jbp+ZE|He!sM;K$}p6YE8~k2B<ISw
+z@E1SJTi&4q{Bwu}Ml4_OAtrk17bOr6I~lQ4ddaH<?nUk;|7XEcy<{pq`~6UY<m`8$
+z$esn&Ta<ia5e7xnRKq&O|5@CSPM;^#P4{+FV{=$FanLM=DW7dD%QR&P(S#C%_uSEq
+b$<eP;bd3g)JJ40|z+Gyb8Xe+~)r<ZIjQx$i
+
+literal 0
+HcmV?d00001
+
+diff --git a/test/tools/llvm-readobj/imports-mangle.test b/test/tools/llvm-readobj/imports-mangle.test
+new file mode 100644
+index 0000000..211fc57
+--- /dev/null
++++ b/test/tools/llvm-readobj/imports-mangle.test
+@@ -0,0 +1,17 @@
++RUN: llvm-readobj --coff-imports %p/Inputs/imports.mangle.coff-x86_64 | FileCheck -check-prefix=X64  %s
++
++X64:      Name type: undecorate
++X64-NEXT:   Symbol: __imp_?sym4@@YAHH@Z
++X64-NEXT:   Symbol: ?sym4@@YAHH@Z
++
++X64:      Name type: noprefix
++X64-NEXT:   Symbol: __imp__sym3
++X64-NEXT:   Symbol: _sym3
++
++X64:      Name type: name
++X64-NEXT:   Symbol: __imp_sym1
++X64-NEXT:   Symbol: sym1
++
++X64:      Name type: ordinal
++X64-NEXT:   Symbol: __imp_sym2
++X64-NEXT:   Symbol: sym2
+diff --git a/tools/llvm-readobj/llvm-readobj.cpp b/tools/llvm-readobj/llvm-readobj.cpp
+index c293919..bb5ad37 100644
+--- a/tools/llvm-readobj/llvm-readobj.cpp
++++ b/tools/llvm-readobj/llvm-readobj.cpp
+@@ -450,6 +450,8 @@ static void dumpArchive(const Archive *Arc) {
+     }
+     if (ObjectFile *Obj = dyn_cast<ObjectFile>(&*ChildOrErr.get()))
+       dumpObject(Obj);
++    else if (COFFImportFile *Import = dyn_cast<COFFImportFile>(&*ChildOrErr.get()))
++      dumpCOFFImportFile(Import);
+     else
+       reportError(Arc->getFileName(), readobj_error::unrecognized_file_format);
+   }
+-- 
+2.7.4
+

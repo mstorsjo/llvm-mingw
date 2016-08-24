@@ -1,0 +1,36 @@
+From 2743b4757dcb3ef66dc9e7b64034b0f8b94ff66a Mon Sep 17 00:00:00 2001
+From: Martell Malone <martellmalone@gmail.com>
+Date: Tue, 16 Aug 2016 12:55:01 -0700
+Subject: [PATCH 6/6] mingw-w64: use MSVC style ByteAlignment
+
+We can do alignment without -aligncomm derectives in PE COFF
+Until we support GNU style in lld we should use this
+---
+ lib/MC/WinCOFFStreamer.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/MC/WinCOFFStreamer.cpp b/lib/MC/WinCOFFStreamer.cpp
+index 5c6407e..f86cbc5 100644
+--- a/lib/MC/WinCOFFStreamer.cpp
++++ b/lib/MC/WinCOFFStreamer.cpp
+@@ -208,7 +208,7 @@ void MCWinCOFFStreamer::EmitCommonSymbol(MCSymbol *S, uint64_t Size,
+   auto *Symbol = cast<MCSymbolCOFF>(S);
+ 
+   const Triple &T = getContext().getObjectFileInfo()->getTargetTriple();
+-  if (T.isKnownWindowsMSVCEnvironment()) {
++  if (T.getEnvironment() != Triple::Cygnus) {
+     if (ByteAlignment > 32)
+       report_fatal_error("alignment is limited to 32-bytes");
+ 
+@@ -220,7 +220,7 @@ void MCWinCOFFStreamer::EmitCommonSymbol(MCSymbol *S, uint64_t Size,
+   Symbol->setExternal(true);
+   Symbol->setCommon(Size, ByteAlignment);
+ 
+-  if (!T.isKnownWindowsMSVCEnvironment() && ByteAlignment > 1) {
++  if (T.getEnvironment() == Triple::Cygnus && ByteAlignment > 1) {
+     SmallString<128> Directive;
+     raw_svector_ostream OS(Directive);
+     const MCObjectFileInfo *MFI = getContext().getObjectFileInfo();
+-- 
+2.7.4
+
