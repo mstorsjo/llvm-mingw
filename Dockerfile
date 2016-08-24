@@ -40,8 +40,6 @@ RUN cd llvm/tools/lld && \
 #RUN cd llvm/projects/libcxx && \
 #    git am /build/patches/libcxx-*.patch
 
-RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
-
 RUN mkdir /build/prefix
 
 # Build LLVM
@@ -106,20 +104,26 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
 
-#Work around upstream issue with capital W windows.h - this is required
-#by compiler-rt, see e.g. https://reviews.llvm.org/D23308.
-RUN ln -s /build/prefix/armv7-w64-mingw32/include/windows.h /build/prefix/armv7-w64-mingw32/include/Windows.h
-
 COPY patches/compiler-rt-*.patch /build/patches/
+RUN git clone -b master --depth=1 https://github.com/llvm-mirror/compiler-rt.git
 RUN cd compiler-rt && \
     git am /build/patches/compiler-rt-*.patch
 
 # Manually build compiler-rt as a standalone project
-RUN cd compiler-rt && \
-    make clang_mingw-builtins-arm RANLIB=llvm-ranlib AR=llvm-ar
-
-RUN mkdir -p /build/prefix/lib/clang/3.9.0/lib/windows && \
-    cp /build/compiler-rt/clang_mingw/builtins-arm/libcompiler_rt.a /build/prefix/lib/clang/3.9.0/lib/windows/libclang_rt.builtins-arm.a
+RUN cd compiler-rt && mkdir build && cd build && cmake \
+    -DCMAKE_C_COMPILER=$CC \
+    -DCMAKE_CXX_COMPILER=$CXX \
+    -DCMAKE_SYSTEM_NAME=Windows \
+    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+    -DCMAKE_C_COMPILER_WORKS=1 \
+    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="armv7--windows-gnu" \
+    -DCMAKE_SIZEOF_VOID_P=4 \
+    ../lib/builtins && \
+    make -j4 && \
+    mkdir -p /build/prefix/lib/clang/3.9.0/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/3.9.0/lib/windows
 
 RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
     autoreconf -vif && \

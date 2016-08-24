@@ -1,0 +1,44 @@
+From 608efc9306e10f9e9daf0ea981f53deb98851772 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 25 Aug 2016 10:02:16 +0300
+Subject: [PATCH 2/2] builtins: Allow building the necessary helper functions
+ for msvc mode with cmake
+
+---
+ lib/builtins/CMakeLists.txt | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/lib/builtins/CMakeLists.txt b/lib/builtins/CMakeLists.txt
+index 18bdee9..003d5b8 100644
+--- a/lib/builtins/CMakeLists.txt
++++ b/lib/builtins/CMakeLists.txt
+@@ -367,7 +367,7 @@ set(arm_Thumb1_SOURCES
+   ${arm_Thumb1_VFPv2_SOURCES}
+   ${arm_Thumb1_icache_SOURCES})
+ 
+-if(WIN32)
++if(WIN32 AND MINGW)
+   set(arm_SOURCES
+       fixdfdi.c
+       fixsfdi.c
+@@ -390,6 +390,17 @@ if(WIN32)
+       udivmodsi4.c
+       udivsi3.c
+       umoddi3.c)
++elseif(WIN32)
++  set(arm_SOURCES
++      umoddi3.c
++      moddi3.c
++      udivmoddi4.c
++      divsi3.c
++      udivsi3.c
++      umodsi3.c
++      udivdi3.c
++      modsi3.c
++      divdi3.c)
+ else(WIN32)
+   # TODO the EABI sources should only be added to EABI targets
+   set(arm_SOURCES
+-- 
+2.7.4
+

@@ -1,55 +1,330 @@
-From 1e1bd1b7ddb2b259a88fcdc3fdeea6fad16d3b11 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
-Date: Tue, 9 Aug 2016 23:50:59 +0300
-Subject: [PATCH] Fix "make clang_mingw-builtins-arm" with latest master
+From b362e07e7a8e0d11291d1bc681eebef2cc000b74 Mon Sep 17 00:00:00 2001
+From: Martell Malone <martellmalone@gmail.com>
+Date: Tue, 16 Aug 2016 15:50:50 -0700
+Subject: [PATCH 1/2] builtins: add support for windows arm divide functions
 
-This does the same to clang_linux.mk as was done in SVN rev
-258863, git mirror commit 20da67f8d3f8.
+The divmod functions work in the same way as the corresponding
+__rt_*div* functions for windows, but their parameters are swapped.
 ---
- make/platform/clang_linux.mk | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ cmake/base-config-ix.cmake        |  2 +-
+ cmake/builtin-config-ix.cmake     |  2 +-
+ lib/builtins/CMakeLists.txt       | 25 ++++++++++++++++++++++++-
+ lib/builtins/arm/aeabi_idivmod.S  |  9 +++++++++
+ lib/builtins/arm/aeabi_ldivmod.S  | 12 ++++++++++++
+ lib/builtins/arm/aeabi_uidivmod.S |  9 +++++++++
+ lib/builtins/arm/aeabi_uldivmod.S | 12 ++++++++++++
+ lib/builtins/fixdfdi.c            |  8 ++++++++
+ lib/builtins/fixsfdi.c            |  8 ++++++++
+ lib/builtins/fixunsdfdi.c         |  8 ++++++++
+ lib/builtins/fixunssfdi.c         |  8 ++++++++
+ lib/builtins/floatdidf.c          |  8 ++++++++
+ lib/builtins/floatdisf.c          |  8 ++++++++
+ lib/builtins/floatundidf.c        |  8 ++++++++
+ lib/builtins/floatundisf.c        |  8 ++++++++
+ 15 files changed, 132 insertions(+), 3 deletions(-)
 
-diff --git a/make/platform/clang_linux.mk b/make/platform/clang_linux.mk
-index 870209f..6dce2e1 100644
---- a/make/platform/clang_linux.mk
-+++ b/make/platform/clang_linux.mk
-@@ -49,16 +49,14 @@ endif
+diff --git a/cmake/base-config-ix.cmake b/cmake/base-config-ix.cmake
+index 830e443..644cea2 100644
+--- a/cmake/base-config-ix.cmake
++++ b/cmake/base-config-ix.cmake
+@@ -153,7 +153,7 @@ macro(test_targets)
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "mips")
+       test_target_arch(mips "" "-mips32r2" "--target=mips-linux-gnu")
+       test_target_arch(mips64 "" "-mips64r2" "--target=mips64-linux-gnu" "-mabi=64")
+-    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "arm")
++    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "arm|armv7")
+       if(WIN32)
+         test_target_arch(arm "" "" "")
+       else()
+diff --git a/cmake/builtin-config-ix.cmake b/cmake/builtin-config-ix.cmake
+index 9289618..bf15570 100644
+--- a/cmake/builtin-config-ix.cmake
++++ b/cmake/builtin-config-ix.cmake
+@@ -2,7 +2,7 @@ include(BuiltinTests)
+ include(CheckCSourceCompiles)
  
- # Build runtime libraries for i386.
- ifeq ($(call contains,$(SupportedArches),i386),true)
--Configs += builtins-i386 profile-i386
-+Configs += builtins-i386
- Arch.builtins-i386 := i386
--Arch.profile-i386 := i386
- endif
+ # Make all the tests only check the compiler
+-set(TEST_COMPILE_ONLY On)
++set(TEST_COMPILE_ONLY TRUE)
  
- # Build runtime libraries for x86_64.
- ifeq ($(call contains,$(SupportedArches),x86_64),true)
--Configs += builtins-x86_64 profile-x86_64
-+Configs += builtins-x86_64
- Arch.builtins-x86_64 := x86_64
--Arch.profile-x86_64 := x86_64
- endif
+ builtin_check_c_compiler_flag(-fPIC                 COMPILER_RT_HAS_FPIC_FLAG)
+ builtin_check_c_compiler_flag(-fPIE                 COMPILER_RT_HAS_FPIE_FLAG)
+diff --git a/lib/builtins/CMakeLists.txt b/lib/builtins/CMakeLists.txt
+index a7d665e..18bdee9 100644
+--- a/lib/builtins/CMakeLists.txt
++++ b/lib/builtins/CMakeLists.txt
+@@ -367,7 +367,30 @@ set(arm_Thumb1_SOURCES
+   ${arm_Thumb1_VFPv2_SOURCES}
+   ${arm_Thumb1_icache_SOURCES})
  
- endif
-@@ -71,17 +69,9 @@ CFLAGS := -Wall -Werror -O3 -fomit-frame-pointer
+-if(NOT WIN32)
++if(WIN32)
++  set(arm_SOURCES
++      fixdfdi.c
++      fixsfdi.c
++      fixunsdfdi.c
++      fixunssfdi.c
++      floatdidf.c
++      floatdisf.c
++      floatundidf.c
++      floatundisf.c
++      arm/aeabi_idivmod.S
++      arm/aeabi_ldivmod.S
++      arm/aeabi_uidivmod.S
++      arm/aeabi_uldivmod.S
++      divmoddi4.c
++      divmodsi4.c
++      divdi3.c
++      divsi3.c
++      moddi3.c
++      udivmoddi4.c
++      udivmodsi4.c
++      udivsi3.c
++      umoddi3.c)
++else(WIN32)
+   # TODO the EABI sources should only be added to EABI targets
+   set(arm_SOURCES
+     ${arm_SOURCES}
+diff --git a/lib/builtins/arm/aeabi_idivmod.S b/lib/builtins/arm/aeabi_idivmod.S
+index 2fcad86..5dab937 100644
+--- a/lib/builtins/arm/aeabi_idivmod.S
++++ b/lib/builtins/arm/aeabi_idivmod.S
+@@ -15,12 +15,21 @@
+ //   return {quot, rem};
+ // }
  
- CFLAGS.builtins-i386 := $(CFLAGS) -m32
- CFLAGS.builtins-x86_64 := $(CFLAGS) -m64
--CFLAGS.profile-i386 := $(CFLAGS) -m32
--CFLAGS.profile-x86_64 := $(CFLAGS) -m64
++#ifdef __MINGW32__
++#define __aeabi_idivmod __rt_sdiv
++#endif
++
+         .syntax unified
+         .p2align 2
+ DEFINE_COMPILERRT_FUNCTION(__aeabi_idivmod)
+         push    { lr }
+         sub     sp, sp, #4
+         mov     r2, sp
++#ifdef __MINGW32__
++        mov     r3, r0
++        mov     r0, r1
++        mov     r1, r3
++#endif
+         bl      SYMBOL_NAME(__divmodsi4)
+         ldr     r1, [sp]
+         add     sp, sp, #4
+diff --git a/lib/builtins/arm/aeabi_ldivmod.S b/lib/builtins/arm/aeabi_ldivmod.S
+index 9f161f3..4821e82 100644
+--- a/lib/builtins/arm/aeabi_ldivmod.S
++++ b/lib/builtins/arm/aeabi_ldivmod.S
+@@ -16,6 +16,10 @@
+ //   return {quot, rem};
+ // }
  
- FUNCTIONS.builtins-i386 := $(CommonFunctions) $(ArchFunctions.i386)
- FUNCTIONS.builtins-x86_64 := $(CommonFunctions) $(ArchFunctions.x86_64)
--FUNCTIONS.profile-i386 := GCDAProfiling InstrProfiling InstrProfilingBuffer \
--                          InstrProfilingFile InstrProfilingPlatformOther \
--                          InstrProfilingRuntime InstrProfilingUtil \
--                          InstrProfilingWriter InstrProfilingValue \
--                          InstrProfilingMerge InstrProfilingMergeFile
--FUNCTIONS.profile-x86_64 := $(FUNCTIONS.profile-i386)
++#ifdef __MINGW32__
++#define __aeabi_ldivmod __rt_sdiv64
++#endif
++
+         .syntax unified
+         .p2align 2
+ DEFINE_COMPILERRT_FUNCTION(__aeabi_ldivmod)
+@@ -23,6 +27,14 @@ DEFINE_COMPILERRT_FUNCTION(__aeabi_ldivmod)
+         sub     sp, sp, #16
+         add     r12, sp, #8
+         str     r12, [sp]
++#ifdef __MINGW32__
++        mov     r12, r0
++        mov     r0, r2
++        mov     r2, r12
++        mov     r12, r1
++        mov     r1, r3
++        mov     r3, r12
++#endif
+         bl      SYMBOL_NAME(__divmoddi4)
+         ldr     r2, [sp, #8]
+         ldr     r3, [sp, #12]
+diff --git a/lib/builtins/arm/aeabi_uidivmod.S b/lib/builtins/arm/aeabi_uidivmod.S
+index e1e12d9..6606a50 100644
+--- a/lib/builtins/arm/aeabi_uidivmod.S
++++ b/lib/builtins/arm/aeabi_uidivmod.S
+@@ -16,12 +16,21 @@
+ //   return {quot, rem};
+ // }
  
- # Always use optimized variants.
- OPTIMIZED := 1
++#ifdef __MINGW32__
++#define __aeabi_uidivmod __rt_udiv
++#endif
++
+         .syntax unified
+         .p2align 2
+ DEFINE_COMPILERRT_FUNCTION(__aeabi_uidivmod)
+         push    { lr }
+         sub     sp, sp, #4
+         mov     r2, sp
++#ifdef __MINGW32__
++        mov     r3, r0
++        mov     r0, r1
++        mov     r1, r3
++#endif
+         bl      SYMBOL_NAME(__udivmodsi4)
+         ldr     r1, [sp]
+         add     sp, sp, #4
+diff --git a/lib/builtins/arm/aeabi_uldivmod.S b/lib/builtins/arm/aeabi_uldivmod.S
+index e8aaef2..60fee45 100644
+--- a/lib/builtins/arm/aeabi_uldivmod.S
++++ b/lib/builtins/arm/aeabi_uldivmod.S
+@@ -16,6 +16,10 @@
+ //   return {quot, rem};
+ // }
+ 
++#ifdef __MINGW32__
++#define __aeabi_uldivmod __rt_udiv64
++#endif
++
+         .syntax unified
+         .p2align 2
+ DEFINE_COMPILERRT_FUNCTION(__aeabi_uldivmod)
+@@ -23,6 +27,14 @@ DEFINE_COMPILERRT_FUNCTION(__aeabi_uldivmod)
+         sub	sp, sp, #16
+         add	r12, sp, #8
+         str	r12, [sp]
++#ifdef __MINGW32__
++        mov     r12, r0
++        mov     r0, r2
++        mov     r2, r12
++        mov     r12, r1
++        mov     r1, r3
++        mov     r3, r12
++#endif
+         bl	SYMBOL_NAME(__udivmoddi4)
+         ldr	r2, [sp, #8]
+         ldr	r3, [sp, #12]
+diff --git a/lib/builtins/fixdfdi.c b/lib/builtins/fixdfdi.c
+index 14283ef..4bcd432 100644
+--- a/lib/builtins/fixdfdi.c
++++ b/lib/builtins/fixdfdi.c
+@@ -44,3 +44,11 @@ __fixdfdi(fp_t a) {
+ }
+ 
+ #endif
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI di_int
++__dtoi64(double a)
++{
++    return __fixdfdi(a);
++}
++#endif
+diff --git a/lib/builtins/fixsfdi.c b/lib/builtins/fixsfdi.c
+index fab47e2..24f6e83 100644
+--- a/lib/builtins/fixsfdi.c
++++ b/lib/builtins/fixsfdi.c
+@@ -45,3 +45,11 @@ __fixsfdi(fp_t a) {
+ }
+ 
+ #endif
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI di_int
++__stoi64(float a)
++{
++    return __fixsfdi(a);
++}
++#endif
+diff --git a/lib/builtins/fixunsdfdi.c b/lib/builtins/fixunsdfdi.c
+index 4b0bc9e..5a8bb5c 100644
+--- a/lib/builtins/fixunsdfdi.c
++++ b/lib/builtins/fixunsdfdi.c
+@@ -42,3 +42,11 @@ __fixunsdfdi(fp_t a) {
+ }
+ 
+ #endif
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI du_int
++__dtou64(double a)
++{
++    return __fixunsdfdi(a);
++}
++#endif
+diff --git a/lib/builtins/fixunssfdi.c b/lib/builtins/fixunssfdi.c
+index f8ebab8..72fdf4d 100644
+--- a/lib/builtins/fixunssfdi.c
++++ b/lib/builtins/fixunssfdi.c
+@@ -43,3 +43,11 @@ __fixunssfdi(fp_t a) {
+ }
+ 
+ #endif
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI du_int
++__stou64(float a)
++{
++    return __fixunssfdi(a);
++}
++#endif
+diff --git a/lib/builtins/floatdidf.c b/lib/builtins/floatdidf.c
+index 2b023ad..d13f832 100644
+--- a/lib/builtins/floatdidf.c
++++ b/lib/builtins/floatdidf.c
+@@ -105,3 +105,11 @@ __floatdidf(di_int a)
+     return fb.f;
+ }
+ #endif
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI double
++__i64tod(di_int a)
++{
++    return __floatdidf(a);
++}
++#endif
+diff --git a/lib/builtins/floatdisf.c b/lib/builtins/floatdisf.c
+index 3e47580..8f9bf9d 100644
+--- a/lib/builtins/floatdisf.c
++++ b/lib/builtins/floatdisf.c
+@@ -78,3 +78,11 @@ __floatdisf(di_int a)
+            ((su_int)a & 0x007FFFFF);   /* mantissa */
+     return fb.f;
+ }
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI float
++__i64tos(di_int a)
++{
++    return __floatdisf(a);
++}
++#endif
+diff --git a/lib/builtins/floatundidf.c b/lib/builtins/floatundidf.c
+index cfd3a7a..e7f63bf 100644
+--- a/lib/builtins/floatundidf.c
++++ b/lib/builtins/floatundidf.c
+@@ -104,3 +104,11 @@ __floatundidf(du_int a)
+     return fb.f;
+ }
+ #endif
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI double
++__u64tod(du_int a)
++{
++    return __floatundidf(a);
++}
++#endif
+diff --git a/lib/builtins/floatundisf.c b/lib/builtins/floatundisf.c
+index 713a44a..3716ec2 100644
+--- a/lib/builtins/floatundisf.c
++++ b/lib/builtins/floatundisf.c
+@@ -75,3 +75,11 @@ __floatundisf(du_int a)
+            ((su_int)a & 0x007FFFFF);  /* mantissa */
+     return fb.f;
+ }
++
++#ifdef __MINGW32__
++COMPILER_RT_ABI float
++__u64tos(du_int a)
++{
++    return __floatundisf(a);
++}
++#endif
 -- 
 2.7.4
 
