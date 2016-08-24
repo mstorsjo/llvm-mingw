@@ -40,11 +40,6 @@ RUN cd llvm/tools/lld && \
 #RUN cd llvm/projects/libcxx && \
 #    git am /build/patches/libcxx-*.patch
 
-RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64
-COPY patches/mingw-*.patch /build/patches/
-RUN cd mingw-w64 && \
-    git am /build/patches/mingw-*.patch
-
 RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
 
 RUN mkdir /build/prefix
@@ -63,6 +58,11 @@ RUN cd llvm && mkdir build && cd build && cmake \
     ../ && \
     make -j4 && \
     make install
+
+RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64
+COPY patches/mingw-*.patch /build/patches/
+RUN cd mingw-w64 && \
+    git am /build/patches/mingw-*.patch
 
 #FIXME: Move this UP!
 ENV TOOLCHAIN_PREFIX=/build/prefix
