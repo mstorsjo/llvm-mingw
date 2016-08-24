@@ -73,12 +73,6 @@ ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 RUN mkdir $MINGW_PREFIX
 RUN ln -s $MINGW_PREFIX $TOOLCHAIN_PREFIX/mingw
 
-RUN cd mingw-w64/mingw-w64-tools/genlib && \
-    mkdir build && cd build && \
-    ../configure --prefix=$TOOLCHAIN_PREFIX && \
-    make -j4 && \
-    make install
-
 RUN cd mingw-w64/mingw-w64-headers && mkdir build && cd build && \
     ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
         --enable-secure-api && \
@@ -106,7 +100,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
     mkdir build && cd build && \
     AR="llvm-ar -format gnu" ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
         --disable-lib32 --disable-lib64 --enable-libarm32 \
-        --with-genlib && \
+        --with-genlib=llvm-dlltool && \
     make -j4 && \
     make install
 
