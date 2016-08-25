@@ -1,40 +1,59 @@
-From cd25e08b778f0bc44872121cb9ed07534d4367f5 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
-Date: Fri, 13 May 2016 11:29:03 +0200
-Subject: [PATCH] Always include locale_win32.h for win32 builds, including
- mingw
+From a91ea0b2d56e1dc45dbe3edda9e16a8724311d21 Mon Sep 17 00:00:00 2001
+From: Martin Storsjo <martin@martin.st>
+Date: Thu, 25 Aug 2016 12:59:57 +0300
+Subject: [PATCH 2/2] Hack
 
+Also remove unnecessary defines for open/read/close that are handled
+by linker aliases now.
 ---
- include/ctype.h  | 2 +-
- include/stdlib.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ include/support/win32/locale_win32.h | 6 ++----
+ src/new.cpp                          | 2 +-
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/include/ctype.h b/include/ctype.h
-index 22d6c49..bf57a25 100644
---- a/include/ctype.h
-+++ b/include/ctype.h
-@@ -40,7 +40,7 @@ int toupper(int c);
+diff --git a/include/support/win32/locale_win32.h b/include/support/win32/locale_win32.h
+index d167309..c4cdd93 100644
+--- a/include/support/win32/locale_win32.h
++++ b/include/support/win32/locale_win32.h
+@@ -64,10 +64,6 @@ isupper_l(int c, _locale_t loc)
+  return _isupper_l((int)c, loc);
+ }
  
- #ifdef __cplusplus
+-#define open _open
+-#define close _close
+-#define read _read
+-
+ #define strtod_l _strtod_l
  
--#if defined(_LIBCPP_MSVCRT)
-+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
- // We support including .h headers inside 'extern "C"' contexts, so switch
- // back to C++ linkage before including these C++ headers.
- extern "C++" {
-diff --git a/include/stdlib.h b/include/stdlib.h
-index 12fd676..9308c73 100644
---- a/include/stdlib.h
-+++ b/include/stdlib.h
-@@ -97,7 +97,7 @@ void *aligned_alloc(size_t alignment, size_t size);                       // C11
+ // TODO: add _strtof_l to mingw-w64
+@@ -104,6 +100,7 @@ int vasprintf_l( char **ret, locale_t loc, const char *format, va_list ap );
  
- extern "C++" {
+ #ifdef __MINGW32__
  
--#ifdef _LIBCPP_MSVCRT
-+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
- #include "support/win32/locale_win32.h"
- #endif // _LIBCPP_MSVCRT
++#if 0
+ // Stubs
+ inline  _locale_t _get_current_locale(void) {
+  return NULL;
+@@ -120,6 +117,7 @@ inline  _locale_t _free_locale(_locale_t _Locale) {
+   return loc;
+ }
  
++#endif
+ 
+ #include <time.h>
+ 
+diff --git a/src/new.cpp b/src/new.cpp
+index f4f73d8..62222e1 100644
+--- a/src/new.cpp
++++ b/src/new.cpp
+@@ -31,7 +31,7 @@
+     #endif  // _LIBCPPABI_VERSION
+ #endif
+ 
+-#ifndef __GLIBCXX__
++#if 0
+ 
+ // Implement all new and delete operators as weak definitions
+ // in this shared library, so that they can be overridden by programs
 -- 
-2.8.1
+2.7.4
 

@@ -1,25 +1,268 @@
-From ab3797f34376ddbf35d4a5eed8af1aa1209727c1 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
-Date: Thu, 12 May 2016 20:57:05 +0200
-Subject: [PATCH] Fix win32 build
+From 57d48bf47108014aa5e0c5435c107581e86e3045 Mon Sep 17 00:00:00 2001
+From: Martell Malone <martellmalone@gmail.com>
+Date: Sat, 6 Aug 2016 03:54:22 -0700
+Subject: [PATCH] mingw-w64 hack and slash fixes for libc++
 
----
- include/type_traits | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+CMAKE_HOST_WIN32 change can be upstreamed in a different patch
 
+This is very hacky but gets libcxx to compile
+Make sure you only install the headers after building
+Will need to run the test suite and do more work here
+
+diff --git a/include/CMakeLists.txt b/include/CMakeLists.txt
+index 219d1b7..2a9337f 100644
+--- a/include/CMakeLists.txt
++++ b/include/CMakeLists.txt
+@@ -27,7 +27,7 @@ if (LIBCXX_INSTALL_HEADERS)
+ 
+   if (LIBCXX_NEEDS_SITE_CONFIG)
+     set(UNIX_CAT cat)
+-    if (WIN32)
++    if (CMAKE_HOST_WIN32)
+       set(UNIX_CAT type)
+     endif()
+     # Generate and install a custom __config header. The new header is created
+diff --git a/include/__config b/include/__config
+index 353ca10..b58c350 100644
+--- a/include/__config
++++ b/include/__config
+@@ -152,6 +152,8 @@
+ #  // If mingw not explicitly detected, assume using MS C runtime only.
+ #  ifndef __MINGW32__
+ #    define _LIBCPP_MSVCRT // Using Microsoft's C Runtime library
++#  else
++#    define _LIBCPP_HAS_NO_CONSTEXPR
+ #  endif
+ #endif  // _WIN32
+ 
+@@ -177,7 +179,7 @@
+   // including accesses to the special files under /dev. C++11's
+   // std::random_device is instead exposed through a NaCl syscall.
+ # define _LIBCPP_USING_NACL_RANDOM
+-#elif defined(_WIN32)
++#elif defined(_MSC_VER)
+ # define _LIBCPP_USING_WIN32_RANDOM
+ #else
+ # define _LIBCPP_USING_DEV_RANDOM
+@@ -831,7 +833,8 @@ extern "C" void __sanitizer_annotate_contiguous_container(
+     defined(__linux__) || \
+     defined(__APPLE__) || \
+     defined(__CloudABI__) || \
+-    defined(__sun__)
++    defined(__sun__) || \
++    defined(__MINGW32__)
+ #  define _LIBCPP_HAS_THREAD_API_PTHREAD
+ # else
+ #  error "No thread API"
+diff --git a/include/support/win32/locale_win32.h b/include/support/win32/locale_win32.h
+index 7f3710e..d167309 100644
+--- a/include/support/win32/locale_win32.h
++++ b/include/support/win32/locale_win32.h
+@@ -64,6 +64,15 @@ isupper_l(int c, _locale_t loc)
+  return _isupper_l((int)c, loc);
+ }
+ 
++#define open _open
++#define close _close
++#define read _read
++
++#define strtod_l _strtod_l
++
++// TODO: add _strtof_l to mingw-w64
++#define strtof_l _strtod_l
++
+ #define isdigit_l _isdigit_l
+ #define isxdigit_l _isxdigit_l
+ #define strcoll_l _strcoll_l
+@@ -93,6 +102,33 @@ int snprintf_l(char *ret, size_t n, locale_t loc, const char *format, ...);
+ int asprintf_l( char **ret, locale_t loc, const char *format, ... );
+ int vasprintf_l( char **ret, locale_t loc, const char *format, va_list ap );
+ 
++#ifdef __MINGW32__
++
++// Stubs
++inline  _locale_t _get_current_locale(void) {
++ return NULL;
++}
++
++inline  _locale_t _create_locale(int _Category,const char *_Locale) {
++    _locale_t loc;
++    return loc;
++}
++//extern "C" void _free_locale(_locale_t _Locale) {}
++//void __cdecl _free_locale(_locale_t _Locale);
++inline  _locale_t _free_locale(_locale_t _Locale) {
++  _locale_t loc;
++  return loc;
++}
++
++
++#include <time.h>
++
++inline  size_t _strftime_l(char* s, size_t n, const char * f, const struct tm * tm, _locale_t l)
++{
++    return strftime(s, n, f, tm);
++}
++
++#endif
+ 
+ // not-so-pressing FIXME: use locale to determine blank characters
+ inline int isblank_l( int c, locale_t /*loc*/ )
+@@ -104,7 +140,7 @@ inline int iswblank_l( wint_t c, locale_t /*loc*/ )
+     return ( c == L' ' || c == L'\t' );
+ }
+ 
+-#if defined(_LIBCPP_MSVCRT)
++#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+ inline int isblank( int c, locale_t /*loc*/ )
+ { return ( c == ' ' || c == '\t' ); }
+ inline int iswblank( wint_t c, locale_t /*loc*/ )
+diff --git a/include/support/win32/support.h b/include/support/win32/support.h
+index 5765bab..4955b3a 100644
+--- a/include/support/win32/support.h
++++ b/include/support/win32/support.h
+@@ -37,12 +37,13 @@ extern "C" {
+ 
+ int vasprintf(char **sptr, const char *__restrict fmt, va_list ap);
+ int asprintf(char **sptr, const char *__restrict fmt, ...);
++}
++#endif // __MINGW32__
++
+ size_t mbsnrtowcs(wchar_t *__restrict dst, const char **__restrict src,
+                   size_t nmc, size_t len, mbstate_t *__restrict ps);
+ size_t wcsnrtombs(char *__restrict dst, const wchar_t **__restrict src,
+                   size_t nwc, size_t len, mbstate_t *__restrict ps);
+-}
+-#endif // __MINGW32__
+ 
+ #if defined(_LIBCPP_MSVCRT)
+ #define snprintf _snprintf
 diff --git a/include/type_traits b/include/type_traits
-index b7adfeb..f7cef9d 100644
+index 0d578bb..88dfd99 100644
 --- a/include/type_traits
 +++ b/include/type_traits
-@@ -1630,7 +1630,7 @@ _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x800);
+@@ -1671,7 +1671,7 @@ _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x800);
  _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x1000);
  _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x2000);
  // MSDN says that MSVC does not support alignment beyond 8192 (=0x2000)
 -#if !defined(_LIBCPP_MSVC)
-+#if !defined(_WIN32)
++#if !defined(_LIBCPP_MSVC) && !defined(__MINGW32__)
  _CREATE_ALIGNED_STORAGE_SPECIALIZATION(0x4000);
  #endif // !_LIBCPP_MSVC
  
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index cabf2e6..8729707 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -33,9 +33,11 @@ add_link_flags_if(LIBCXX_CXX_ABI_LIBRARY_PATH "-L${LIBCXX_CXX_ABI_LIBRARY_PATH}"
+ 
+ add_library_flags_if(LIBCXX_COVERAGE_LIBRARY "${LIBCXX_COVERAGE_LIBRARY}")
+ 
++if(NOT MINGW)
+ add_library_flags_if(LIBCXX_ENABLE_STATIC_ABI_LIBRARY "-Wl,--whole-archive" "-Wl,-Bstatic")
+ add_library_flags("${LIBCXX_CXX_ABI_LIBRARY}")
+ add_library_flags_if(LIBCXX_ENABLE_STATIC_ABI_LIBRARY "-Wl,-Bdynamic" "-Wl,--no-whole-archive")
++endif()
+ 
+ if (APPLE AND LLVM_USE_SANITIZER)
+   if ("${LLVM_USE_SANITIZER}" STREQUAL "Address")
+@@ -71,9 +73,14 @@ add_library_flags_if(LIBCXX_HAS_RT_LIB rt)
+ add_library_flags_if(LIBCXX_HAS_GCC_S_LIB gcc_s)
+ add_library_flags_if(LIBCXX_HAVE_CXX_ATOMICS_WITH_LIB atomic)
+ 
+-# Setup flags.
+ add_flags_if_supported(-fPIC)
+-add_link_flags_if_supported(-nodefaultlibs)
++
++# Setup flags.
++if (NOT MINGW)
++  add_link_flags_if_supported(-nodefaultlibs)
++else()
++  add_library_flags(-lc++abi)
++endif()
+ 
+ if ( APPLE AND (LIBCXX_CXX_ABI_LIBNAME STREQUAL "libcxxabi" OR
+                 LIBCXX_CXX_ABI_LIBNAME STREQUAL "none"))
+diff --git a/src/locale.cpp b/src/locale.cpp
+index da2fd11..03696a7 100644
+--- a/src/locale.cpp
++++ b/src/locale.cpp
+@@ -26,9 +26,9 @@
+ #include "cstring"
+ #include "cwctype"
+ #include "__sso_allocator"
+-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
++#if defined(_LIBCPP_MSVCRT)
+ #include "support/win32/locale_win32.h"
+-#elif !defined(__ANDROID__)
++#elif !defined(__ANDROID__) && !defined(__MINGW32__)
+ #include <langinfo.h>
+ #endif
+ #include <stdlib.h>
+diff --git a/src/support/win32/locale_win32.cpp b/src/support/win32/locale_win32.cpp
+index 5a43743..b220afe 100644
+--- a/src/support/win32/locale_win32.cpp
++++ b/src/support/win32/locale_win32.cpp
+@@ -8,6 +8,11 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#ifdef __MINGW32__
++#define _GNU_SOURCE
++#include <support/win32/support.h>
++#endif
++
+ #include <locale>
+ #include <cstdarg> // va_start, va_end
+ 
+diff --git a/src/support/win32/support.cpp b/src/support/win32/support.cpp
+index e989681..0d60ef4 100644
+--- a/src/support/win32/support.cpp
++++ b/src/support/win32/support.cpp
+@@ -8,6 +8,10 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#ifdef __MINGW32__
++#define _GNU_SOURCE
++#endif
++
+ #include <cstdarg> // va_start, va_end
+ #include <cstddef> // size_t
+ #include <cstdlib> // malloc
+@@ -17,6 +21,7 @@
+ 
+ // Some of these functions aren't standard or if they conform, the name does not.
+ 
++#ifndef __MINGW32__
+ int asprintf(char **sptr, const char *__restrict format, ...)
+ {
+     va_list ap;
+@@ -51,6 +56,7 @@ int vasprintf( char **sptr, const char *__restrict format, va_list ap )
+     *sptr = p;
+     return count;
+ }
++#endif
+ 
+ // Returns >= 0: the number of wide characters found in the 
+ // multi byte sequence src (of src_size_bytes), that fit in the buffer dst 
+diff --git a/src/system_error.cpp b/src/system_error.cpp
+index 87f35ae..fdd56ea 100644
+--- a/src/system_error.cpp
++++ b/src/system_error.cpp
+@@ -70,6 +70,12 @@ string do_strerror_r(int ev) {
+     char* ret = ::strerror_r(ev, buffer, strerror_buff_size);
+     return string(ret);
+ }
++#elif defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
++string do_strerror_r(int ev) {
++    char buffer[strerror_buff_size];
++    std::snprintf(buffer, strerror_buff_size, "Win32 Unsupported %d", ev);
++    return string(buffer);
++}
+ #else
+ // POSIX version
+ string do_strerror_r(int ev) {
 -- 
-2.8.1
+2.8.3
 

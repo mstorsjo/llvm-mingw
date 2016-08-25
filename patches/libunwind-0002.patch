@@ -1,14 +1,14 @@
-From 9d0332b9dac6c5925c827d8b372f3c846da8a639 Mon Sep 17 00:00:00 2001
+From 17e850de43aefe7da87db8c2eaa521e5159c1cbb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Hugo=20Beauz=C3=A9e-Luyssen?= <hugo@beauzee.fr>
 Date: Fri, 13 May 2016 15:07:26 +0200
-Subject: [PATCH] Define _Unwind_Ptr on windows
+Subject: [PATCH 2/2] Define _Unwind_Ptr on windows
 
 ---
  src/AddressSpace.hpp | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/src/AddressSpace.hpp b/src/AddressSpace.hpp
-index ab17d42..8e5fc20 100644
+index 892950f..9751d9e 100644
 --- a/src/AddressSpace.hpp
 +++ b/src/AddressSpace.hpp
 @@ -47,6 +47,8 @@ extern "C" _Unwind_Ptr __gnu_Unwind_Find_exidx(_Unwind_Ptr addr, int *len);
@@ -21,5 +21,5 @@ index ab17d42..8e5fc20 100644
  #include <link.h>
  #else // !defined(_LIBUNWIND_IS_BAREMETAL)
 -- 
-2.8.1
+2.7.4
 
