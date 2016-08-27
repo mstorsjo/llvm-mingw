@@ -235,8 +235,9 @@ ENV CCAS="gas-preprocessor.pl ${CC}"
 ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
 
 RUN mkdir -p /build/hello
-COPY hello.c /build/hello/
+COPY hello.c hello.cpp /build/hello/
 RUN cd /build/hello && armv7-w64-mingw32-clang hello.c -o hello.exe
+RUN cd /build/hello && armv7-w64-mingw32-clang++ hello.cpp -o hello-cpp.exe -fno-exceptions
 
 RUN git clone --depth=1 git://git.libav.org/libav.git
 
