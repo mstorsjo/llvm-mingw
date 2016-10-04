@@ -122,8 +122,8 @@ RUN cd compiler-rt && mkdir build && cd build && cmake \
     -DCMAKE_SIZEOF_VOID_P=4 \
     ../lib/builtins && \
     make -j4 && \
-    mkdir -p /build/prefix/lib/clang/3.9.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/3.9.0/lib/windows
+    mkdir -p /build/prefix/lib/clang/3.9.1/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/3.9.1/lib/windows
 
 RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
     autoreconf -vif && \
@@ -155,7 +155,7 @@ RUN cd libcxxabi && \
 
 RUN cd libunwind && mkdir build && cd build && \
     CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
-    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.9.0/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
+    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.9.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
     cmake \
         -DCMAKE_CXX_COMPILER_WORKS=TRUE \
         -DLLVM_ENABLE_LIBCXX=TRUE \
