@@ -1,13 +1,15 @@
-From b362e07e7a8e0d11291d1bc681eebef2cc000b74 Mon Sep 17 00:00:00 2001
-From: Martell Malone <martellmalone@gmail.com>
-Date: Tue, 16 Aug 2016 15:50:50 -0700
-Subject: [PATCH 1/2] builtins: add support for windows arm divide functions
+From 43abf42d132d75e8f51519b8c946e7a57e94175b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Fri, 7 Oct 2016 16:44:22 +0300
+Subject: [PATCH] builtins: Allow building windows arm functions for mingw
+
+When building for MSVC, the msvcrt libraries contain these functions.
+When building in a mingw environment, we need to provide them somehow,
+e.g. via compiler-rt.
 
 The divmod functions work in the same way as the corresponding
 __rt_*div* functions for windows, but their parameters are swapped.
 ---
- cmake/base-config-ix.cmake        |  2 +-
- cmake/builtin-config-ix.cmake     |  2 +-
  lib/builtins/CMakeLists.txt       | 25 ++++++++++++++++++++++++-
  lib/builtins/arm/aeabi_idivmod.S  |  9 +++++++++
  lib/builtins/arm/aeabi_ldivmod.S  | 12 ++++++++++++
@@ -21,44 +23,18 @@ __rt_*div* functions for windows, but their parameters are swapped.
  lib/builtins/floatdisf.c          |  8 ++++++++
  lib/builtins/floatundidf.c        |  8 ++++++++
  lib/builtins/floatundisf.c        |  8 ++++++++
- 15 files changed, 132 insertions(+), 3 deletions(-)
+ 13 files changed, 130 insertions(+), 1 deletion(-)
 
-diff --git a/cmake/base-config-ix.cmake b/cmake/base-config-ix.cmake
-index 830e443..644cea2 100644
---- a/cmake/base-config-ix.cmake
-+++ b/cmake/base-config-ix.cmake
-@@ -153,7 +153,7 @@ macro(test_targets)
-     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "mips")
-       test_target_arch(mips "" "-mips32r2" "--target=mips-linux-gnu")
-       test_target_arch(mips64 "" "-mips64r2" "--target=mips64-linux-gnu" "-mabi=64")
--    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "arm")
-+    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "arm|armv7")
-       if(WIN32)
-         test_target_arch(arm "" "" "")
-       else()
-diff --git a/cmake/builtin-config-ix.cmake b/cmake/builtin-config-ix.cmake
-index 9289618..bf15570 100644
---- a/cmake/builtin-config-ix.cmake
-+++ b/cmake/builtin-config-ix.cmake
-@@ -2,7 +2,7 @@ include(BuiltinTests)
- include(CheckCSourceCompiles)
- 
- # Make all the tests only check the compiler
--set(TEST_COMPILE_ONLY On)
-+set(TEST_COMPILE_ONLY TRUE)
- 
- builtin_check_c_compiler_flag(-fPIC                 COMPILER_RT_HAS_FPIC_FLAG)
- builtin_check_c_compiler_flag(-fPIE                 COMPILER_RT_HAS_FPIE_FLAG)
 diff --git a/lib/builtins/CMakeLists.txt b/lib/builtins/CMakeLists.txt
-index a7d665e..18bdee9 100644
+index 5cbc1cb..1fc4b32 100644
 --- a/lib/builtins/CMakeLists.txt
 +++ b/lib/builtins/CMakeLists.txt
-@@ -367,7 +367,30 @@ set(arm_Thumb1_SOURCES
+@@ -371,7 +371,30 @@ set(arm_Thumb1_SOURCES
    ${arm_Thumb1_VFPv2_SOURCES}
    ${arm_Thumb1_icache_SOURCES})
  
 -if(NOT WIN32)
-+if(WIN32)
++if(MINGW)
 +  set(arm_SOURCES
 +      fixdfdi.c
 +      fixsfdi.c
@@ -81,7 +57,7 @@ index a7d665e..18bdee9 100644
 +      udivmodsi4.c
 +      udivsi3.c
 +      umoddi3.c)
-+else(WIN32)
++else(MINGW)
    # TODO the EABI sources should only be added to EABI targets
    set(arm_SOURCES
      ${arm_SOURCES}
