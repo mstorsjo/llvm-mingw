@@ -11,6 +11,9 @@ Offset: 18 Size 2 bits Name: Type
 Offset: 20 Size 3 bits Name: Name Type
 
 Offset: 20 added based on 18+2
+
+Cherry-picked from SVN trunk commit 283055, git mirror commit
+d17dee59d1351.
 ---
  include/llvm/Support/COFF.h                            |   2 +-
  .../llvm-readobj/Inputs/imports.mangle.coff-x86_64     | Bin 0 -> 2108 bytes
