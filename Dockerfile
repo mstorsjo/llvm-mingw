@@ -104,10 +104,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
 
-COPY patches/compiler-rt-*.patch /build/patches/
 RUN git clone -b master --depth=1 https://github.com/llvm-mirror/compiler-rt.git
-RUN cd compiler-rt && \
-    git am /build/patches/compiler-rt-*.patch
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && mkdir build && cd build && cmake \
