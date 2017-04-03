@@ -1,17 +1,17 @@
-From c12d174fab12116ed74f3984d12fbff057943f60 Mon Sep 17 00:00:00 2001
+From ebade0c4f7558bb16b2504f06076585d1f618a4c Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
 Date: Mon, 15 Aug 2016 20:57:27 -0700
-Subject: [PATCH 5/5] mingw-w64: enable support for __declspec(selectany)
+Subject: [PATCH 3/4] mingw-w64: enable support for __declspec(selectany)
 
 ---
  include/clang/Basic/Attr.td | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/include/clang/Basic/Attr.td b/include/clang/Basic/Attr.td
-index 7da1efe..2d4be9e 100644
+index fa60d51..0739511 100644
 --- a/include/clang/Basic/Attr.td
 +++ b/include/clang/Basic/Attr.td
-@@ -2097,9 +2097,8 @@ def DLLImport : InheritableAttr, TargetSpecificAttr<TargetWindows> {
+@@ -2180,9 +2180,8 @@ def DLLImport : InheritableAttr, TargetSpecificAttr<TargetWindows> {
    let Documentation = [DLLImportDocs];
  }
  

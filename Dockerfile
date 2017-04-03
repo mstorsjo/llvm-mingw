@@ -14,15 +14,15 @@ RUN git config --global user.name "VideoLAN Buildbot" && \
 
 WORKDIR /build
 
-RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/llvm.git
+RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/llvm.git
 RUN cd llvm/tools && \
-    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/clang.git && \
-    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/lld.git
+    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/clang.git && \
+    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/lld.git
 
 #RUN cd llvm/projects && \
-#    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-#    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
-#    git clone https://github.com/llvm-mirror/libunwind.git -b release_39 --depth=1
+#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
+#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+#    git clone https://github.com/llvm-mirror/libunwind.git -b release_40 --depth=1
 
 RUN mkdir /build/patches
 
@@ -104,7 +104,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
 
-RUN git clone -b master --depth=1 https://github.com/llvm-mirror/compiler-rt.git
+RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && mkdir build && cd build && cmake \
@@ -119,8 +119,8 @@ RUN cd compiler-rt && mkdir build && cd build && cmake \
     -DCMAKE_SIZEOF_VOID_P=4 \
     ../lib/builtins && \
     make -j4 && \
-    mkdir -p /build/prefix/lib/clang/3.9.1/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/3.9.1/lib/windows
+    mkdir -p /build/prefix/lib/clang/4.0.1/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/4.0.1/lib/windows
 
 RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
     autoreconf -vif && \
@@ -134,9 +134,9 @@ RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
     make -j4 && \
     make install 
 
-RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
-    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libunwind.git
+RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
+    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
 COPY patches/libcxx-*.patch /build/patches/
 RUN cd libcxx && \
@@ -152,7 +152,7 @@ RUN cd libcxxabi && \
 
 RUN cd libunwind && mkdir build && cd build && \
     CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
-    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/3.9.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
+    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/4.0.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
     cmake \
         -DCMAKE_CXX_COMPILER_WORKS=TRUE \
         -DLLVM_ENABLE_LIBCXX=TRUE \

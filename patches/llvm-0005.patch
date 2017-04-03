@@ -1,7 +1,7 @@
-From 3de4f391131ab56e03622bf3bbb152c29bdc293e Mon Sep 17 00:00:00 2001
+From 44892d7c172014a45e9a191fc36b2d4cca343890 Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
 Date: Tue, 16 Aug 2016 13:05:23 -0700
-Subject: [PATCH 5/6] COFF: Fix short import lib import name type bitshift
+Subject: [PATCH 2/3] COFF: Fix short import lib import name type bitshift
 
 llvm-readobj: Support short import objects from within an archive
 The import magic was previous just checked against the archive as a whole
@@ -11,31 +11,13 @@ Offset: 18 Size 2 bits Name: Type
 Offset: 20 Size 3 bits Name: Name Type
 
 Offset: 20 added based on 18+2
-
-Cherry-picked from SVN trunk commit 283055, git mirror commit
-d17dee59d1351.
 ---
- include/llvm/Support/COFF.h                            |   2 +-
  .../llvm-readobj/Inputs/imports.mangle.coff-x86_64     | Bin 0 -> 2108 bytes
  test/tools/llvm-readobj/imports-mangle.test            |  17 +++++++++++++++++
- tools/llvm-readobj/llvm-readobj.cpp                    |   2 ++
- 4 files changed, 20 insertions(+), 1 deletion(-)
+ 2 files changed, 17 insertions(+)
  create mode 100644 test/tools/llvm-readobj/Inputs/imports.mangle.coff-x86_64
  create mode 100644 test/tools/llvm-readobj/imports-mangle.test
 
-diff --git a/include/llvm/Support/COFF.h b/include/llvm/Support/COFF.h
-index 7dad3e8..1ca781b9 100644
---- a/include/llvm/Support/COFF.h
-+++ b/include/llvm/Support/COFF.h
-@@ -657,7 +657,7 @@ namespace COFF {
-     }
- 
-     ImportNameType getNameType() const {
--      return static_cast<ImportNameType>((TypeInfo & 0x1C) >> 3);
-+      return static_cast<ImportNameType>((TypeInfo & 0x1C) >> 2);
-     }
-   };
- 
 diff --git a/test/tools/llvm-readobj/Inputs/imports.mangle.coff-x86_64 b/test/tools/llvm-readobj/Inputs/imports.mangle.coff-x86_64
 new file mode 100644
 index 0000000000000000000000000000000000000000..af6e583a31b953d1c9451266b09bee50093b8d54
@@ -81,19 +63,6 @@ index 0000000..211fc57
 +X64:      Name type: ordinal
 +X64-NEXT:   Symbol: __imp_sym2
 +X64-NEXT:   Symbol: sym2
-diff --git a/tools/llvm-readobj/llvm-readobj.cpp b/tools/llvm-readobj/llvm-readobj.cpp
-index c293919..bb5ad37 100644
---- a/tools/llvm-readobj/llvm-readobj.cpp
-+++ b/tools/llvm-readobj/llvm-readobj.cpp
-@@ -450,6 +450,8 @@ static void dumpArchive(const Archive *Arc) {
-     }
-     if (ObjectFile *Obj = dyn_cast<ObjectFile>(&*ChildOrErr.get()))
-       dumpObject(Obj);
-+    else if (COFFImportFile *Import = dyn_cast<COFFImportFile>(&*ChildOrErr.get()))
-+      dumpCOFFImportFile(Import);
-     else
-       reportError(Arc->getFileName(), readobj_error::unrecognized_file_format);
-   }
 -- 
 2.7.4
 

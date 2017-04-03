@@ -1,7 +1,7 @@
-From 5d2a7cb021208fd23b8b57034d11fef3900397c4 Mon Sep 17 00:00:00 2001
+From 82a145503d9b1aecf8cf45bd7b536543f3342345 Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
 Date: Wed, 16 Dec 2015 02:07:06 -0800
-Subject: [PATCH 1/6] mingw-w64: setup new defaults for target
+Subject: [PATCH 1/4] mingw-w64: setup new defaults for target
 
 runtime: compiler-rt
 c++ lib: libc++
@@ -12,12 +12,12 @@ linker: lld
  2 files changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/lib/Driver/ToolChains.h b/lib/Driver/ToolChains.h
-index 4e5c3f7..4de35d6 100644
+index 3240357..3be7f25 100644
 --- a/lib/Driver/ToolChains.h
 +++ b/lib/Driver/ToolChains.h
-@@ -680,6 +680,15 @@ public:
-       const llvm::opt::ArgList &DriverArgs,
-       llvm::opt::ArgStringList &CC1Args) const override;
+@@ -714,6 +714,15 @@ public:
+ 
+   void printVerboseInfo(raw_ostream &OS) const override;
  
 +  RuntimeLibType GetDefaultRuntimeLibType() const override {
 +    return RuntimeLibType::RLT_CompilerRT;
@@ -32,10 +32,10 @@ index 4e5c3f7..4de35d6 100644
    Tool *getTool(Action::ActionClass AC) const override;
    Tool *buildLinker() const override;
 diff --git a/lib/Driver/Tools.cpp b/lib/Driver/Tools.cpp
-index 95f2850..3fff6d2 100644
+index 3c3d453..2a9a09d 100644
 --- a/lib/Driver/Tools.cpp
 +++ b/lib/Driver/Tools.cpp
-@@ -10376,7 +10376,7 @@ void MinGW::Linker::ConstructJob(Compilation &C, const JobAction &JA,
+@@ -11216,7 +11216,7 @@ void MinGW::Linker::ConstructJob(Compilation &C, const JobAction &JA,
    // handled somewhere else.
    Args.ClaimAllArgs(options::OPT_w);
  

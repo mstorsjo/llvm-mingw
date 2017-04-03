@@ -1,7 +1,7 @@
-From 33dec3bb0148afe0bcff8c8684833f89c7a61bb6 Mon Sep 17 00:00:00 2001
+From 2488a5d11c8a5ff0c5ab3749dd36ef8ba53bfac1 Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
 Date: Fri, 5 Aug 2016 21:50:38 -0700
-Subject: [PATCH 6/6] mingw-w64: support static builds of libc++
+Subject: [PATCH 4/4] mingw-w64: support static builds of libc++
 
 Static builds require libc++abi to be linked
 Will add support for both modes in future
@@ -11,10 +11,10 @@ Will add support for both modes in future
  2 files changed, 19 insertions(+)
 
 diff --git a/lib/Driver/MinGWToolChain.cpp b/lib/Driver/MinGWToolChain.cpp
-index a1dc25b..816e11d 100644
+index 1ac3bd3..3c3e319 100644
 --- a/lib/Driver/MinGWToolChain.cpp
 +++ b/lib/Driver/MinGWToolChain.cpp
-@@ -242,3 +242,18 @@ void MinGW::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+@@ -249,3 +249,18 @@ void MinGW::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
      break;
    }
  }
@@ -34,10 +34,10 @@ index a1dc25b..816e11d 100644
 +  }
 +}
 diff --git a/lib/Driver/ToolChains.h b/lib/Driver/ToolChains.h
-index 4de35d6..bfc9b80 100644
+index 3be7f25..f62207d 100644
 --- a/lib/Driver/ToolChains.h
 +++ b/lib/Driver/ToolChains.h
-@@ -676,6 +676,10 @@ public:
+@@ -705,6 +705,10 @@ public:
    void
    AddClangSystemIncludeArgs(const llvm::opt::ArgList &DriverArgs,
                              llvm::opt::ArgStringList &CC1Args) const override;

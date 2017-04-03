@@ -1,7 +1,7 @@
-From f8cba388440ff846c5f479889fc64a03066ff39c Mon Sep 17 00:00:00 2001
+From 6fa2a85b5bfc696204939659c7f51c185d1d8b47 Mon Sep 17 00:00:00 2001
 From: Martin Storsjo <martin@martin.st>
 Date: Mon, 8 Aug 2016 15:37:59 +0300
-Subject: [PATCH 2/5] Make the "gnu arguments in lld coff" patch not break
+Subject: [PATCH 2/2] Make the "gnu arguments in lld coff" patch not break
  using lld-link in normal MSVC mode
 
 ---
@@ -11,10 +11,10 @@ Subject: [PATCH 2/5] Make the "gnu arguments in lld coff" patch not break
  3 files changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/COFF/Driver.cpp b/COFF/Driver.cpp
-index 0821591..65cfa9f 100644
+index 4992296..b19998f 100644
 --- a/COFF/Driver.cpp
 +++ b/COFF/Driver.cpp
-@@ -602,6 +602,7 @@ void LinkerDriver::link(llvm::ArrayRef<const char *> ArgsArr) {
+@@ -782,6 +782,7 @@ void LinkerDriver::link(ArrayRef<const char *> ArgsArr) {
    if (Config->ImageBase == uint64_t(-1))
      Config->ImageBase = getDefaultImageBase();
  
@@ -23,10 +23,10 @@ index 0821591..65cfa9f 100644
    if (Config->Machine == I386) {
      Config->SEHTable = Symtab.addRelative("___safe_se_handler_table", 0);
 diff --git a/COFF/DriverUtils.cpp b/COFF/DriverUtils.cpp
-index e2f1f2d..f9c37ec 100644
+index f5f3d6d..aab554f 100644
 --- a/COFF/DriverUtils.cpp
 +++ b/COFF/DriverUtils.cpp
-@@ -591,7 +591,10 @@ static const llvm::opt::OptTable::Info infoTable[] = {
+@@ -637,7 +637,10 @@ static const llvm::opt::OptTable::Info infoTable[] = {
  
  class COFFOptTable : public llvm::opt::OptTable {
  public:
@@ -39,7 +39,7 @@ index e2f1f2d..f9c37ec 100644
  
  // Parses a given list of options.
 diff --git a/COFF/Options.td b/COFF/Options.td
-index 322b162..4e7338a 100644
+index b3b30a3..dec6a0a 100644
 --- a/COFF/Options.td
 +++ b/COFF/Options.td
 @@ -19,11 +19,13 @@ def align   : P<"align", "Section alignment">;
