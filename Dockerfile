@@ -138,87 +138,87 @@ RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git 
     git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
     git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
-COPY patches/libcxx-*.patch /build/patches/
-RUN cd libcxx && \
-    git am /build/patches/libcxx-*.patch
+#COPY patches/libcxx-*.patch /build/patches/
+#RUN cd libcxx && \
+#    git am /build/patches/libcxx-*.patch
 
-COPY patches/libcxxabi-*.patch /build/patches/
-RUN cd libcxxabi && \
-    git am /build/patches/libcxxabi-*.patch
+#COPY patches/libcxxabi-*.patch /build/patches/
+#RUN cd libcxxabi && \
+#    git am /build/patches/libcxxabi-*.patch
 
 # COPY patches/libunwind-*.patch /build/patches/
 #RUN cd libunwind && \
 #    git am /build/patches/libunwind-*.patch
 
-RUN cd libunwind && mkdir build && cd build && \
-    CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
-    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/4.0.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
-    cmake \
-        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-        -DLLVM_ENABLE_LIBCXX=TRUE \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DLIBUNWIND_ENABLE_SHARED=OFF \
-        ..
+#RUN cd libunwind && mkdir build && cd build && \
+#    CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
+#    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/4.0.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
+#    cmake \
+#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+#        -DLLVM_ENABLE_LIBCXX=TRUE \
+#        -DCMAKE_BUILD_TYPE=Release \
+#        -DLIBUNWIND_ENABLE_SHARED=OFF \
+#        ..
 
 #RUN cd libunwind/build && make -j4
 #RUN cd libunwind/build && make install
 
-RUN cd libcxx && mkdir build && cd build && \
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
-        -DCMAKE_C_COMPILER=$CC \
-        -DCMAKE_CXX_COMPILER=$CXX \
-        -DCMAKE_CROSSCOMPILING=TRUE \
-        -DCMAKE_SYSTEM_NAME=Windows \
-        -DCMAKE_C_COMPILER_WORKS=TRUE \
-        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-        -DLIBCXX_INSTALL_HEADERS=ON \
-        -DLIBCXX_ENABLE_EXCEPTIONS=OFF \
-        -DLIBCXX_ENABLE_THREADS=OFF \
-        -DLIBCXX_ENABLE_MONOTONIC_CLOCK=OFF \
-        -DLIBCXX_ENABLE_SHARED=OFF \
-        -DLIBCXX_SUPPORTS_STD_EQ_CXX11_FLAG=TRUE \
-        -DLIBCXX_HAVE_CXX_ATOMICS_WITHOUT_LIB=TRUE \
-        -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
-        -DLIBCXX_ENABLE_FILESYSTEM=OFF \
-        -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
-        -DLIBCXX_CXX_ABI=libcxxabi \
-        -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
-        -DCMAKE_CXX_FLAGS="-fno-exceptions" \
-        .. && \
-    make -j4 && \
-    make install
+#RUN cd libcxx && mkdir build && cd build && \
+#    cmake \
+#        -DCMAKE_BUILD_TYPE=Release \
+#        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
+#        -DCMAKE_C_COMPILER=$CC \
+#        -DCMAKE_CXX_COMPILER=$CXX \
+#        -DCMAKE_CROSSCOMPILING=TRUE \
+#        -DCMAKE_SYSTEM_NAME=Windows \
+#        -DCMAKE_C_COMPILER_WORKS=TRUE \
+#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+#        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+#        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+#        -DLIBCXX_INSTALL_HEADERS=ON \
+#        -DLIBCXX_ENABLE_EXCEPTIONS=OFF \
+#        -DLIBCXX_ENABLE_THREADS=OFF \
+#        -DLIBCXX_ENABLE_MONOTONIC_CLOCK=OFF \
+#        -DLIBCXX_ENABLE_SHARED=OFF \
+#        -DLIBCXX_SUPPORTS_STD_EQ_CXX11_FLAG=TRUE \
+#        -DLIBCXX_HAVE_CXX_ATOMICS_WITHOUT_LIB=TRUE \
+#        -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
+#        -DLIBCXX_ENABLE_FILESYSTEM=OFF \
+#        -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
+#        -DLIBCXX_CXX_ABI=libcxxabi \
+#        -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
+#        -DCMAKE_CXX_FLAGS="-fno-exceptions" \
+#        .. && \
+#    make -j4 && \
+#    make install
 
-RUN cd libcxxabi && mkdir build && cd build && \
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
-        -DCMAKE_C_COMPILER=$CC \
-        -DCMAKE_CXX_COMPILER=$CXX \
-        -DCMAKE_CROSSCOMPILING=TRUE \
-        -DCMAKE_SYSTEM_NAME=Windows \
-        -DCMAKE_C_COMPILER_WORKS=TRUE \
-        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-        -DLIBCXXABI_USE_COMPILER_RT=ON \
-        -DLIBCXXABI_ENABLE_EXCEPTIONS=OFF \
-        -DLIBCXXABI_ENABLE_THREADS=OFF \
-        -DLIBCXXABI_TARGET_TRIPLE=$TARGET_TUPLE \
-        -DLIBCXXABI_SYSROOT=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
-        -DLIBCXXABI_ENABLE_SHARED=OFF \
-        -DLIBCXXABI_LIBCXX_INCLUDES=$TOOLCHAIN_PREFIX/$TARGET_TUPLE/c++/v1 \
-        -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
-        -DCXX_SUPPORTS_CXX11=TRUE \
-        -DCMAKE_CXX_FLAGS="-fno-exceptions" \
-        .. && \
-    make -j4 && \
-    make install
+#RUN cd libcxxabi && mkdir build && cd build && \
+#    cmake \
+#        -DCMAKE_BUILD_TYPE=Release \
+#        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
+#        -DCMAKE_C_COMPILER=$CC \
+#        -DCMAKE_CXX_COMPILER=$CXX \
+#        -DCMAKE_CROSSCOMPILING=TRUE \
+#        -DCMAKE_SYSTEM_NAME=Windows \
+#        -DCMAKE_C_COMPILER_WORKS=TRUE \
+#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+#        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+#        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+#        -DLIBCXXABI_USE_COMPILER_RT=ON \
+#        -DLIBCXXABI_ENABLE_EXCEPTIONS=OFF \
+#        -DLIBCXXABI_ENABLE_THREADS=OFF \
+#        -DLIBCXXABI_TARGET_TRIPLE=$TARGET_TUPLE \
+#        -DLIBCXXABI_SYSROOT=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
+#        -DLIBCXXABI_ENABLE_SHARED=OFF \
+#        -DLIBCXXABI_LIBCXX_INCLUDES=$TOOLCHAIN_PREFIX/$TARGET_TUPLE/c++/v1 \
+#        -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
+#        -DCXX_SUPPORTS_CXX11=TRUE \
+#        -DCMAKE_CXX_FLAGS="-fno-exceptions" \
+#        .. && \
+#    make -j4 && \
+#    make install
 
-RUN cd /build/prefix/include && ln -s /build/prefix/$TARGET_TUPLE/include/c++ .
+#RUN cd /build/prefix/include && ln -s /build/prefix/$TARGET_TUPLE/include/c++ .
 
 RUN mkdir gaspp && cd gaspp && \
     wget -q https://raw.githubusercontent.com/libav/gas-preprocessor/master/gas-preprocessor.pl && \
@@ -234,7 +234,7 @@ ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
 RUN mkdir -p /build/hello
 COPY hello.c hello.cpp /build/hello/
 RUN cd /build/hello && armv7-w64-mingw32-clang hello.c -o hello.exe
-RUN cd /build/hello && armv7-w64-mingw32-clang++ hello.cpp -o hello-cpp.exe -fno-exceptions
+#RUN cd /build/hello && armv7-w64-mingw32-clang++ hello.cpp -o hello-cpp.exe -fno-exceptions
 
 RUN git clone --depth=1 git://git.libav.org/libav.git
 
