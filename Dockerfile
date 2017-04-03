@@ -14,10 +14,10 @@ RUN git config --global user.name "VideoLAN Buildbot" && \
 
 WORKDIR /build
 
-RUN git clone -b release_39 https://github.com/llvm-mirror/llvm.git --depth=1
+RUN git clone -b release_39 --depth=1 https://github.com/llvm-mirror/llvm.git
 RUN cd llvm/tools && \
     git clone -b release_39 --depth=1 https://github.com/llvm-mirror/clang.git && \
-    git clone --depth=1 -b release_39 https://github.com/llvm-mirror/lld.git --depth=1
+    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/lld.git
 
 #RUN cd llvm/projects && \
 #    git clone -b release_39 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
