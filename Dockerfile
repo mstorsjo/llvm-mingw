@@ -62,10 +62,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout 4e3188bff2fd44cf1e1bf155b64b28f67f5c4457
-COPY patches/mingw-*.patch /build/patches/
-RUN cd mingw-w64 && \
-    git am /build/patches/mingw-*.patch
+    git checkout 1e81200e88f19e440bbe646bfb410159ff8b0d51
 
 #FIXME: Move this UP!
 ENV TOOLCHAIN_PREFIX=/build/prefix
