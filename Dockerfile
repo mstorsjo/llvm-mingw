@@ -14,10 +14,18 @@ RUN git config --global user.name "VideoLAN Buildbot" && \
 
 WORKDIR /build
 
-RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/llvm.git
+# release_50 should work just as well as the pinned hash, except for arm64 support.
+# When cloning master and checking out a pinned old hash, we can't use --depth=1.
+RUN git clone -b master https://github.com/llvm-mirror/llvm.git
 RUN cd llvm/tools && \
-    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/clang.git && \
-    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/lld.git
+    git clone -b master https://github.com/llvm-mirror/clang.git && \
+    git clone -b master https://github.com/llvm-mirror/lld.git && \
+    cd .. && \
+    git checkout ee09c63e57866e6d47964f0094a7d884ae99b7ef && \
+    cd tools/clang && \
+    git checkout c778ea4b266d5fdcf3ab2d2509b19083bc43a91e && \
+    cd ../lld && \
+    git checkout ccf03952480f7b995f53263f0b529a57497230ff
 
 #RUN cd llvm/projects && \
 #    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
@@ -26,13 +34,7 @@ RUN cd llvm/tools && \
 
 RUN mkdir /build/patches
 
-COPY patches/llvm-*.patch patches/clang-*.patch patches/lld-*.patch /build/patches/
-
-RUN cd llvm && \
-    git am /build/patches/llvm-*.patch
-
-RUN cd llvm/tools/clang && \
-    git am /build/patches/clang-*.patch
+COPY patches/lld-*.patch /build/patches/
 
 RUN cd llvm/tools/lld && \
     git am /build/patches/lld-*.patch
@@ -52,35 +54,43 @@ RUN cd llvm && mkdir build && cd build && cmake \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_ENABLE_FFI=OFF \
     -DLLVM_ENABLE_SPHINX=OFF \
+    -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DCMAKE_CXX_FLAGS="-D_GNU_SOURCE -D_LIBCPP_HAS_NO_CONSTEXPR" \
     ../ && \
     make -j4 && \
     make install
 
-RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64
+RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
+    cd mingw-w64 && \
+    git checkout 4e3188bff2fd44cf1e1bf155b64b28f67f5c4457
 COPY patches/mingw-*.patch /build/patches/
 RUN cd mingw-w64 && \
     git am /build/patches/mingw-*.patch
 
 #FIXME: Move this UP!
 ENV TOOLCHAIN_PREFIX=/build/prefix
-ENV TARGET_TUPLE=armv7-w64-mingw32
-ENV MINGW_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
-RUN mkdir $MINGW_PREFIX
-RUN ln -s $MINGW_PREFIX $TOOLCHAIN_PREFIX/mingw
-
-RUN cd mingw-w64/mingw-w64-headers && mkdir build && cd build && \
-    ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
+RUN cd mingw-w64/mingw-w64-headers && \
+    for arch in armv7 aarch64 i686 x86_64; do \
+      mkdir build-${arch} && cd build-${arch} && \
+        ../configure --host=${arch}-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/${arch}-w64-mingw32 \
         --enable-secure-api && \
-    make install
+        make install && \
+      cd ..; \
+    done
 
 # Install the usual $TUPLE-clang binary
-COPY wrappers/* $TOOLCHAIN_PREFIX/bin/
+RUN mkdir /build/wrappers
+COPY wrappers/clang-target-wrapper /build/wrappers
+RUN for arch in armv7 aarch64 i686 x86_64; do \
+      for exec in clang clang++; do \
+        cp wrappers/clang-target-wrapper $TOOLCHAIN_PREFIX/bin/${arch}-w64-mingw32-${exec}; \
+      done; \
+    done
 
-ENV CC=armv7-w64-mingw32-clang
-ENV CXX=armv7-w64-mingw32-clang++
+#ENV CC=armv7-w64-mingw32-clang
+#ENV CXX=armv7-w64-mingw32-clang++
 ENV AR=llvm-ar 
 ENV RANLIB=llvm-ranlib 
 ENV LD=lld
@@ -95,21 +105,46 @@ ENV NM=llvm-nm
 # Force the flag -format gnu to llvm-ar in this step to work around this issue.
 RUN cd mingw-w64/mingw-w64-crt && \
     autoreconf -vif && \
-    mkdir build && cd build && \
-    AR="llvm-ar -format gnu" ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX \
-        --disable-lib32 --disable-lib64 --enable-libarm32 \
-        --with-genlib=llvm-dlltool && \
-    make -j4 && \
-    make install
+    mkdir build-arm32 && cd build-arm32 && \
+    CC=armv7-w64-mingw32-clang \
+    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=armv7-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/armv7-w64-mingw32 \
+        --disable-lib32 --disable-lib64 --enable-libarm32 && \
+    make -j4 && make install && \
+    cd .. && \
+    mkdir build-arm64 && cd build-arm64 && \
+    CC=aarch64-w64-mingw32-clang \
+    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=aarch64-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/aarch64-w64-mingw32 \
+        --disable-lib32 --disable-lib64 --enable-libarm64 && \
+    make -j4 && make install && \
+    cd .. && \
+    mkdir build-i686 && cd build-i686 && \
+    CC=i686-w64-mingw32-clang \
+    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=i686-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/i686-w64-mingw32 \
+        --enable-lib32 --disable-lib64 && \
+    make -j4 && make install && \
+    cd .. && \
+    mkdir build-x86_64 && cd build-x86_64 && \
+    CC=x86_64-w64-mingw32-clang \
+    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=x86_64-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/x86_64-w64-mingw32 \
+        --enable-lib64 --disable-lib32 && \
+    make -j4 && make install && \
+    cd ..
 
-RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
+#RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
 
-RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/compiler-rt.git
+RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
+    cd compiler-rt && \
+    git checkout 8293838e866814d904640f6359954d00852f2421
+
+COPY patches/compiler-rt-*.patch /build/patches/
+
+RUN cd compiler-rt && \
+    git am /build/patches/compiler-rt-*.patch
 
 # Manually build compiler-rt as a standalone project
-RUN cd compiler-rt && mkdir build && cd build && cmake \
-    -DCMAKE_C_COMPILER=$CC \
-    -DCMAKE_CXX_COMPILER=$CXX \
+RUN cd compiler-rt && \
+    mkdir build-armv7 && cd build-armv7 && cmake \
+    -DCMAKE_C_COMPILER=armv7-w64-mingw32-clang \
     -DCMAKE_SYSTEM_NAME=Windows \
     -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
     -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
@@ -119,24 +154,66 @@ RUN cd compiler-rt && mkdir build && cd build && cmake \
     -DCMAKE_SIZEOF_VOID_P=4 \
     ../lib/builtins && \
     make -j4 && \
-    mkdir -p /build/prefix/lib/clang/4.0.1/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/4.0.1/lib/windows
-
-RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
-    autoreconf -vif && \
-    mkdir build && cd build && \
-    ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX && make && make install
-
-RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
-    mkdir build && cd build && \
-    CC=gcc \
-    ../configure --prefix=$TOOLCHAIN_PREFIX --target=$TARGET_TUPLE && \
+    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cd .. && \
+    mkdir build-aarch64 && cd build-aarch64 && cmake \
+    -DCMAKE_C_COMPILER=aarch64-w64-mingw32-clang \
+    -DCMAKE_SYSTEM_NAME=Windows \
+    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+    -DCMAKE_C_COMPILER_WORKS=1 \
+    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="aarch64--windows-gnu" \
+    -DCMAKE_SIZEOF_VOID_P=8 \
+    ../lib/builtins && \
     make -j4 && \
-    make install 
+    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-aarch64.a /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cd .. && \
+    mkdir build-i686 && cd build-i686 && cmake \
+    -DCMAKE_C_COMPILER=i686-w64-mingw32-clang \
+    -DCMAKE_SYSTEM_NAME=Windows \
+    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+    -DCMAKE_C_COMPILER_WORKS=1 \
+    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="i686--windows-gnu" \
+    -DCMAKE_SIZEOF_VOID_P=4 \
+    ../lib/builtins && \
+    make -j4 && \
+    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-i386.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-i686.a && \
+    cd .. && \
+    mkdir build-x86_64 && cd build-x86_64 && cmake \
+    -DCMAKE_C_COMPILER=x86_64-w64-mingw32-clang \
+    -DCMAKE_SYSTEM_NAME=Windows \
+    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+    -DCMAKE_C_COMPILER_WORKS=1 \
+    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64--windows-gnu" \
+    -DCMAKE_SIZEOF_VOID_P=8 \
+    ../lib/builtins && \
+    make -j4 && \
+    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-x86_64.a /build/prefix/lib/clang/6.0.0/lib/windows
 
-RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
-    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
+#RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
+#    autoreconf -vif && \
+#    mkdir build && cd build && \
+#    ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX && make && make install
+
+#RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
+#    mkdir build && cd build && \
+#    CC=gcc \
+#    ../configure --prefix=$TOOLCHAIN_PREFIX --target=$TARGET_TUPLE && \
+#    make -j4 && \
+#    make install 
+
+#RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
+#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
 #COPY patches/libcxx-*.patch /build/patches/
 #RUN cd libcxx && \
@@ -220,27 +297,32 @@ RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git 
 
 #RUN cd /build/prefix/include && ln -s /build/prefix/$TARGET_TUPLE/include/c++ .
 
-RUN mkdir gaspp && cd gaspp && \
-    wget -q https://raw.githubusercontent.com/libav/gas-preprocessor/master/gas-preprocessor.pl && \
-    chmod +x gas-preprocessor.pl
+# gaspp is no longer required with clang 5.0
+#RUN mkdir gaspp && cd gaspp && \
+#    wget -q https://raw.githubusercontent.com/libav/gas-preprocessor/master/gas-preprocessor.pl && \
+#    chmod +x gas-preprocessor.pl
 
-ENV PATH=/build/gaspp:$PATH
-
-ENV AS="gas-preprocessor.pl ${CC}"
-ENV ASCPP="gas-preprocessor.pl ${CC}"
-ENV CCAS="gas-preprocessor.pl ${CC}"
-ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
+#ENV PATH=/build/gaspp:$PATH
+#
+#ENV AS="gas-preprocessor.pl ${CC}"
+#ENV ASCPP="gas-preprocessor.pl ${CC}"
+#ENV CCAS="gas-preprocessor.pl ${CC}"
+#ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
 
 RUN mkdir -p /build/hello
 COPY hello.c hello.cpp /build/hello/
-RUN cd /build/hello && armv7-w64-mingw32-clang hello.c -o hello.exe
+RUN cd /build/hello && \
+    armv7-w64-mingw32-clang hello.c -o hello-armv7.exe && \
+    aarch64-w64-mingw32-clang hello.c -o hello-aarch64.exe && \
+    x86_64-w64-mingw32-clang hello.c -o hello-x86_64.exe && \
+    i686-w64-mingw32-clang hello.c -o hello-i686.exe
+
 #RUN cd /build/hello && armv7-w64-mingw32-clang++ hello.cpp -o hello-cpp.exe -fno-exceptions
 
 RUN git clone --depth=1 git://git.libav.org/libav.git
 
-# Clear LDFLAGS, lld seems to fail with msvcr120_app for some reason (recheck this)
 RUN cd /build/libav && \
     mkdir build && cd build && \
-    LDFLAGS="" ../configure --arch=arm --cpu=armv7-a --target-os=mingw32 --cc=armv7-w64-mingw32-clang --ar=llvm-ar --nm=llvm-nm --enable-cross-compile --enable-gpl && \
+    ../configure --arch=aarch64 --target-os=mingw32 --cc=aarch64-w64-mingw32-clang --ar=llvm-ar --nm=llvm-nm --enable-cross-compile --enable-gpl && \
     make -j4 all testprogs
 

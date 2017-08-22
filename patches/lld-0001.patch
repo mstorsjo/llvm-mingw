@@ -1,159 +1,401 @@
-From d2b8d30134e620ec5d36be0765e52c7bf9bc57d6 Mon Sep 17 00:00:00 2001
+From ece347fc2af075b7149776c301ec59825868f969 Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
-Date: Wed, 28 Oct 2015 19:32:16 +0000
-Subject: [PATCH 1/2] add support for gnu arguments in lld coff
+Date: Tue, 22 Aug 2017 10:11:15 +0300
+Subject: [PATCH] COFF: Introduce LD shim around LINK
 
 ---
- COFF/Driver.cpp      | 31 ++++++++++++++++++++++++++++++-
- COFF/Driver.h        |  3 +++
- COFF/DriverUtils.cpp |  2 +-
- COFF/Options.td      | 20 ++++++++++++++++++++
- tools/lld/lld.cpp    | 21 +++++++++++++++++++++
- 5 files changed, 75 insertions(+), 2 deletions(-)
+This patch is up for review at https://reviews.llvm.org/D33880.
+---
+ CMakeLists.txt              |   1 +
+ ELF/Driver.cpp              |   8 +-
+ MinGW/CMakeLists.txt        |  20 +++++
+ MinGW/Driver.cpp            | 205 ++++++++++++++++++++++++++++++++++++++++++++
+ MinGW/Options.td            |  38 ++++++++
+ include/lld/Driver/Driver.h |   5 ++
+ test/COFF/out.test          |   5 ++
+ tools/lld/CMakeLists.txt    |   1 +
+ tools/lld/lld.cpp           |  12 +++
+ 9 files changed, 289 insertions(+), 6 deletions(-)
+ create mode 100644 MinGW/CMakeLists.txt
+ create mode 100644 MinGW/Driver.cpp
+ create mode 100644 MinGW/Options.td
 
-diff --git a/COFF/Driver.cpp b/COFF/Driver.cpp
-index 4dabd9e..4992296 100644
---- a/COFF/Driver.cpp
-+++ b/COFF/Driver.cpp
-@@ -232,6 +232,7 @@ void LinkerDriver::parseDirectives(StringRef S) {
-     case OPT_fastfail:
-     case OPT_guardsym:
-     case OPT_throwingnew:
-+    case OPT_aligncomm:
-       break;
-     default:
-       fatal(Arg->getSpelling() + " is not allowed in .drectve");
-@@ -260,6 +261,31 @@ StringRef LinkerDriver::doFindFile(StringRef Filename) {
-   return Filename;
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e2ab0e3..1893e6b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -221,4 +221,5 @@ endif()
+ add_subdirectory(docs)
+ add_subdirectory(COFF)
+ add_subdirectory(ELF)
++add_subdirectory(MinGW)
+ 
+diff --git a/ELF/Driver.cpp b/ELF/Driver.cpp
+index b0962c7..ee86569 100644
+--- a/ELF/Driver.cpp
++++ b/ELF/Driver.cpp
+@@ -113,12 +113,8 @@ static std::tuple<ELFKind, uint16_t, uint8_t> parseEmulation(StringRef Emul) {
+           .Case("elf_iamcu", {ELF32LEKind, EM_IAMCU})
+           .Default({ELFNoneKind, EM_NONE});
+ 
+-  if (Ret.first == ELFNoneKind) {
+-    if (S == "i386pe" || S == "i386pep" || S == "thumb2pe")
+-      error("Windows targets are not supported on the ELF frontend: " + Emul);
+-    else
+-      error("unknown emulation: " + Emul);
+-  }
++  if (Ret.first == ELFNoneKind)
++    error("unknown emulation: " + Emul);
+   return std::make_tuple(Ret.first, Ret.second, OSABI);
  }
  
-+// Searches a given library from input search paths, which are filled
-+// from -L command line switches. Returns a path to an existent library file.
-+StringRef LinkerDriver::searchLibrary(StringRef Filename) {
+diff --git a/MinGW/CMakeLists.txt b/MinGW/CMakeLists.txt
+new file mode 100644
+index 0000000..32992bc
+--- /dev/null
++++ b/MinGW/CMakeLists.txt
+@@ -0,0 +1,20 @@
++set(LLVM_TARGET_DEFINITIONS Options.td)
++tablegen(LLVM Options.inc -gen-opt-parser-defs)
++add_public_tablegen_target(ShimOptionsTableGen)
 +
-+  std::vector<std::string> Names;
-+  if (Filename[0] == ':') {
-+    Names.push_back(Filename.drop_front());
-+  } else {
-+    //if (!Config->Static)
-+    Names.push_back(("lib" + Filename + ".dll.a").str());
-+    Names.push_back(("lib" + Filename + ".a").str());
-+  }
++if(NOT LLD_BUILT_STANDALONE)
++  set(tablegen_deps intrinsics_gen)
++endif()
 +
-+  for (const std::string &Name : Names) {
-+    for (StringRef Dir : SearchPaths) {
-+      SmallString<128> Path = Dir;
-+      llvm::sys::path::append(Path, Name.c_str());
-+      if (llvm::sys::fs::exists(Path.str()))
-+        return Saver.save(Path.str());
-+    }
-+  }
-+  fatal("Unable to find library -l" + Filename);
-+  return "";
++add_lld_library(lldMinGW
++  Driver.cpp
++
++  LINK_LIBS
++  lldConfig
++  lldCore
++  ${LLVM_PTHREAD_LIB}
++
++  DEPENDS
++  ShimOptionsTableGen
++  ${tablegen_deps}
++)
+diff --git a/MinGW/Driver.cpp b/MinGW/Driver.cpp
+new file mode 100644
+index 0000000..7df3cc0
+--- /dev/null
++++ b/MinGW/Driver.cpp
+@@ -0,0 +1,205 @@
++//===- MinGW/Driver.cpp ---------------------------------------------------===//
++//
++//                             The LLVM Linker
++//
++// This file is distributed under the University of Illinois Open Source
++// License. See LICENSE.TXT for details.
++//
++//===----------------------------------------------------------------------===//
++///
++/// GNU ld style linker driver for COFF currently supporting mingw-w64.
++///
++//===----------------------------------------------------------------------===//
++
++#include "lld/Driver/Driver.h"
++#include "llvm/ADT/ArrayRef.h"
++#include "llvm/ADT/Optional.h"
++#include "llvm/ADT/StringRef.h"
++#include "llvm/ADT/StringSwitch.h"
++#include "llvm/ADT/Triple.h"
++#include "llvm/Option/Arg.h"
++#include "llvm/Option/ArgList.h"
++#include "llvm/Option/Option.h"
++#include "llvm/Support/CommandLine.h"
++#include "llvm/Support/FileSystem.h"
++#include "llvm/Support/Path.h"
++#include "llvm/Support/StringSaver.h"
++
++#if !defined(_MSC_VER) && !defined(__MINGW32__)
++#include <unistd.h>
++#endif
++
++using namespace lld;
++using namespace llvm;
++
++namespace lld {
++namespace mingw {
++namespace {
++
++// Create OptTable
++enum {
++  OPT_INVALID = 0,
++#define OPTION(_1, _2, ID, _4, _5, _6, _7, _8, _9, _10, _11, _12) OPT_##ID,
++#include "Options.inc"
++#undef OPTION
++};
++
++// Create prefix string literals used in Options.td
++#define PREFIX(NAME, VALUE) const char *const NAME[] = VALUE;
++#include "Options.inc"
++#undef PREFIX
++
++// Create table mapping all options defined in Options.td
++static const opt::OptTable::Info infoTable[] = {
++#define OPTION(X1, X2, ID, KIND, GROUP, ALIAS, X7, X8, X9, X10, X11, X12)      \
++  {X1, X2, X10,         X11,         OPT_##ID, opt::Option::KIND##Class,       \
++   X9, X8, OPT_##GROUP, OPT_##ALIAS, X7,       X12},
++#include "Options.inc"
++#undef OPTION
++};
++
++class COFFLdOptTable : public opt::OptTable {
++public:
++  COFFLdOptTable() : OptTable(infoTable, false) {}
++  opt::InputArgList parse(ArrayRef<const char *> Argv);
++};
++
++} // namespace
++
++BumpPtrAllocator BAlloc;
++StringSaver Saver{BAlloc};
++static SmallVector<const char *, 256> LinkArgs;
++static std::vector<StringRef> SearchPaths;
++
++static void error(const Twine &Msg) {
++  errs() << Msg << "\n";
++  llvm_shutdown();
++  outs().flush();
++  errs().flush();
++  exit(1);
 +}
 +
- // Resolves a file path. This never returns the same path
- // (in that case, it returns None).
- Optional<StringRef> LinkerDriver::findFile(StringRef Filename) {
-@@ -667,6 +693,9 @@ void LinkerDriver::link(ArrayRef<const char *> ArgsArr) {
-   for (auto *Arg : Args.filtered(OPT_defaultlib))
-     if (Optional<StringRef> Path = findLib(Arg->getValue()))
-       enqueuePath(*Path);
-+  for (auto *Arg : Args.filtered(OPT_l))
-+    if (Optional<StringRef> Path = searchLibrary(Arg->getValue()))
-+      enqueuePath(*Path);
- 
-   // Windows specific -- Create a resource file containing a manifest file.
-   if (Config->Manifest == Configuration::Embed)
-@@ -753,7 +782,7 @@ void LinkerDriver::link(ArrayRef<const char *> ArgsArr) {
-   if (Config->ImageBase == uint64_t(-1))
-     Config->ImageBase = getDefaultImageBase();
- 
--  Symtab.addRelative(mangle("__ImageBase"), 0);
-+  Symtab.addRelative(mangle("__image_base__"), 0);
-   if (Config->Machine == I386) {
-     Config->SEHTable = Symtab.addRelative("___safe_se_handler_table", 0);
-     Config->SEHCount = Symtab.addAbsolute("___safe_se_handler_count", 0);
-diff --git a/COFF/Driver.h b/COFF/Driver.h
-index 4489426..d293014 100644
---- a/COFF/Driver.h
-+++ b/COFF/Driver.h
-@@ -86,6 +86,9 @@ private:
-   StringRef doFindFile(StringRef Filename);
-   StringRef doFindLib(StringRef Filename);
- 
-+  // Searches for a gnu library
-+  StringRef searchLibrary(StringRef Path);
++// Find a file by concatenating given paths.
++static Optional<std::string> findFile(StringRef Path1, const Twine &Path2) {
++  SmallString<128> S;
++  sys::path::append(S, Path1, Path2);
++  if (sys::fs::exists(S))
++    return S.str().str();
++  return None;
++}
 +
-   // Parses LIB environment which contains a list of search paths.
-   void addLibSearchPaths();
++Optional<std::string> findFromSearchPaths(StringRef Path) {
++  for (StringRef Dir : SearchPaths)
++    if (Optional<std::string> S = findFile(Dir, Path))
++      return S;
++  return None;
++}
++
++// This is for -lfoo. We'll look for libfoo.dll.a or libfoo.a from search paths.
++Optional<std::string> searchLibrary(StringRef Name, bool IgnoreShared = false) {
++  if (Name.startswith(":"))
++    return findFromSearchPaths(Name.substr(1));
++  for (StringRef Dir : SearchPaths) {
++    if (!IgnoreShared)
++      if (Optional<std::string> S = findFile(Dir, "lib" + Name + ".dll.a"))
++        return S;
++    if (Optional<std::string> S = findFile(Dir, "lib" + Name + ".a"))
++      return S;
++  }
++  return None;
++}
++
++// Add a given library by searching it from input search paths.
++void addLibrary(StringRef Name, bool StaticOnly) {
++  if (Optional<std::string> Path = searchLibrary(Name, StaticOnly))
++    LinkArgs.push_back(Saver.save(*Path).data());
++  else
++    error("unable to find library -l" + Name);
++}
++
++void createFiles(opt::InputArgList &Args) {
++  for (auto *Arg : Args) {
++    switch (Arg->getOption().getID()) {
++    case OPT_l:
++      addLibrary(Arg->getValue(), Args.hasArg(OPT_Bstatic));
++      break;
++    case OPT_INPUT:
++      LinkArgs.push_back(Saver.save(Arg->getValue()).data());
++      break;
++    }
++  }
++}
++
++static std::vector<StringRef> getArgs(opt::InputArgList &Args, int Id) {
++  std::vector<StringRef> V;
++  for (auto *Arg : Args.filtered(Id))
++    V.push_back(Arg->getValue());
++  return V;
++}
++
++static void forward(opt::InputArgList &Args, unsigned Key, StringRef OutArg,
++                    const char *Default = nullptr) {
++  StringRef S = Args.getLastArgValue(Key);
++  if (S.size()) {
++    LinkArgs.push_back(Saver.save(Twine("-" + OutArg + ":" + S)).data());
++  } else if (Default) {
++    LinkArgs.push_back(
++        Saver.save(Twine("-" + OutArg + ":" + StringRef(Default))).data());
++  }
++}
++
++static void forwardValue(opt::InputArgList &Args, unsigned Key,
++                         StringRef CmpArg, StringRef OutArg,
++                         StringRef OutValueArg) {
++  StringRef S = Args.getLastArgValue(Key);
++  if (S == CmpArg)
++    LinkArgs.push_back(
++        Saver.save(Twine("-" + OutArg + ":" + OutValueArg)).data());
++}
++
++opt::InputArgList COFFLdOptTable::parse(ArrayRef<const char *> Argv) {
++  unsigned MissingIndex;
++  unsigned MissingCount;
++  SmallVector<const char *, 256> Vec(Argv.data(), Argv.data() + Argv.size());
++  opt::InputArgList Args = this->ParseArgs(Vec, MissingIndex, MissingCount);
++  if (MissingCount)
++    error(Twine(Args.getArgString(MissingIndex)) + ": missing argument");
++  if (!Args.hasArgNoClaim(OPT_INPUT) && !Args.hasArgNoClaim(OPT_l))
++    error("no input files");
++  for (auto *Arg : Args.filtered(OPT_UNKNOWN))
++    error("unknown argument: " + Arg->getSpelling());
++  return Args;
++}
++
++bool link(ArrayRef<const char *> ArgsArr, raw_ostream &Diag) {
++  COFFLdOptTable Parser;
++  opt::InputArgList Args = Parser.parse(ArgsArr.slice(1));
++  LinkArgs.push_back(ArgsArr[0]);
++
++  forwardValue(Args, OPT_m, "i386pe", "MACHINE", "X86");
++  forwardValue(Args, OPT_m, "i386pep", "MACHINE", "X64");
++  forwardValue(Args, OPT_m, "thumb2pe", "MACHINE", "ARM");
++  forwardValue(Args, OPT_m, "arm64pe", "MACHINE", "ARM64");
++
++  forward(Args, OPT_o, "OUT", "a.exe");
++  forward(Args, OPT_entry, "ENTRY");
++  forward(Args, OPT_subs, "SUBSYSTEM");
++  forward(Args, OPT_shared, "DLL");
++  forward(Args, OPT_outlib, "IMPLIB");
++  forward(Args, OPT_stack, "STACK");
++
++  SearchPaths = getArgs(Args, OPT_L);
++  createFiles(Args);
++
++  // handle __image_base__
++  auto M = Args.getLastArg(OPT_m);
++  if (M && StringRef(M->getValue()) == "i386pe")
++    LinkArgs.push_back("/alternatename:__image_base__=___ImageBase");
++  else
++    LinkArgs.push_back("/alternatename:__image_base__=__ImageBase");
++
++  return coff::link(LinkArgs);
++}
++
++} // namespace mingw
++} // namespace lld
+diff --git a/MinGW/Options.td b/MinGW/Options.td
+new file mode 100644
+index 0000000..abf53c9
+--- /dev/null
++++ b/MinGW/Options.td
+@@ -0,0 +1,38 @@
++include "llvm/Option/OptParser.td"
++
++class F<string name>: Flag<["--", "-"], name>;
++class J<string name>: Joined<["--", "-"], name>;
++class S<string name>: Separate<["--", "-"], name>;
++
++def L: JoinedOrSeparate<["-"], "L">, MetaVarName<"<dir>">,
++  HelpText<"Add a directory to the library search path">;
++def entry: S<"entry">, MetaVarName<"<entry>">,
++  HelpText<"Name of entry point symbol">;
++def m: JoinedOrSeparate<["-"], "m">, HelpText<"Set target emulation">;
++def o: JoinedOrSeparate<["-"], "o">, MetaVarName<"<path>">,
++  HelpText<"Path to file to write output">;
++def l: JoinedOrSeparate<["-"], "l">, MetaVarName<"<libName>">,
++  HelpText<"Root name of library to use">;
++def shared: F<"shared">, HelpText<"Build a shared object">;
++def subs: Separate<["--"], "subsystem">, HelpText<"Specify subsystem">;
++def stack: Flag<["--"], "stack">, Alias<stack>;
++def outlib: Separate<["--"], "out-implib">, HelpText<"Import library name">;
++
++// Currently stubs to avoid errors
++def Bdynamic: F<"Bdynamic">, HelpText<"Link against shared libraries">;
++def Bstatic: F<"Bstatic">, HelpText<"Do not link against shared libraries">;
++def major_image_version: Separate<["--"], "major-image-version">;
++def minor_image_version: Separate<["--"], "minor-image-version">;
++def enable_auto_image_base: Flag<["--"], "enable-auto-image-base">;
++def full_shutdown: Flag<["--"], "full-shutdown">;
++def O: Joined<["-"], "O">, HelpText<"Optimize output file size">;
++def v: Flag<["-"], "v">, HelpText<"Display the version number">;
++def verbose: F<"verbose">, HelpText<"Verbose mode">;
++def version: F<"version">, HelpText<"Display the version number and exit">;
++
++// Alias
++def alias_entry_e: JoinedOrSeparate<["-"], "e">, Alias<entry>;
++
++// Style
++def rsp_quoting: J<"rsp-quoting=">,
++  HelpText<"Quoting style for response files. Values supported: windows|posix">;
+diff --git a/include/lld/Driver/Driver.h b/include/lld/Driver/Driver.h
+index 4ba0994..655fcfe 100644
+--- a/include/lld/Driver/Driver.h
++++ b/include/lld/Driver/Driver.h
+@@ -19,6 +19,11 @@ bool link(llvm::ArrayRef<const char *> Args,
+           llvm::raw_ostream &Diag = llvm::errs());
+ }
  
-diff --git a/COFF/DriverUtils.cpp b/COFF/DriverUtils.cpp
-index 14dd004..f5f3d6d 100644
---- a/COFF/DriverUtils.cpp
-+++ b/COFF/DriverUtils.cpp
-@@ -637,7 +637,7 @@ static const llvm::opt::OptTable::Info infoTable[] = {
++namespace mingw {
++bool link(llvm::ArrayRef<const char *> Args,
++          llvm::raw_ostream &Diag = llvm::errs());
++}
++
+ namespace elf {
+ bool link(llvm::ArrayRef<const char *> Args, bool CanExitEarly,
+           llvm::raw_ostream &Diag = llvm::errs());
+diff --git a/test/COFF/out.test b/test/COFF/out.test
+index a7b5614..976191c 100644
+--- a/test/COFF/out.test
++++ b/test/COFF/out.test
+@@ -4,14 +4,19 @@
+ # RUN: cp %t.obj %T/out/out1.obj
+ # RUN: cp %t.obj %T/out/tmp/out2
+ # RUN: cp %t.obj %T/out/tmp/out3.xyz
++# RUN: cp %t.obj %T/out/out4.obj
  
- class COFFOptTable : public llvm::opt::OptTable {
- public:
--  COFFOptTable() : OptTable(infoTable, true) {}
-+  COFFOptTable() : OptTable(infoTable) {}
- };
+ # RUN: rm -f out1.exe out2.exe out3.exe out3.dll
+ # RUN: lld-link /entry:main %T/out/out1.obj
+ # RUN: lld-link /entry:main %T/out/tmp/out2
+ # RUN: lld-link /dll /entry:main %T/out/tmp/out3.xyz
  
- // Parses a given list of options.
-diff --git a/COFF/Options.td b/COFF/Options.td
-index 9dfbcc8..b3b30a3 100644
---- a/COFF/Options.td
-+++ b/COFF/Options.td
-@@ -99,6 +99,26 @@ def dumppdb : Joined<["/", "-"], "dumppdb">;
- def lldmap : F<"lldmap">;
- def lldmap_file : Joined<["/", "-"], "lldmap:">;
++# RUN: rm -f a.exe
++# RUN: ld.lld -m i386pep --entry main %T/out/out4.obj
++
+ # RUN: llvm-readobj out1.exe | FileCheck %s
+ # RUN: llvm-readobj out2.exe | FileCheck %s
+ # RUN: llvm-readobj out3.dll | FileCheck %s
++# RUN: llvm-readobj a.exe | FileCheck %s
  
-+
-+def output : Separate<["-"], "o">, Alias<out>;
-+def L : Joined<["-"], "L">, Alias<libpath>;
-+def e : Separate<["-"], "e">, Alias<entry>;
-+def subs : Separate<["--"], "subsystem">, Alias<subsystem>;
-+
-+def l : JoinedOrSeparate<["-"], "l">, MetaVarName<"<libName>">;
-+
-+// Used to silence some gnu warnings
-+def aligncomm : P<"aligncomm", "Comm Alignment">;
-+def Bdynamic: Flag<["-"], "Bdynamic">;
-+
-+// Used to override gnu pe targets
-+def m : Separate<["-"], "m">, MetaVarName<"<emulation>">,
-+     HelpText<"Select target emulation">;
-+
-+// Select an optional flavor
-+def flavor: Separate<["-"], "flavor">,
-+     HelpText<"Flavor for linking, options are gnu/darwin/link">;
-+
- //==============================================================================
- // The flags below do nothing. They are defined only for link.exe compatibility.
- //==============================================================================
+ CHECK: File:
+diff --git a/tools/lld/CMakeLists.txt b/tools/lld/CMakeLists.txt
+index 2df1069..fc80fbd 100644
+--- a/tools/lld/CMakeLists.txt
++++ b/tools/lld/CMakeLists.txt
+@@ -10,6 +10,7 @@ target_link_libraries(lld
+   lldDriver
+   lldCOFF
+   lldELF
++  lldMinGW
+   )
+ 
+ install(TARGETS lld
 diff --git a/tools/lld/lld.cpp b/tools/lld/lld.cpp
-index 0c32ff1..5bd823a 100644
+index 09f8079..3b45aec 100644
 --- a/tools/lld/lld.cpp
 +++ b/tools/lld/lld.cpp
-@@ -49,6 +49,24 @@ static Flavor getFlavor(StringRef S) {
+@@ -49,6 +49,16 @@ static Flavor getFlavor(StringRef S) {
        .Default(Invalid);
  }
  
 +static bool isPETarget(const std::vector<const char *> &V) {
-+  for (auto It = V.begin(); It != V.end(); It++) {
-+    if (*It == StringRef("-m")) {
-+      It++;
-+      if (It == V.end())
-+        return false;
-+      if (*It == StringRef("i386pe"))
-+        return true;
-+      if (*It == StringRef("i386pep"))
-+        return true;
-+      if (*It == StringRef("thumb2pe"))
-+        return true;
-+      return false;
-+    }
++  for (auto It = V.begin(); It + 1 != V.end(); ++It) {
++    if (StringRef(*It) != "-m")
++      continue;
++    StringRef S = *(It + 1);
++    return S == "i386pe" || S == "i386pep" || S == "thumb2pe" || S == "arm64pe";
 +  }
 +  return false;
 +}
@@ -161,16 +403,15 @@ index 0c32ff1..5bd823a 100644
  static Flavor parseProgname(StringRef Progname) {
  #if __APPLE__
    // Use Darwin driver for "ld" on Darwin.
-@@ -99,6 +117,9 @@ int main(int Argc, const char **Argv) {
-   llvm_shutdown_obj Shutdown;
- 
+@@ -101,6 +111,8 @@ int main(int Argc, const char **Argv) {
    std::vector<const char *> Args(Argv, Argv + Argc);
-+  if (isPETarget(Args))
-+    return !coff::link(Args);
-+
    switch (parseFlavor(Args)) {
    case Gnu:
++    if (isPETarget(Args))
++      return !mingw::link(Args);
      return !elf::link(Args, true);
+   case WinLink:
+     return !coff::link(Args);
 -- 
 2.7.4
 

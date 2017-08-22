@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+TARGET="$(basename $0 | sed 's/-clang.*//')"
+EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
+# We could set these defaults in the clang frontend driver, but that's not yet merged upstream
+$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -Qunused-arguments "$@"

@@ -1,36 +1,90 @@
-From 077f2318a219db191588d0ab00df58bb694c2931 Mon Sep 17 00:00:00 2001
+From beb5ab5b7b18e82cc2d73ed23639cf9aa1a8ec6f Mon Sep 17 00:00:00 2001
 From: Martell Malone <martellmalone@gmail.com>
-Date: Fri, 5 Aug 2016 20:09:41 -0700
-Subject: [PATCH] Handle __CTOR_LIST__ for clang
+Date: Fri, 18 Aug 2017 19:59:20 +0100
+Subject: [PATCH] crt: Handle .ctors and .dtors within mingw-w64
 
+When building with clang we currently assume you will be
+linking with llvm's lld or a bleeding edge binutils.
+In future this will become the default method once
+binutils support has settled and bumped a few versions.
+---
+This patch is up for review at
+https://sourceforge.net/p/mingw-w64/mailman/message/36002789/.
+---
 
-diff --git a/mingw-w64-crt/crt/crtbegin.c b/mingw-w64-crt/crt/crtbegin.c
-index 39c0d85..231dafc 100644
---- a/mingw-w64-crt/crt/crtbegin.c
-+++ b/mingw-w64-crt/crt/crtbegin.c
-@@ -4,3 +4,7 @@
-  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
-  */
- 
-+#ifdef __clang__
-+__attribute__ (( __section__ (".ctors"), __used__ , aligned(sizeof(void *)))) const void * __CTOR_LIST__ = (void *) -1;
-+__attribute__ (( __section__ (".dtors"), __used__ , aligned(sizeof(void *)))) const void * __DTOR_LIST__ = (void *) -1;
-+#endif
-diff --git a/mingw-w64-crt/crt/crtexe.c b/mingw-w64-crt/crt/crtexe.c
-index ae37e0f..ad91f25 100644
---- a/mingw-w64-crt/crt/crtexe.c
-+++ b/mingw-w64-crt/crt/crtexe.c
-@@ -60,6 +60,11 @@ extern _CRTALLOC(".CRT$XIZ") _PIFV __xi_z[];
+diff --git a/mingw-w64-crt/crt/crtdll.c b/mingw-w64-crt/crt/crtdll.c
+index 07a18408..85035d49 100644
+--- a/mingw-w64-crt/crt/crtdll.c
++++ b/mingw-w64-crt/crt/crtdll.c
+@@ -40,6 +40,13 @@ extern _CRTALLOC(".CRT$XIZ") _PIFV __xi_z[];
  extern _CRTALLOC(".CRT$XCA") _PVFV __xc_a[];
  extern _CRTALLOC(".CRT$XCZ") _PVFV __xc_z[];
  
 +#ifdef __clang__
-+extern _CRTALLOC(".ctors$zzz") void *__CTOR_END__[] = {(void*)0};
-+extern _CRTALLOC(".dtors$zzz") void *__DTOR_END__[] = {(void*)0};
++__attribute__ (( __section__ (".ctors"), __used__ , aligned(sizeof(void *)))) const void * __CTOR_LIST__ = (void *) -1;
++__attribute__ (( __section__ (".dtors"), __used__ , aligned(sizeof(void *)))) const void * __DTOR_LIST__ = (void *) -1;
++__attribute__ (( __section__ (".ctors$zzz"), __used__ , aligned(sizeof(void *)))) const void * __CTOR_END__ = (void *) 0;
++__attribute__ (( __section__ (".dtors$zzz"), __used__ , aligned(sizeof(void *)))) const void * __DTOR_END__ = (void *) 0;
 +#endif
 +
  /* TLS initialization hook.  */
  extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback;
  
+diff --git a/mingw-w64-crt/crt/crtexe.c b/mingw-w64-crt/crt/crtexe.c
+index ae37e0fe..e3a84784 100644
+--- a/mingw-w64-crt/crt/crtexe.c
++++ b/mingw-w64-crt/crt/crtexe.c
+@@ -60,6 +60,13 @@ extern _CRTALLOC(".CRT$XIZ") _PIFV __xi_z[];
+ extern _CRTALLOC(".CRT$XCA") _PVFV __xc_a[];
+ extern _CRTALLOC(".CRT$XCZ") _PVFV __xc_z[];
+ 
++#ifdef __clang__
++__attribute__ (( __section__ (".ctors"), __used__ , aligned(sizeof(void *)))) const void * __CTOR_LIST__ = (void *) -1;
++__attribute__ (( __section__ (".dtors"), __used__ , aligned(sizeof(void *)))) const void * __DTOR_LIST__ = (void *) -1;
++__attribute__ (( __section__ (".ctors$zzz"), __used__ , aligned(sizeof(void *)))) const void * __CTOR_END__ = (void *) 0;
++__attribute__ (( __section__ (".dtors$zzz"), __used__ , aligned(sizeof(void *)))) const void * __DTOR_END__ = (void *) 0;
++#endif
++
+ /* TLS initialization hook.  */
+ extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback;
+ 
+diff --git a/mingw-w64-crt/crt/gccmain.c b/mingw-w64-crt/crt/gccmain.c
+index fc0e3500..54cbf02b 100644
+--- a/mingw-w64-crt/crt/gccmain.c
++++ b/mingw-w64-crt/crt/gccmain.c
+@@ -28,6 +28,23 @@ __do_global_dtors (void)
+     }
+ }
+ 
++#ifdef __clang__
++extern func_ptr __CTOR_END__[];
++extern func_ptr __DTOR_END__[];
++
++void __do_global_ctors (void)
++{
++  static func_ptr *p = __CTOR_END__ - 1;
++  while (*p != (func_ptr) -1) {
++    (*(p))();
++    p--;
++  }
++  atexit (__do_global_dtors);
++}
++
++#else
++// old method that iterates the list twice because old linker scripts do not have __CTOR_END__
++
+ void
+ __do_global_ctors (void)
+ {
+@@ -47,6 +64,8 @@ __do_global_ctors (void)
+   atexit (__do_global_dtors);
+ }
+ 
++#endif
++
+ static int initialized = 0;
+ 
+ void
 -- 
-2.8.3
+2.14.1
+
