@@ -3,10 +3,11 @@ FROM ubuntu:16.04
 MAINTAINER Hugo Beauzée-Luyssen <hugo@beauzee.fr>
 
 #FIXME: Remove vim once debuging is complete
+# git-svn is only used to get sensible version numbers in clang version printouts
 RUN apt-get update -qq && apt-get install -qqy \
     git wget bzip2 file libwine-development-dev unzip libtool pkg-config cmake \
     build-essential automake texinfo ragel yasm p7zip-full gettext autopoint \
-    vim python
+    vim python git-svn
 
 
 RUN git config --global user.name "VideoLAN Buildbot" && \
@@ -16,16 +17,23 @@ WORKDIR /build
 
 # release_50 should work just as well as the pinned hash, except for arm64 support.
 # When cloning master and checking out a pinned old hash, we can't use --depth=1.
-RUN git clone -b master https://github.com/llvm-mirror/llvm.git
-RUN cd llvm/tools && \
+RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
+    cd llvm/tools && \
     git clone -b master https://github.com/llvm-mirror/clang.git && \
     git clone -b master https://github.com/llvm-mirror/lld.git && \
     cd .. && \
     git checkout ee09c63e57866e6d47964f0094a7d884ae99b7ef && \
+    git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
+    git config svn-remote.svn.fetch :refs/remotes/origin/master && \
+    git svn rebase -l && \
     cd tools/clang && \
     git checkout c778ea4b266d5fdcf3ab2d2509b19083bc43a91e && \
+    git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
+    git config svn-remote.svn.fetch :refs/remotes/origin/master && \
+    git svn rebase -l && \
     cd ../lld && \
     git checkout ccf03952480f7b995f53263f0b529a57497230ff
+
 
 #RUN cd llvm/projects && \
 #    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
