@@ -109,7 +109,6 @@ ENV NM=llvm-nm
 # wrong format, leading to lld later segfaulting when trying to link.
 # Force the flag -format gnu to llvm-ar in this step to work around this issue.
 RUN cd mingw-w64/mingw-w64-crt && \
-    autoreconf -vif && \
     mkdir build-arm32 && cd build-arm32 && \
     CC=armv7-w64-mingw32-clang \
     AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=armv7-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/armv7-w64-mingw32 \
