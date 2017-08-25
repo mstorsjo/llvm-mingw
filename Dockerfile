@@ -141,11 +141,6 @@ RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
     cd compiler-rt && \
     git checkout 8293838e866814d904640f6359954d00852f2421
 
-COPY patches/compiler-rt-*.patch /build/patches/
-
-RUN cd compiler-rt && \
-    git am /build/patches/compiler-rt-*.patch
-
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
     mkdir build-armv7 && cd build-armv7 && cmake \
@@ -155,12 +150,12 @@ RUN cd compiler-rt && \
     -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
     -DCMAKE_C_COMPILER_WORKS=1 \
     -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="armv7--windows-gnu" \
-    -DCMAKE_SIZEOF_VOID_P=4 \
+    -DCMAKE_C_COMPILER_TARGET=armv7-windows-gnu \
+    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
     ../lib/builtins && \
     make -j4 && \
     mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-arm.a /build/prefix/lib/clang/6.0.0/lib/windows && \
+    cp lib/windows/libclang_rt.builtins-armv7.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-arm.a && \
     cd .. && \
     mkdir build-aarch64 && cd build-aarch64 && cmake \
     -DCMAKE_C_COMPILER=aarch64-w64-mingw32-clang \
@@ -169,8 +164,8 @@ RUN cd compiler-rt && \
     -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
     -DCMAKE_C_COMPILER_WORKS=1 \
     -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="aarch64--windows-gnu" \
-    -DCMAKE_SIZEOF_VOID_P=8 \
+    -DCMAKE_C_COMPILER_TARGET=aarch64-windows-gnu \
+    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
     ../lib/builtins && \
     make -j4 && \
     mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
@@ -183,12 +178,12 @@ RUN cd compiler-rt && \
     -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
     -DCMAKE_C_COMPILER_WORKS=1 \
     -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="i686--windows-gnu" \
-    -DCMAKE_SIZEOF_VOID_P=4 \
+    -DCMAKE_C_COMPILER_TARGET=i686-windows-gnu \
+    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
     ../lib/builtins && \
     make -j4 && \
     mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-i386.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-i686.a && \
+    cp lib/windows/libclang_rt.builtins-i686.a /build/prefix/lib/clang/6.0.0/lib/windows && \
     cd .. && \
     mkdir build-x86_64 && cd build-x86_64 && cmake \
     -DCMAKE_C_COMPILER=x86_64-w64-mingw32-clang \
@@ -197,8 +192,8 @@ RUN cd compiler-rt && \
     -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
     -DCMAKE_C_COMPILER_WORKS=1 \
     -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64--windows-gnu" \
-    -DCMAKE_SIZEOF_VOID_P=8 \
+    -DCMAKE_C_COMPILER_TARGET=x86_64-windows-gnu \
+    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
     ../lib/builtins && \
     make -j4 && \
     mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
