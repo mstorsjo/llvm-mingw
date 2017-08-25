@@ -70,10 +70,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout 1e81200e88f19e440bbe646bfb410159ff8b0d51
-COPY patches/mingw-*.patch /build/patches/
-RUN cd mingw-w64 && \
-    git am /build/patches/mingw-*.patch
+    git checkout 5a9fa9ea1e662fc73db514328049555e4bf68ac4
 
 
 #FIXME: Move this UP!
