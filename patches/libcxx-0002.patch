@@ -1,0 +1,30 @@
+From 79a72b66ba63b97812b8f0076c032da9a0033e9e Mon Sep 17 00:00:00 2001
+From: Martin Storsjo <martin@martin.st>
+Date: Fri, 25 Aug 2017 11:06:31 +0300
+Subject: [PATCH 2/2] Rerun ranlib manually after merging the static libraries
+
+In cross build setups, the ar used in merge_archives.py might
+not be the right one for the target; make sure to rebuild the
+index for the static library.
+
+Differential Revision: https://reviews.llvm.org/D37134
+---
+ lib/CMakeLists.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index 5786514..56b9a22 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -272,6 +272,8 @@ if (LIBCXX_ENABLE_STATIC)
+       "$<TARGET_LINKER_FILE:cxx_static>"
+       "${MERGE_ARCHIVES_ABI_TARGET}"
+       "${MERGE_ARCHIVES_SEARCH_PATHS}"
++    COMMAND
++      ${CMAKE_RANLIB} $<TARGET_LINKER_FILE:cxx_static>
+     WORKING_DIRECTORY ${LIBCXX_BUILD_DIR}
+     )
+   endif()
+-- 
+2.7.4
+

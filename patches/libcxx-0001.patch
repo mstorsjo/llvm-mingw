@@ -1,0 +1,26 @@
+From f12a5570d2d24b147122d7b64fc1dadf7226db2c Mon Sep 17 00:00:00 2001
+From: Martin Storsjo <martin@martin.st>
+Date: Fri, 25 Aug 2017 11:00:37 +0300
+Subject: [PATCH 1/2] Handle object files named *.obj in merge_archives.py
+
+Differential Revision: https://reviews.llvm.org/D37133
+---
+ utils/merge_archives.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/utils/merge_archives.py b/utils/merge_archives.py
+index 856dd3b..b1bd3cb 100755
+--- a/utils/merge_archives.py
++++ b/utils/merge_archives.py
+@@ -120,6 +120,8 @@ def main():
+ 
+     files = glob.glob(os.path.join(temp_directory_root, '*.o'))
+     if not files:
++        files = glob.glob(os.path.join(temp_directory_root, '*.obj'))
++    if not files:
+         print_and_exit('Failed to glob for %s' % glob_path)
+     cmd = [ar_exe, '-qc', args.output] + files
+     execute_command_verbose(cmd, cwd=temp_directory_root, verbose=args.verbose)
+-- 
+2.7.4
+

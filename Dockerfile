@@ -71,6 +71,10 @@ RUN cd llvm && mkdir build && cd build && cmake \
 RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
     git checkout 1e81200e88f19e440bbe646bfb410159ff8b0d51
+COPY patches/mingw-*.patch /build/patches/
+RUN cd mingw-w64 && \
+    git am /build/patches/mingw-*.patch
+
 
 #FIXME: Move this UP!
 ENV TOOLCHAIN_PREFIX=/build/prefix
@@ -210,13 +214,18 @@ RUN cd compiler-rt && \
 #    make -j4 && \
 #    make install 
 
-#RUN git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
+RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
+    git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
+    cd libcxx && \
+    git checkout d4c8905691de47a521409a6316c94b0009a91fef && \
+    cd ../libcxxabi && \
+    git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6
+
 #    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
 
-#COPY patches/libcxx-*.patch /build/patches/
-#RUN cd libcxx && \
-#    git am /build/patches/libcxx-*.patch
+COPY patches/libcxx-*.patch /build/patches/
+RUN cd libcxx && \
+    git am /build/patches/libcxx-*.patch
 
 #COPY patches/libcxxabi-*.patch /build/patches/
 #RUN cd libcxxabi && \
@@ -239,62 +248,62 @@ RUN cd compiler-rt && \
 #RUN cd libunwind/build && make -j4
 #RUN cd libunwind/build && make install
 
-#RUN cd libcxx && mkdir build && cd build && \
-#    cmake \
-#        -DCMAKE_BUILD_TYPE=Release \
-#        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
-#        -DCMAKE_C_COMPILER=$CC \
-#        -DCMAKE_CXX_COMPILER=$CXX \
-#        -DCMAKE_CROSSCOMPILING=TRUE \
-#        -DCMAKE_SYSTEM_NAME=Windows \
-#        -DCMAKE_C_COMPILER_WORKS=TRUE \
-#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-#        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-#        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-#        -DLIBCXX_INSTALL_HEADERS=ON \
-#        -DLIBCXX_ENABLE_EXCEPTIONS=OFF \
-#        -DLIBCXX_ENABLE_THREADS=OFF \
-#        -DLIBCXX_ENABLE_MONOTONIC_CLOCK=OFF \
-#        -DLIBCXX_ENABLE_SHARED=OFF \
-#        -DLIBCXX_SUPPORTS_STD_EQ_CXX11_FLAG=TRUE \
-#        -DLIBCXX_HAVE_CXX_ATOMICS_WITHOUT_LIB=TRUE \
-#        -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
-#        -DLIBCXX_ENABLE_FILESYSTEM=OFF \
-#        -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
-#        -DLIBCXX_CXX_ABI=libcxxabi \
-#        -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
-#        -DCMAKE_CXX_FLAGS="-fno-exceptions" \
-#        .. && \
-#    make -j4 && \
-#    make install
+RUN cd libcxxabi && mkdir build && cd build && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/armv7-w64-mingw32 \
+        -DCMAKE_C_COMPILER=armv7-w64-mingw32-clang \
+        -DCMAKE_CXX_COMPILER=armv7-w64-mingw32-clang++ \
+        -DCMAKE_CROSSCOMPILING=TRUE \
+        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_C_COMPILER_WORKS=TRUE \
+        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+        -DLIBCXXABI_USE_COMPILER_RT=ON \
+        -DLIBCXXABI_ENABLE_EXCEPTIONS=OFF \
+        -DLIBCXXABI_ENABLE_THREADS=OFF \
+        -DLIBCXXABI_TARGET_TRIPLE=armv7-w64-mingw32 \
+        -DLIBCXXABI_SYSROOT=$TOOLCHAIN_PREFIX/armv7-w64-mingw32 \
+        -DLIBCXXABI_ENABLE_SHARED=OFF \
+        -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
+        -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
+        -DCXX_SUPPORTS_CXX11=TRUE \
+        -DCMAKE_CXX_FLAGS="-fno-exceptions -D_WIN32_WINNT=0x600 -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+        .. && \
+    make -j4
 
-#RUN cd libcxxabi && mkdir build && cd build && \
-#    cmake \
-#        -DCMAKE_BUILD_TYPE=Release \
-#        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
-#        -DCMAKE_C_COMPILER=$CC \
-#        -DCMAKE_CXX_COMPILER=$CXX \
-#        -DCMAKE_CROSSCOMPILING=TRUE \
-#        -DCMAKE_SYSTEM_NAME=Windows \
-#        -DCMAKE_C_COMPILER_WORKS=TRUE \
-#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-#        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-#        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-#        -DLIBCXXABI_USE_COMPILER_RT=ON \
-#        -DLIBCXXABI_ENABLE_EXCEPTIONS=OFF \
-#        -DLIBCXXABI_ENABLE_THREADS=OFF \
-#        -DLIBCXXABI_TARGET_TRIPLE=$TARGET_TUPLE \
-#        -DLIBCXXABI_SYSROOT=$TOOLCHAIN_PREFIX/$TARGET_TUPLE \
-#        -DLIBCXXABI_ENABLE_SHARED=OFF \
-#        -DLIBCXXABI_LIBCXX_INCLUDES=$TOOLCHAIN_PREFIX/$TARGET_TUPLE/c++/v1 \
-#        -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
-#        -DCXX_SUPPORTS_CXX11=TRUE \
-#        -DCMAKE_CXX_FLAGS="-fno-exceptions" \
-#        .. && \
-#    make -j4 && \
-#    make install
+RUN cd libcxx && mkdir build && cd build && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/armv7-w64-mingw32 \
+        -DCMAKE_C_COMPILER=armv7-w64-mingw32-clang \
+        -DCMAKE_CXX_COMPILER=armv7-w64-mingw32-clang++ \
+        -DCMAKE_CROSSCOMPILING=TRUE \
+        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_C_COMPILER_WORKS=TRUE \
+        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+        -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+        -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+        -DLIBCXX_INSTALL_HEADERS=ON \
+        -DLIBCXX_ENABLE_EXCEPTIONS=OFF \
+        -DLIBCXX_ENABLE_THREADS=OFF \
+        -DLIBCXX_ENABLE_MONOTONIC_CLOCK=OFF \
+        -DLIBCXX_ENABLE_SHARED=OFF \
+        -DLIBCXX_SUPPORTS_STD_EQ_CXX11_FLAG=TRUE \
+        -DLIBCXX_HAVE_CXX_ATOMICS_WITHOUT_LIB=TRUE \
+        -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
+        -DLIBCXX_ENABLE_FILESYSTEM=OFF \
+        -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
+        -DLIBCXX_CXX_ABI=libcxxabi \
+        -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
+        -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build/lib \
+        -DCMAKE_CXX_FLAGS="-fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+        .. && \
+    make -j4 && \
+    make install
 
-#RUN cd /build/prefix/include && ln -s /build/prefix/$TARGET_TUPLE/include/c++ .
+RUN cd /build/prefix/include && ln -s /build/prefix/armv7-w64-mingw32/include/c++ .
 
 # gaspp is no longer required with clang 5.0
 #RUN mkdir gaspp && cd gaspp && \
@@ -316,7 +325,7 @@ RUN cd /build/hello && \
     x86_64-w64-mingw32-clang hello.c -o hello-x86_64.exe && \
     i686-w64-mingw32-clang hello.c -o hello-i686.exe
 
-#RUN cd /build/hello && armv7-w64-mingw32-clang++ hello.cpp -o hello-cpp.exe -fno-exceptions
+RUN cd /build/hello && armv7-w64-mingw32-clang++ hello.cpp -o hello-cpp.exe -fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS
 
 RUN git clone --depth=1 git://git.libav.org/libav.git
 
