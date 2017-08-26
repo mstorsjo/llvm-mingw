@@ -153,7 +153,6 @@ RUN cd compiler-rt && \
             -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
             -DCMAKE_C_COMPILER_WORKS=1 \
-            -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
             -DCMAKE_C_COMPILER_TARGET=$arch-windows-gnu \
             -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
             ../lib/builtins && \
