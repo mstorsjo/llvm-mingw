@@ -110,30 +110,27 @@ ENV NM=llvm-nm
 # wrong format, leading to lld later segfaulting when trying to link.
 # Force the flag -format gnu to llvm-ar in this step to work around this issue.
 RUN cd mingw-w64/mingw-w64-crt && \
-    mkdir build-arm32 && cd build-arm32 && \
-    CC=armv7-w64-mingw32-clang \
-    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=armv7-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/armv7-w64-mingw32 \
-        --disable-lib32 --disable-lib64 --enable-libarm32 && \
-    make -j4 && make install && \
-    cd .. && \
-    mkdir build-arm64 && cd build-arm64 && \
-    CC=aarch64-w64-mingw32-clang \
-    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=aarch64-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/aarch64-w64-mingw32 \
-        --disable-lib32 --disable-lib64 --enable-libarm64 && \
-    make -j4 && make install && \
-    cd .. && \
-    mkdir build-i686 && cd build-i686 && \
-    CC=i686-w64-mingw32-clang \
-    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=i686-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/i686-w64-mingw32 \
-        --enable-lib32 --disable-lib64 && \
-    make -j4 && make install && \
-    cd .. && \
-    mkdir build-x86_64 && cd build-x86_64 && \
-    CC=x86_64-w64-mingw32-clang \
-    AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=x86_64-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/x86_64-w64-mingw32 \
-        --enable-lib64 --disable-lib32 && \
-    make -j4 && make install && \
-    cd ..
+    for arch in armv7 aarch64 i686 x86_64; do \
+        mkdir build-$arch && cd build-$arch && \
+        case $arch in \
+        armv7) \
+            FLAGS="--disable-lib32 --disable-lib64 --enable-libarm32" \
+            ;; \
+        aarch64) \
+            FLAGS="--disable-lib32 --disable-lib64 --enable-libarm64" \
+            ;; \
+        i686) \
+            FLAGS="--enable-lib32 --disable-lib64" \
+            ;; \
+        x86_64) \
+            FLAGS="--disable-lib32 --enable-lib64" \
+            ;; \
+        esac && \
+        CC=$arch-w64-mingw32-clang \
+        AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=$arch-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 $FLAGS && \
+        make -j4 && make install && \
+        cd ..; \
+    done
 
 #RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
 
@@ -143,61 +140,28 @@ RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
-    mkdir build-armv7 && cd build-armv7 && cmake \
-    -DCMAKE_C_COMPILER=armv7-w64-mingw32-clang \
-    -DCMAKE_SYSTEM_NAME=Windows \
-    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-    -DCMAKE_C_COMPILER_WORKS=1 \
-    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCMAKE_C_COMPILER_TARGET=armv7-windows-gnu \
-    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
-    ../lib/builtins && \
-    make -j4 && \
-    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-armv7.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-arm.a && \
-    cd .. && \
-    mkdir build-aarch64 && cd build-aarch64 && cmake \
-    -DCMAKE_C_COMPILER=aarch64-w64-mingw32-clang \
-    -DCMAKE_SYSTEM_NAME=Windows \
-    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-    -DCMAKE_C_COMPILER_WORKS=1 \
-    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCMAKE_C_COMPILER_TARGET=aarch64-windows-gnu \
-    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
-    ../lib/builtins && \
-    make -j4 && \
-    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-aarch64.a /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cd .. && \
-    mkdir build-i686 && cd build-i686 && cmake \
-    -DCMAKE_C_COMPILER=i686-w64-mingw32-clang \
-    -DCMAKE_SYSTEM_NAME=Windows \
-    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-    -DCMAKE_C_COMPILER_WORKS=1 \
-    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCMAKE_C_COMPILER_TARGET=i686-windows-gnu \
-    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
-    ../lib/builtins && \
-    make -j4 && \
-    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-i686.a /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cd .. && \
-    mkdir build-x86_64 && cd build-x86_64 && cmake \
-    -DCMAKE_C_COMPILER=x86_64-w64-mingw32-clang \
-    -DCMAKE_SYSTEM_NAME=Windows \
-    -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-    -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
-    -DCMAKE_C_COMPILER_WORKS=1 \
-    -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
-    -DCMAKE_C_COMPILER_TARGET=x86_64-windows-gnu \
-    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
-    ../lib/builtins && \
-    make -j4 && \
-    mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-    cp lib/windows/libclang_rt.builtins-x86_64.a /build/prefix/lib/clang/6.0.0/lib/windows
+    for arch in armv7 aarch64 i686 x86_64; do \
+        libarchname=$arch && \
+        case $arch in \
+        armv7) \
+            libarchname=arm \
+            ;; \
+        esac && \
+        mkdir build-$arch && cd build-$arch && cmake \
+            -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+            -DCMAKE_C_COMPILER_WORKS=1 \
+            -DLLVM_CONFIG_PATH=$TOOLCHAIN_PREFIX/bin/llvm-config \
+            -DCMAKE_C_COMPILER_TARGET=$arch-windows-gnu \
+            -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
+            ../lib/builtins && \
+        make -j4 && \
+        mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
+        cp lib/windows/libclang_rt.builtins-$arch.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
+        cd ..; \
+    done
 
 #RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
 #    autoreconf -vif && \
