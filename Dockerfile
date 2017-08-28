@@ -70,7 +70,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout 5a9fa9ea1e662fc73db514328049555e4bf68ac4
+    git checkout d3a74e38ba2a1ea3eb971b501d05cef364bb25ff
 
 
 #FIXME: Move this UP!
@@ -209,7 +209,7 @@ RUN cd libcxx && \
 #RUN cd libunwind/build && make install
 
 RUN cd libcxxabi && \
-    for arch in armv7 i686 x86_64; do \
+    for arch in armv7 aarch64 i686 x86_64; do \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -237,7 +237,7 @@ RUN cd libcxxabi && \
     done
 
 RUN cd libcxx && \
-    for arch in armv7 i686 x86_64; do \
+    for arch in armv7 aarch64 i686 x86_64; do \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -290,7 +290,7 @@ RUN cd /build/hello && \
     done
 
 RUN cd /build/hello && \
-    for arch in armv7 x86_64 i686; do \
+    for arch in armv7 aarch64 x86_64 i686; do \
         $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS; \
     done
 
