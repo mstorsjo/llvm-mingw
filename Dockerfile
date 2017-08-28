@@ -68,7 +68,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
     make -j4 && \
     make install
 
-RUN git clone --depth=1 git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
+RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
     git checkout 5a9fa9ea1e662fc73db514328049555e4bf68ac4
 
