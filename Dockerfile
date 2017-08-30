@@ -225,12 +225,11 @@ RUN cd libcxxabi && \
             -DLIBCXXABI_ENABLE_EXCEPTIONS=OFF \
             -DLIBCXXABI_ENABLE_THREADS=OFF \
             -DLIBCXXABI_TARGET_TRIPLE=$arch-w64-mingw32 \
-            -DLIBCXXABI_SYSROOT=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
             -DLIBCXXABI_ENABLE_SHARED=OFF \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="-fno-exceptions -D_WIN32_WINNT=0x600 -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+            -DCMAKE_CXX_FLAGS="-fno-exceptions -D_WIN32_WINNT=0x600 -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
             .. && \
         make -j4 && \
         cd ..; \
