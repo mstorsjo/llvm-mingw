@@ -22,17 +22,17 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git clone -b master https://github.com/llvm-mirror/clang.git && \
     git clone -b master https://github.com/llvm-mirror/lld.git && \
     cd .. && \
-    git checkout ee09c63e57866e6d47964f0094a7d884ae99b7ef && \
+    git checkout e6310c77e13473ba0ccae14226c44c69364cd101 && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
     cd tools/clang && \
-    git checkout c778ea4b266d5fdcf3ab2d2509b19083bc43a91e && \
+    git checkout 0e1cc480682f4981cb4b18f43e98bd6bcf62a3ea && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
     cd ../lld && \
-    git checkout ccf03952480f7b995f53263f0b529a57497230ff
+    git checkout de832f6ba6bcb2d18a80f379cd5cbdb8a16cb82a
 
 
 #RUN cd llvm/projects && \
@@ -136,15 +136,25 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
     cd compiler-rt && \
-    git checkout 8293838e866814d904640f6359954d00852f2421
+    git checkout 1c3df8c3b6deb2547abd998c3f688c7d56494333
+
+# Add a symlink for i386 -> i686; we normally name the toolchain
+# i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
+# need to refer to it as i386 at this stage.
+RUN cd /build/prefix && ln -s i686-w64-mingw32 i386-w64-mingw32
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
     for arch in armv7 aarch64 i686 x86_64; do \
+        buildarchname=$arch && \
         libarchname=$arch && \
         case $arch in \
         armv7) \
             libarchname=arm \
+            ;; \
+        i686) \
+            buildarchname=i386 \
+            libarchname=i386 \
             ;; \
         esac && \
         mkdir build-$arch && cd build-$arch && cmake \
@@ -153,12 +163,12 @@ RUN cd compiler-rt && \
             -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
             -DCMAKE_C_COMPILER_WORKS=1 \
-            -DCMAKE_C_COMPILER_TARGET=$arch-windows-gnu \
+            -DCMAKE_C_COMPILER_TARGET=$buildarchname-windows-gnu \
             -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
             ../lib/builtins && \
         make -j4 && \
         mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-        cp lib/windows/libclang_rt.builtins-$arch.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
+        cp lib/windows/libclang_rt.builtins-$buildarchname.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
         cd ..; \
     done
 
@@ -177,7 +187,7 @@ RUN cd compiler-rt && \
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
     cd libcxx && \
-    git checkout d4c8905691de47a521409a6316c94b0009a91fef && \
+    git checkout 90dfa2804a6a0ab2b03761cb5bf5995162fbdd6a && \
     cd ../libcxxabi && \
     git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6
 
