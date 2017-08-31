@@ -83,7 +83,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
         ../configure --host=${arch}-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/${arch}-w64-mingw32 \
         --enable-secure-api && \
         make install && \
-      cd ..; \
+      cd .. || exit 1; \
     done
 
 # Install the usual $TUPLE-clang binary
@@ -129,7 +129,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
         CC=$arch-w64-mingw32-clang \
         AR="llvm-ar -format gnu" DLLTOOL=llvm-dlltool ../configure --host=$arch-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 $FLAGS && \
         make -j4 && make install && \
-        cd ..; \
+        cd .. || exit 1; \
     done
 
 #RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
@@ -169,7 +169,7 @@ RUN cd compiler-rt && \
         make -j4 && \
         mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
         cp lib/windows/libclang_rt.builtins-$buildarchname.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
-        cd ..; \
+        cd .. || exit 1; \
     done
 
 #RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
@@ -242,7 +242,7 @@ RUN cd libcxxabi && \
             -DCMAKE_CXX_FLAGS="-fno-exceptions -D_WIN32_WINNT=0x600 -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
             .. && \
         make -j4 && \
-        cd ..; \
+        cd .. || exit 1; \
     done
 
 RUN cd libcxx && \
@@ -274,7 +274,7 @@ RUN cd libcxx && \
             -DCMAKE_CXX_FLAGS="-fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
             .. && \
         make -j4 && make install && \
-        cd ..; \
+        cd .. || exit 1; \
     done
 
 RUN cd /build/prefix/include && ln -s /build/prefix/armv7-w64-mingw32/include/c++ .
@@ -295,12 +295,12 @@ RUN mkdir -p /build/hello
 COPY hello.c hello.cpp /build/hello/
 RUN cd /build/hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
-        $arch-w64-mingw32-clang hello.c -o hello-$arch.exe; \
+        $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
     done
 
 RUN cd /build/hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
-        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS; \
+        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS || exit 1; \
     done
 
 RUN git clone --depth=1 git://git.libav.org/libav.git
