@@ -22,17 +22,17 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git clone -b master https://github.com/llvm-mirror/clang.git && \
     git clone -b master https://github.com/llvm-mirror/lld.git && \
     cd .. && \
-    git checkout e6310c77e13473ba0ccae14226c44c69364cd101 && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
+    git checkout fe70e7d53a5e6a06451ca85ee1df05c63d40ac13 && \
     cd tools/clang && \
-    git checkout 0e1cc480682f4981cb4b18f43e98bd6bcf62a3ea && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
+    git checkout 618f522e3f279b7d9e106d91610586996451700b && \
     cd ../lld && \
-    git checkout de832f6ba6bcb2d18a80f379cd5cbdb8a16cb82a
+    git checkout 1111a860796063c660aae33028d9a18e276c69c6
 
 
 #RUN cd llvm/projects && \
@@ -70,7 +70,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout d3a74e38ba2a1ea3eb971b501d05cef364bb25ff
+    git checkout cff7cb7dfea164bc0f479bea0b50bcad384bfc85
 
 
 #FIXME: Move this UP!
@@ -187,7 +187,7 @@ RUN cd compiler-rt && \
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
     cd libcxx && \
-    git checkout 90dfa2804a6a0ab2b03761cb5bf5995162fbdd6a && \
+    git checkout ea75e09e617815faace7bfeb7ad8885067a46fb6 && \
     cd ../libcxxabi && \
     git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6
 
