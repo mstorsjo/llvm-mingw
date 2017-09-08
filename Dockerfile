@@ -15,7 +15,6 @@ RUN git config --global user.name "VideoLAN Buildbot" && \
 
 WORKDIR /build
 
-# release_50 should work just as well as the pinned hash, except for arm64 support.
 # When cloning master and checking out a pinned old hash, we can't use --depth=1.
 RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     cd llvm/tools && \
@@ -35,20 +34,12 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git checkout 1111a860796063c660aae33028d9a18e276c69c6
 
 
-#RUN cd llvm/projects && \
-#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxx.git && \
-#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libcxxabi.git && \
-#    git clone https://github.com/llvm-mirror/libunwind.git -b release_40 --depth=1
-
 RUN mkdir /build/patches
 
 COPY patches/lld-*.patch /build/patches/
 
 RUN cd llvm/tools/lld && \
     git am /build/patches/lld-*.patch
-
-#RUN cd llvm/projects/libcxx && \
-#    git am /build/patches/libcxx-*.patch
 
 RUN mkdir /build/prefix
 
@@ -73,7 +64,6 @@ RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     git checkout cff7cb7dfea164bc0f479bea0b50bcad384bfc85
 
 
-#FIXME: Move this UP!
 ENV TOOLCHAIN_PREFIX=/build/prefix
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
@@ -86,7 +76,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
       cd .. || exit 1; \
     done
 
-# Install the usual $TUPLE-clang binary
+# Install the usual $TUPLE-clang binaries
 RUN mkdir /build/wrappers
 COPY wrappers/clang-target-wrapper /build/wrappers
 RUN for arch in armv7 aarch64 i686 x86_64; do \
@@ -95,8 +85,6 @@ RUN for arch in armv7 aarch64 i686 x86_64; do \
       done; \
     done
 
-#ENV CC=armv7-w64-mingw32-clang
-#ENV CXX=armv7-w64-mingw32-clang++
 ENV AR=llvm-ar 
 ENV RANLIB=llvm-ranlib 
 ENV LD=lld
@@ -197,14 +185,6 @@ COPY patches/libcxx-*.patch /build/patches/
 RUN cd libcxx && \
     git am /build/patches/libcxx-*.patch
 
-#COPY patches/libcxxabi-*.patch /build/patches/
-#RUN cd libcxxabi && \
-#    git am /build/patches/libcxxabi-*.patch
-
-# COPY patches/libunwind-*.patch /build/patches/
-#RUN cd libunwind && \
-#    git am /build/patches/libunwind-*.patch
-
 #RUN cd libunwind && mkdir build && cd build && \
 #    CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
 #    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/4.0.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
@@ -278,18 +258,6 @@ RUN cd libcxx && \
     done
 
 RUN cd /build/prefix/include && ln -s /build/prefix/armv7-w64-mingw32/include/c++ .
-
-# gaspp is no longer required with clang 5.0
-#RUN mkdir gaspp && cd gaspp && \
-#    wget -q https://raw.githubusercontent.com/libav/gas-preprocessor/master/gas-preprocessor.pl && \
-#    chmod +x gas-preprocessor.pl
-
-#ENV PATH=/build/gaspp:$PATH
-#
-#ENV AS="gas-preprocessor.pl ${CC}"
-#ENV ASCPP="gas-preprocessor.pl ${CC}"
-#ENV CCAS="gas-preprocessor.pl ${CC}"
-#ENV LDFLAGS="-lmsvcr120_app ${LDFLAGS}"
 
 RUN mkdir -p /build/hello
 COPY hello.c hello.cpp /build/hello/
