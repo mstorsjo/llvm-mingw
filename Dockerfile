@@ -47,14 +47,7 @@ RUN mkdir /build/prefix
 RUN cd llvm && mkdir build && cd build && cmake \
     -DCMAKE_INSTALL_PREFIX="/build/prefix" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_ENABLE_ASSERTIONS=OFF \
-    -DLLVM_ENABLE_EH=ON \
-    -DLLVM_ENABLE_THREADS=ON \
-    -DLLVM_ENABLE_RTTI=ON \
-    -DLLVM_ENABLE_FFI=OFF \
-    -DLLVM_ENABLE_SPHINX=OFF \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
-    -DCMAKE_CXX_FLAGS="-D_GNU_SOURCE -D_LIBCPP_HAS_NO_CONSTEXPR" \
     ../ && \
     make -j4 && \
     make install
