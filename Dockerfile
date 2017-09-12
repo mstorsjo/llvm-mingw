@@ -24,22 +24,15 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout fe70e7d53a5e6a06451ca85ee1df05c63d40ac13 && \
+    git checkout b6b25740b763ba8cf7d6eecb59b47e25d6edc1f5 && \
     cd tools/clang && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout 618f522e3f279b7d9e106d91610586996451700b && \
+    git checkout aae8a30c39b60e5ef14e565557b7fc398112d1e5 && \
     cd ../lld && \
-    git checkout 1111a860796063c660aae33028d9a18e276c69c6
+    git checkout ef40e6b6d0de8d27b5641c1a7902cb0716b89d08
 
-
-RUN mkdir /build/patches
-
-COPY patches/lld-*.patch /build/patches/
-
-RUN cd llvm/tools/lld && \
-    git am /build/patches/lld-*.patch
 
 RUN mkdir /build/prefix
 
@@ -173,6 +166,8 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6
 
 #    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
+
+RUN mkdir /build/patches
 
 COPY patches/libcxx-*.patch /build/patches/
 RUN cd libcxx && \
