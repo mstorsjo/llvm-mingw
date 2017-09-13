@@ -161,17 +161,11 @@ RUN cd compiler-rt && \
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
     cd libcxx && \
-    git checkout ea75e09e617815faace7bfeb7ad8885067a46fb6 && \
+    git checkout 5f919fe349450b3da0e29611ae37f6a940179290 && \
     cd ../libcxxabi && \
     git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6
 
 #    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
-
-RUN mkdir /build/patches
-
-COPY patches/libcxx-*.patch /build/patches/
-RUN cd libcxx && \
-    git am /build/patches/libcxx-*.patch
 
 #RUN cd libunwind && mkdir build && cd build && \
 #    CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
