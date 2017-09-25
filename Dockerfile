@@ -155,28 +155,25 @@ RUN cd compiler-rt && \
 
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
+    git clone -b master https://github.com/llvm-mirror/libunwind.git && \
     cd libcxx && \
     git checkout 5f919fe349450b3da0e29611ae37f6a940179290 && \
     cd ../libcxxabi && \
-    git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6
+    git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6 && \
+    cd ../libunwind && \
+    git checkout f6b13c346dcda30dc00569faaa6968f0f3541d23
 
-#    git clone -b release_40 --depth=1 https://github.com/llvm-mirror/libunwind.git
-
-#RUN cd libunwind && mkdir build && cd build && \
-#    CXXFLAGS="-nodefaultlibs -D_LIBUNWIND_IS_BAREMETAL" \
-#    LDFLAGS="/build/prefix/armv7-w64-mingw32/lib/crt2.o /build/prefix/armv7-w64-mingw32/lib/crtbegin.o -lmingw32 /build/prefix/bin/../lib/clang/4.0.1/lib/windows/libclang_rt.builtins-arm.a -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 /build/prefix/armv7-w64-mingw32/lib/crtend.o" \
-#    cmake \
-#        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-#        -DLLVM_ENABLE_LIBCXX=TRUE \
-#        -DCMAKE_BUILD_TYPE=Release \
-#        -DLIBUNWIND_ENABLE_SHARED=OFF \
-#        ..
-
-#RUN cd libunwind/build && make -j4
-#RUN cd libunwind/build && make install
 
 RUN cd libcxxabi && \
     for arch in armv7 aarch64 i686 x86_64; do \
+        CXX_FLAG="-fsjlj-exceptions" && \
+        EXCEPTIONS=ON && \
+        case $arch in \
+        aarch64) \
+            CXX_FLAG="-fno-exceptions" \
+            EXCEPTIONS=OFF \
+            ;; \
+        esac && \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -189,14 +186,14 @@ RUN cd libcxxabi && \
             -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
-            -DLIBCXXABI_ENABLE_EXCEPTIONS=OFF \
+            -DLIBCXXABI_ENABLE_EXCEPTIONS=$EXCEPTIONS \
             -DLIBCXXABI_ENABLE_THREADS=OFF \
             -DLIBCXXABI_TARGET_TRIPLE=$arch-w64-mingw32 \
             -DLIBCXXABI_ENABLE_SHARED=OFF \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="-fno-exceptions -D_WIN32_WINNT=0x600 -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_WIN32_WINNT=0x600 -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
             .. && \
         make -j4 && \
         cd .. || exit 1; \
@@ -204,6 +201,14 @@ RUN cd libcxxabi && \
 
 RUN cd libcxx && \
     for arch in armv7 aarch64 i686 x86_64; do \
+        CXX_FLAG="-fsjlj-exceptions" && \
+        EXCEPTIONS=ON && \
+        case $arch in \
+        aarch64) \
+            CXX_FLAG="-fno-exceptions" \
+            EXCEPTIONS=ON \
+            ;; \
+        esac && \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -216,7 +221,7 @@ RUN cd libcxx && \
             -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
             -DLIBCXX_INSTALL_HEADERS=ON \
-            -DLIBCXX_ENABLE_EXCEPTIONS=OFF \
+            -DLIBCXX_ENABLE_EXCEPTIONS=$EXCEPTIONS \
             -DLIBCXX_ENABLE_THREADS=OFF \
             -DLIBCXX_ENABLE_MONOTONIC_CLOCK=OFF \
             -DLIBCXX_ENABLE_SHARED=OFF \
@@ -228,7 +233,7 @@ RUN cd libcxx && \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch/lib \
-            -DCMAKE_CXX_FLAGS="-fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
             .. && \
         make -j4 && make install && \
         cd .. || exit 1; \
@@ -236,8 +241,38 @@ RUN cd libcxx && \
 
 RUN cd /build/prefix/include && ln -s /build/prefix/armv7-w64-mingw32/include/c++ .
 
+RUN cd libunwind && \
+    for arch in armv7 i686 x86_64; do \
+        mkdir build-$arch && cd build-$arch && cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
+            -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
+            -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
+            -DCMAKE_CROSSCOMPILING=TRUE \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER_WORKS=TRUE \
+            -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+            -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
+            -DLIBUNWIND_USE_COMPILER_RT=TRUE \
+            -DLIBUNWIND_ENABLE_THREADS=FALSE \
+            -DLIBUNWIND_ENABLE_SHARED=FALSE \
+            -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
+            -DCMAKE_CXX_FLAGS="-fsjlj-exceptions -D__USING_SJLJ_EXCEPTIONS__" \
+            -DCMAKE_C_FLAGS="-D__USING_SJLJ_EXCEPTIONS__" \
+            .. && \
+        make -j4 && make install && \
+        ../../libcxx/utils/merge_archives.py \
+            --ar llvm-ar \
+            -o $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
+            $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
+            lib/libunwind.a && \
+        cd .. || exit 1; \
+    done
+
 RUN mkdir -p /build/hello
-COPY hello.c hello.cpp /build/hello/
+COPY hello.c hello.cpp hello-exception.cpp /build/hello/
 RUN cd /build/hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
         $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
@@ -246,6 +281,11 @@ RUN cd /build/hello && \
 RUN cd /build/hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
         $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS || exit 1; \
+    done
+
+RUN cd /build/hello && \
+    for arch in armv7 x86_64 i686; do \
+        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -fsjlj-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS || exit 1; \
     done
 
 RUN git clone --depth=1 git://git.libav.org/libav.git
