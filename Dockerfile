@@ -47,7 +47,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout e09dd4ca58c9570d0ce0206bef95881f79663a0d
+    git checkout 4a93f13f474dfb9a7959552e4cd718356ef9beb1
 
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
@@ -105,7 +105,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
     cd compiler-rt && \
-    git checkout 1c3df8c3b6deb2547abd998c3f688c7d56494333
+    git checkout a16d35ab9a371ca82f039a5cdd2ac308d0f58e80
 
 # Add a symlink for i386 -> i686; we normally name the toolchain
 # i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
@@ -157,11 +157,11 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
     git clone -b master https://github.com/llvm-mirror/libunwind.git && \
     cd libcxx && \
-    git checkout 5f919fe349450b3da0e29611ae37f6a940179290 && \
+    git checkout 8a29c9d39bfbf00a2b3fcd72081a4717401508d5 && \
     cd ../libcxxabi && \
-    git checkout b157fdd968a4e1093645ec7c65213736c4bc7ea6 && \
+    git checkout 05ba3281482304ae8de31123a594972a495da06d && \
     cd ../libunwind && \
-    git checkout f6b13c346dcda30dc00569faaa6968f0f3541d23
+    git checkout 6a5c438e9ef71c86d1d5717519c618dcf5e8100d
 
 
 RUN cd libcxxabi && \
