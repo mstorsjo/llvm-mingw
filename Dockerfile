@@ -40,6 +40,7 @@ RUN mkdir /build/prefix
 RUN cd llvm && mkdir build && cd build && cmake \
     -DCMAKE_INSTALL_PREFIX="/build/prefix" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     ../ && \
     make -j4 && \
