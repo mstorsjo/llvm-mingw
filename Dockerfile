@@ -159,12 +159,6 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
 
 RUN cd libcxxabi && \
     for arch in armv7 aarch64 i686 x86_64; do \
-        EXCEPTIONS=ON && \
-        case $arch in \
-        aarch64) \
-            EXCEPTIONS=OFF \
-            ;; \
-        esac && \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -177,7 +171,7 @@ RUN cd libcxxabi && \
             -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
-            -DLIBCXXABI_ENABLE_EXCEPTIONS=$EXCEPTIONS \
+            -DLIBCXXABI_ENABLE_EXCEPTIONS=ON \
             -DLIBCXXABI_ENABLE_THREADS=ON \
             -DLIBCXXABI_TARGET_TRIPLE=$arch-w64-mingw32 \
             -DLIBCXXABI_ENABLE_SHARED=OFF \
@@ -192,12 +186,6 @@ RUN cd libcxxabi && \
 
 RUN cd libcxx && \
     for arch in armv7 aarch64 i686 x86_64; do \
-        EXCEPTIONS=ON && \
-        case $arch in \
-        aarch64) \
-            EXCEPTIONS=OFF \
-            ;; \
-        esac && \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -211,7 +199,7 @@ RUN cd libcxx && \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DLIBCXX_USE_COMPILER_RT=ON \
             -DLIBCXX_INSTALL_HEADERS=ON \
-            -DLIBCXX_ENABLE_EXCEPTIONS=$EXCEPTIONS \
+            -DLIBCXX_ENABLE_EXCEPTIONS=ON \
             -DLIBCXX_ENABLE_THREADS=ON \
             -DLIBCXX_ENABLE_MONOTONIC_CLOCK=ON \
             -DLIBCXX_ENABLE_SHARED=OFF \
@@ -232,7 +220,7 @@ RUN cd libcxx && \
 RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../armv7-w64-mingw32/include/c++ .
 
 RUN cd libunwind && \
-    for arch in armv7 i686 x86_64; do \
+    for arch in armv7 aarch64 i686 x86_64; do \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -268,12 +256,12 @@ RUN cd hello && \
 
 RUN cd hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
-        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
+        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -lpsapi || exit 1; \
     done
 
 RUN cd hello && \
-    for arch in armv7 x86_64 i686; do \
-        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
+    for arch in armv7 aarch64 x86_64 i686; do \
+        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -lpsapi || exit 1; \
     done
 
 ENV AR=llvm-ar

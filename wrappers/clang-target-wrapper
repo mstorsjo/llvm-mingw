@@ -5,11 +5,11 @@ EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
 # We could set these defaults in the clang frontend driver, but that's not yet merged upstream
 ARCH=$(echo $TARGET | sed 's/-.*//')
 case $ARCH in
-i686|x86_64|armv7)
+i686|x86_64)
 	EH_FLAG=-fsjlj-exceptions
 	;;
-aarch64)
-	EH_FLAG=-fno-exceptions
+armv7|aarch64)
+	EH_FLAG=
 	;;
 esac
 $DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $EH_FLAG -Qunused-arguments "$@"

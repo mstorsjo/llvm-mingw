@@ -68,9 +68,6 @@ normal GCC/binutils based MinGW.
   the dllimport attributes.
 - The C++ libraries ([libcxxabi](http://libcxxabi.llvm.org/), [libcxx](http://libcxx.llvm.org/)) can only be linked statically
   at the moment.
-- The C++ libraries and unwinder aren't built with exceptions support for
-  ARM64 target at the moment. (The toolchain and libraries themselves do
-  support it though.)
 - The ARM64 target doesn't support thread local variables.
 
 Additionally, one may run into other minor differences between GCC and clang.
