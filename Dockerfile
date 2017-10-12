@@ -24,14 +24,14 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout 0df2d3e4b69ffba332ca9af832a65c12938e3fb9 && \
+    git checkout 0f48afc62263f61d37aa9f4fee5a35dead456ea5 && \
     cd tools/clang && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout eb5cf2772e69d4a06981255554b7de2002974707 && \
+    git checkout d5b809ab4198b127b20a123d53c3dc61e2245aaa && \
     cd ../lld && \
-    git checkout a07c9a298eb1edc5d4f7e5a7265387d88d87ef87
+    git checkout 695391c52ec40b3c62f4dd4ca23553c177b362fe
 
 
 RUN mkdir /build/prefix
