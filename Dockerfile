@@ -157,6 +157,30 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     cd ../libunwind && \
     git checkout 2ddcf2461daa5d61c543474aed06b12a8b9ad816
 
+RUN cd libunwind && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        mkdir build-$arch && cd build-$arch && cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
+            -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
+            -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
+            -DCMAKE_CROSSCOMPILING=TRUE \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER_WORKS=TRUE \
+            -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
+            -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
+            -DCXX_SUPPORTS_CXX11=TRUE \
+            -DLIBUNWIND_USE_COMPILER_RT=TRUE \
+            -DLIBUNWIND_ENABLE_THREADS=TRUE \
+            -DLIBUNWIND_ENABLE_SHARED=FALSE \
+            -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
+            -DCMAKE_CXX_FLAGS="-I/build/libcxx/include" \
+            .. && \
+        make -j4 && make install && \
+        cd .. || exit 1; \
+    done
 
 RUN cd libcxxabi && \
     for arch in $TOOLCHAIN_ARCHS; do \
@@ -215,38 +239,15 @@ RUN cd libcxx && \
             -DCMAKE_CXX_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
         make -j4 && make install && \
+        ../utils/merge_archives.py \
+            --ar llvm-ar \
+            -o $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
+            $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
+            $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libunwind.a && \
         cd .. || exit 1; \
     done
 
 RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../$(echo $TOOLCHAIN_ARCHS | awk '{print $1}')-w64-mingw32/include/c++ .
-
-RUN cd libunwind && \
-    for arch in $TOOLCHAIN_ARCHS; do \
-        mkdir build-$arch && cd build-$arch && cmake \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
-            -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
-            -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
-            -DCMAKE_CROSSCOMPILING=TRUE \
-            -DCMAKE_SYSTEM_NAME=Windows \
-            -DCMAKE_C_COMPILER_WORKS=TRUE \
-            -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
-            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
-            -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
-            -DLIBUNWIND_USE_COMPILER_RT=TRUE \
-            -DLIBUNWIND_ENABLE_THREADS=TRUE \
-            -DLIBUNWIND_ENABLE_SHARED=FALSE \
-            -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
-            .. && \
-        make -j4 && make install && \
-        ../../libcxx/utils/merge_archives.py \
-            --ar llvm-ar \
-            -o $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
-            $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
-            lib/libunwind.a && \
-        cd .. || exit 1; \
-    done
 
 RUN mkdir -p hello
 COPY hello.c hello.cpp hello-exception.cpp /build/hello/
