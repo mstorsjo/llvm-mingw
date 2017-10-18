@@ -207,7 +207,7 @@ RUN cd libcxx && \
         case $arch in \
         aarch64) \
             CXX_FLAG="-fno-exceptions" \
-            EXCEPTIONS=ON \
+            EXCEPTIONS=OFF \
             ;; \
         esac && \
         mkdir build-$arch && cd build-$arch && cmake \
