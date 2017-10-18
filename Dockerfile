@@ -72,8 +72,8 @@ RUN for arch in armv7 aarch64 i686 x86_64; do \
       done; \
     done
 
-ENV AR=llvm-ar 
-ENV RANLIB=llvm-ranlib 
+ENV AR=llvm-ar
+ENV RANLIB=llvm-ranlib
 ENV LD=lld
 ENV AS=llvm-as
 ENV NM=llvm-nm
@@ -152,7 +152,7 @@ RUN cd compiler-rt && \
 #    CC=gcc \
 #    ../configure --prefix=$TOOLCHAIN_PREFIX --target=$TARGET_TUPLE && \
 #    make -j4 && \
-#    make install 
+#    make install
 
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
