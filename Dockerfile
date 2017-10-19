@@ -288,11 +288,3 @@ RUN cd /build/hello && \
     for arch in armv7 x86_64 i686; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -fsjlj-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS || exit 1; \
     done
-
-RUN git clone --depth=1 git://git.libav.org/libav.git
-
-RUN cd /build/libav && \
-    mkdir build && cd build && \
-    ../configure --arch=aarch64 --target-os=mingw32 --cc=aarch64-w64-mingw32-clang --ar=llvm-ar --nm=llvm-nm --enable-cross-compile --enable-gpl && \
-    make -j4 all testprogs
-
