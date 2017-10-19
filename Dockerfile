@@ -281,10 +281,10 @@ RUN cd /build/hello && \
 
 RUN cd /build/hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
-        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS || exit 1; \
+        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
     done
 
 RUN cd /build/hello && \
     for arch in armv7 x86_64 i686; do \
-        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -fsjlj-exceptions -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS || exit 1; \
+        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -fsjlj-exceptions || exit 1; \
     done
