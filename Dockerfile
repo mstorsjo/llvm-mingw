@@ -24,14 +24,14 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout 0f48afc62263f61d37aa9f4fee5a35dead456ea5 && \
+    git checkout e893335ed8fab65f7de5584aacd9318efe251cdd && \
     cd tools/clang && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout d5b809ab4198b127b20a123d53c3dc61e2245aaa && \
+    git checkout ef34bcb258ffbf7a500bb715edced98fe6348676 && \
     cd ../lld && \
-    git checkout 695391c52ec40b3c62f4dd4ca23553c177b362fe
+    git checkout 2ca53c31ae73e9973980f08322ee416a4e4886ba
 
 
 RUN mkdir /build/prefix
@@ -48,7 +48,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout cd3e710c712e0973462bd6049fd5df7211f65088
+    git checkout 8bcc70834969d34e113c5614364c4661cfa5d1be
 
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
@@ -106,7 +106,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
     cd compiler-rt && \
-    git checkout a16d35ab9a371ca82f039a5cdd2ac308d0f58e80
+    git checkout e6931d5834fef14f661e8ca88563e3a2beb6feee
 
 # Add a symlink for i386 -> i686; we normally name the toolchain
 # i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
@@ -158,11 +158,11 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
     git clone -b master https://github.com/llvm-mirror/libunwind.git && \
     cd libcxx && \
-    git checkout 8a29c9d39bfbf00a2b3fcd72081a4717401508d5 && \
+    git checkout f45f32b0254e4107b4165ddc99ca2503ab9bd754 && \
     cd ../libcxxabi && \
     git checkout 05ba3281482304ae8de31123a594972a495da06d && \
     cd ../libunwind && \
-    git checkout 6a5c438e9ef71c86d1d5717519c618dcf5e8100d
+    git checkout 40a2e1e338ee856e16859e70c9b6f286902626b1
 
 
 RUN cd libcxxabi && \
