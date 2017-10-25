@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="$(basename $0 | sed 's/-clang.*//')"
-EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
+TARGET="$(basename $0 | sed 's/-[^-]*$//')"
+EXE=$(basename $0 | sed 's/.*-\([^-]*\)/\1/')
+case $EXE in
+clang*)
+    ;;
+gcc)
+    EXE=clang
+    ;;
+g++)
+    EXE=clang++
+    ;;
+esac
 ARCH=$(echo $TARGET | sed 's/-.*//')
 SYSROOT="$(cd "$DIR"/../$TARGET && pwd)"
 case $ARCH in

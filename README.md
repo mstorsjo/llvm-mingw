@@ -36,14 +36,9 @@ To build the toolchain in Docker, run:
 In addition to building the toolchain itself (just like `build-all.sh` does),
 this also builds a few demo apps to show and verify that the toolchain works.
 
-Other branches in this repo contain patches that might not have been
+Other branches in this repo might contain patches that might not have been
 merged upstream yet, and tests of building third party projects using
 the toolchain (in the branch `demoapps`).
-
-For building projects that need more than just specifying
-`CC=<triplet>-clang`, there is more (more or less hacky and in-progress)
-setup for providing a larger selection of the tools that GNU binutils
-normally provides, in the branch `tools`.
 
 Individual components of the toolchain can be (re)built by running
 the standalone shellscripts listed within `build-all.sh`. However, if
