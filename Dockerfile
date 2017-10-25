@@ -72,11 +72,6 @@ RUN for arch in armv7 aarch64 i686 x86_64; do \
       done; \
     done
 
-ENV AR=llvm-ar
-ENV RANLIB=llvm-ranlib
-ENV AS=llvm-as
-ENV NM=llvm-nm
-
 # Build mingw with our freshly built cross compiler
 RUN cd mingw-w64/mingw-w64-crt && \
     for arch in armv7 aarch64 i686 x86_64; do \
@@ -96,7 +91,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
             ;; \
         esac && \
         CC=$arch-w64-mingw32-clang \
-        AR=llvm-ar DLLTOOL=llvm-dlltool ../configure --host=$arch-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 $FLAGS && \
+        AR=llvm-ar RANLIB=llvm-ranlib DLLTOOL=llvm-dlltool ../configure --host=$arch-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 $FLAGS && \
         make -j4 && make install && \
         cd .. || exit 1; \
     done
@@ -129,8 +124,8 @@ RUN cd compiler-rt && \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_SYSTEM_NAME=Windows \
-            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DCMAKE_C_COMPILER_WORKS=1 \
             -DCMAKE_C_COMPILER_TARGET=$buildarchname-windows-gnu \
             -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
@@ -183,8 +178,8 @@ RUN cd libcxxabi && \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
             -DLIBCXXABI_ENABLE_EXCEPTIONS=$EXCEPTIONS \
             -DLIBCXXABI_ENABLE_THREADS=OFF \
@@ -218,8 +213,8 @@ RUN cd libcxx && \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DLIBCXX_USE_COMPILER_RT=ON \
             -DLIBCXX_INSTALL_HEADERS=ON \
             -DLIBCXX_ENABLE_EXCEPTIONS=$EXCEPTIONS \
@@ -253,8 +248,8 @@ RUN cd libunwind && \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/$AR \
-            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/$RANLIB \
+            -DCMAKE_AR=$TOOLCHAIN_PREFIX/bin/llvm-ar \
+            -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DLIBUNWIND_USE_COMPILER_RT=TRUE \
             -DLIBUNWIND_ENABLE_THREADS=TRUE \
@@ -288,3 +283,8 @@ RUN cd /build/hello && \
     for arch in armv7 x86_64 i686; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -fsjlj-exceptions || exit 1; \
     done
+
+ENV AR=llvm-ar
+ENV RANLIB=llvm-ranlib
+ENV AS=llvm-as
+ENV NM=llvm-nm
