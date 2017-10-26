@@ -25,6 +25,14 @@ COPY wrappers/*.sh ./wrappers/
 COPY install-wrappers.sh .
 RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 
+# Cheating: Pull windres from the normal binutils package.
+# llvm-rc isn't fully usable as a replacement for windres yet.
+RUN apt-get update -qq && \
+    apt-get install -qqy binutils-mingw-w64-x86-64 && \
+    cp /usr/bin/x86_64-w64-mingw32-windres $TOOLCHAIN_PREFIX/bin && \
+    apt-get remove -qqy binutils-mingw-w64-x86-64 && \
+    cd $TOOLCHAIN_PREFIX/bin
+
 # Build MinGW-w64
 COPY build-mingw-w64.sh .
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
