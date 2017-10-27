@@ -58,7 +58,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
     for arch in armv7 aarch64 i686 x86_64; do \
       mkdir build-${arch} && cd build-${arch} && \
         ../configure --host=${arch}-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/${arch}-w64-mingw32 \
-        --enable-secure-api && \
+        --enable-secure-api --with-default-win32-winnt=0x600 && \
         make install && \
       cd .. || exit 1; \
     done
@@ -182,13 +182,13 @@ RUN cd libcxxabi && \
             -DCMAKE_RANLIB=$TOOLCHAIN_PREFIX/bin/llvm-ranlib \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
             -DLIBCXXABI_ENABLE_EXCEPTIONS=$EXCEPTIONS \
-            -DLIBCXXABI_ENABLE_THREADS=OFF \
+            -DLIBCXXABI_ENABLE_THREADS=ON \
             -DLIBCXXABI_TARGET_TRIPLE=$arch-w64-mingw32 \
             -DLIBCXXABI_ENABLE_SHARED=OFF \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_WIN32_WINNT=0x600 -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
             .. && \
         make -j4 && \
         cd .. || exit 1; \
@@ -218,8 +218,8 @@ RUN cd libcxx && \
             -DLIBCXX_USE_COMPILER_RT=ON \
             -DLIBCXX_INSTALL_HEADERS=ON \
             -DLIBCXX_ENABLE_EXCEPTIONS=$EXCEPTIONS \
-            -DLIBCXX_ENABLE_THREADS=OFF \
-            -DLIBCXX_ENABLE_MONOTONIC_CLOCK=OFF \
+            -DLIBCXX_ENABLE_THREADS=ON \
+            -DLIBCXX_ENABLE_MONOTONIC_CLOCK=ON \
             -DLIBCXX_ENABLE_SHARED=OFF \
             -DLIBCXX_SUPPORTS_STD_EQ_CXX11_FLAG=TRUE \
             -DLIBCXX_HAVE_CXX_ATOMICS_WITHOUT_LIB=TRUE \
