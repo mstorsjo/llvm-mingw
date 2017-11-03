@@ -24,14 +24,14 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout e893335ed8fab65f7de5584aacd9318efe251cdd && \
+    git checkout 305f0fb15600a5e4a247a8bcf230d4fbf56ac6ba && \
     cd tools/clang && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout ef34bcb258ffbf7a500bb715edced98fe6348676 && \
+    git checkout fb2fbcc95291e95c593f9e5d5712a3fdd82c186a && \
     cd ../lld && \
-    git checkout 2ca53c31ae73e9973980f08322ee416a4e4886ba
+    git checkout bdb0db17cbabf8ad325ed3cd21054aec17056680
 
 
 RUN mkdir /build/prefix
@@ -48,7 +48,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout 2073281091bbde80bf324fa71576d7006d974c8e
+    git checkout d958789c106b4470f75c88bfe9484e5ba0510503
 
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
@@ -100,7 +100,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
 
 RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
     cd compiler-rt && \
-    git checkout e6931d5834fef14f661e8ca88563e3a2beb6feee
+    git checkout de9856b41224c2e7c30d0991d032f5efcf6d43e7
 
 # Add a symlink for i386 -> i686; we normally name the toolchain
 # i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
@@ -156,7 +156,7 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     cd ../libcxxabi && \
     git checkout 05ba3281482304ae8de31123a594972a495da06d && \
     cd ../libunwind && \
-    git checkout 40a2e1e338ee856e16859e70c9b6f286902626b1
+    git checkout 2ddcf2461daa5d61c543474aed06b12a8b9ad816
 
 
 RUN cd libcxxabi && \
