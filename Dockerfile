@@ -48,7 +48,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout 8bcc70834969d34e113c5614364c4661cfa5d1be
+    git checkout 2073281091bbde80bf324fa71576d7006d974c8e
 
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
