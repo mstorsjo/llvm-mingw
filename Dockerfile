@@ -74,7 +74,6 @@ RUN for arch in armv7 aarch64 i686 x86_64; do \
 
 ENV AR=llvm-ar
 ENV RANLIB=llvm-ranlib
-ENV LD=lld
 ENV AS=llvm-as
 ENV NM=llvm-nm
 
