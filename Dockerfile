@@ -56,20 +56,20 @@ ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
 RUN cd mingw-w64/mingw-w64-headers && \
     for arch in armv7 aarch64 i686 x86_64; do \
-      mkdir build-${arch} && cd build-${arch} && \
+        mkdir build-${arch} && cd build-${arch} && \
         ../configure --host=${arch}-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/${arch}-w64-mingw32 \
-        --enable-secure-api --with-default-win32-winnt=0x600 && \
+            --enable-secure-api --with-default-win32-winnt=0x600 && \
         make install && \
-      cd .. || exit 1; \
+        cd .. || exit 1; \
     done
 
 # Install the usual $TUPLE-clang binaries
 RUN mkdir /build/wrappers
 COPY wrappers/clang-target-wrapper /build/wrappers
 RUN for arch in armv7 aarch64 i686 x86_64; do \
-      for exec in clang clang++; do \
-        cp wrappers/clang-target-wrapper $TOOLCHAIN_PREFIX/bin/${arch}-w64-mingw32-${exec}; \
-      done; \
+        for exec in clang clang++; do \
+            cp wrappers/clang-target-wrapper $TOOLCHAIN_PREFIX/bin/${arch}-w64-mingw32-${exec}; \
+        done; \
     done
 
 # Build mingw with our freshly built cross compiler
