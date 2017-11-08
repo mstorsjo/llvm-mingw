@@ -48,6 +48,14 @@ a different version) - and likewise, if configure flags in the build-*.sh
 scripts have changed, you might need to wipe the build directory under
 each project for the new configure options to be taken into use.
 
+If building without the dockerfile, manually install a copy of normal
+GNU binutils windres with the name `x86_64-w64-mingw32-windresreal`.
+Wrappers named `<triplet>-windres` are installed that call this binary
+with the necessary options to make it output in the arch independent
+res format, allowing using it for all architectures, even those that
+GNU binutils don't support. (LLVM does provide a similar tool, llvm-rc,
+but it's not yet ready to actually replace windres in all cases.)
+
 
 
 Status
