@@ -33,30 +33,35 @@ RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 COPY build-compiler-rt.sh .
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX 6.0.0
 
+# Build C test applications
+WORKDIR /build
+ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
+
+COPY hello/*.c ./hello/
+RUN cd hello && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
+    done
+RUN cd hello && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe || exit 1; \
+    done
+
+WORKDIR /build/llvm-mingw
+
 # Build libunwind/libcxxabi/libcxx
 COPY build-libcxx.sh merge-archives.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 
 WORKDIR /build
-ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
-COPY hello/*.c hello/*.cpp ./hello/
-RUN cd hello && \
-    for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
-    done
-
+# Build C++ test applications
+COPY hello/*.cpp ./hello/
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
     done
-
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
-    done
-
-RUN cd hello && \
-    for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe || exit 1; \
     done
