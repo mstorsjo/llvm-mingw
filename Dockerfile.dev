@@ -127,3 +127,10 @@ RUN apt-get update -qq && \
     apt-get remove -qqy binutils-mingw-w64-x86-64 && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
+
+RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.xz && \
+    tar -Jxvf nasm-2.13.01.tar.xz && \
+    cd nasm-2.13.01 && \
+    ./configure --prefix=$TOOLCHAIN_PREFIX && \
+    make -j$CORES && \
+    make install
