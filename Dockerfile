@@ -186,7 +186,7 @@ RUN cd libcxxabi && \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
         make -j4 && \
         cd .. || exit 1; \
@@ -227,7 +227,7 @@ RUN cd libcxx && \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch/lib \
-            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -Xclang -flto-visibility-public-std" \
+            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
         make -j4 && make install && \
         cd .. || exit 1; \
