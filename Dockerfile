@@ -34,8 +34,6 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git checkout bdb0db17cbabf8ad325ed3cd21054aec17056680
 
 
-RUN mkdir /build/prefix
-
 # Build LLVM
 RUN cd llvm && mkdir build && cd build && cmake \
     -DCMAKE_INSTALL_PREFIX="/build/prefix" \
