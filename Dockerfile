@@ -159,11 +159,9 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
 
 RUN cd libcxxabi && \
     for arch in armv7 aarch64 i686 x86_64; do \
-        CXX_FLAG="-fsjlj-exceptions" && \
         EXCEPTIONS=ON && \
         case $arch in \
         aarch64) \
-            CXX_FLAG="-fno-exceptions" \
             EXCEPTIONS=OFF \
             ;; \
         esac && \
@@ -186,7 +184,7 @@ RUN cd libcxxabi && \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" \
+            -DCMAKE_CXX_FLAGS="-D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
         make -j4 && \
         cd .. || exit 1; \
@@ -194,11 +192,9 @@ RUN cd libcxxabi && \
 
 RUN cd libcxx && \
     for arch in armv7 aarch64 i686 x86_64; do \
-        CXX_FLAG="-fsjlj-exceptions" && \
         EXCEPTIONS=ON && \
         case $arch in \
         aarch64) \
-            CXX_FLAG="-fno-exceptions" \
             EXCEPTIONS=OFF \
             ;; \
         esac && \
@@ -227,7 +223,7 @@ RUN cd libcxx && \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch/lib \
-            -DCMAKE_CXX_FLAGS="$CXX_FLAG -D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" \
+            -DCMAKE_CXX_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
         make -j4 && make install && \
         cd .. || exit 1; \
@@ -253,8 +249,6 @@ RUN cd libunwind && \
             -DLIBUNWIND_ENABLE_THREADS=TRUE \
             -DLIBUNWIND_ENABLE_SHARED=FALSE \
             -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
-            -DCMAKE_CXX_FLAGS="-fsjlj-exceptions -D__USING_SJLJ_EXCEPTIONS__" \
-            -DCMAKE_C_FLAGS="-D__USING_SJLJ_EXCEPTIONS__" \
             .. && \
         make -j4 && make install && \
         ../../libcxx/utils/merge_archives.py \
@@ -279,7 +273,7 @@ RUN cd /build/hello && \
 
 RUN cd /build/hello && \
     for arch in armv7 x86_64 i686; do \
-        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -fsjlj-exceptions || exit 1; \
+        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
     done
 
 ENV AR=llvm-ar

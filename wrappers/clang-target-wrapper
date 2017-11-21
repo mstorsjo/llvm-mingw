@@ -3,4 +3,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TARGET="$(basename $0 | sed 's/-clang.*//')"
 EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
 # We could set these defaults in the clang frontend driver, but that's not yet merged upstream
-$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -Qunused-arguments "$@"
+ARCH=$(echo $TARGET | sed 's/-.*//')
+case $ARCH in
+i686|x86_64|armv7)
+	EH_FLAG=-fsjlj-exceptions
+	;;
+aarch64)
+	EH_FLAG=-fno-exceptions
+	;;
+esac
+$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $EH_FLAG -Qunused-arguments "$@"
