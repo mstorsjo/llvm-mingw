@@ -14,6 +14,8 @@ RUN git config --global user.name "LLVM MinGW" && \
 WORKDIR /build
 
 # When cloning master and checking out a pinned old hash, we can't use --depth=1.
+# Do the git-svn rebase to populate git-svn information, to make
+# "clang --version" produce SVN based version numbers.
 RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     cd llvm/tools && \
     git clone -b master https://github.com/llvm-mirror/clang.git && \
