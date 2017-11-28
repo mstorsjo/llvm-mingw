@@ -1,7 +1,5 @@
 FROM ubuntu:16.04
 
-MAINTAINER Hugo Beauzée-Luyssen <hugo@beauzee.fr>
-
 #FIXME: Remove vim once debuging is complete
 # git-svn is only used to get sensible version numbers in clang version printouts
 RUN apt-get update -qq && apt-get install -qqy \
@@ -10,8 +8,8 @@ RUN apt-get update -qq && apt-get install -qqy \
     vim python git-svn
 
 
-RUN git config --global user.name "VideoLAN Buildbot" && \
-    git config --global user.email buildbot@videolan.org
+RUN git config --global user.name "LLVM MinGW" && \
+    git config --global user.email root@localhost
 
 WORKDIR /build
 
