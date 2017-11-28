@@ -62,7 +62,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
     done
 
 # Install the usual $TUPLE-clang binaries
-RUN mkdir /build/wrappers
+RUN mkdir wrappers
 COPY wrappers/clang-target-wrapper /build/wrappers
 RUN for arch in armv7 aarch64 i686 x86_64; do \
         for exec in clang clang++; do \
@@ -103,7 +103,7 @@ RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
 # Add a symlink for i386 -> i686; we normally name the toolchain
 # i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
 # need to refer to it as i386 at this stage.
-RUN cd /build/prefix && ln -s i686-w64-mingw32 i386-w64-mingw32
+RUN cd $TOOLCHAIN_PREFIX && ln -s i686-w64-mingw32 i386-w64-mingw32
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
@@ -129,8 +129,8 @@ RUN cd compiler-rt && \
             -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
             ../lib/builtins && \
         make -j4 && \
-        mkdir -p /build/prefix/lib/clang/6.0.0/lib/windows && \
-        cp lib/windows/libclang_rt.builtins-$buildarchname.a /build/prefix/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
+        mkdir -p $TOOLCHAIN_PREFIX/lib/clang/6.0.0/lib/windows && \
+        cp lib/windows/libclang_rt.builtins-$buildarchname.a $TOOLCHAIN_PREFIX/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
         cd .. || exit 1; \
     done
 
@@ -229,7 +229,7 @@ RUN cd libcxx && \
         cd .. || exit 1; \
     done
 
-RUN cd /build/prefix/include && ln -s /build/prefix/armv7-w64-mingw32/include/c++ .
+RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../armv7-w64-mingw32/include/c++ .
 
 RUN cd libunwind && \
     for arch in armv7 i686 x86_64; do \
@@ -259,19 +259,19 @@ RUN cd libunwind && \
         cd .. || exit 1; \
     done
 
-RUN mkdir -p /build/hello
+RUN mkdir -p hello
 COPY hello.c hello.cpp hello-exception.cpp /build/hello/
-RUN cd /build/hello && \
+RUN cd hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
         $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
     done
 
-RUN cd /build/hello && \
+RUN cd hello && \
     for arch in armv7 aarch64 x86_64 i686; do \
         $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
     done
 
-RUN cd /build/hello && \
+RUN cd hello && \
     for arch in armv7 x86_64 i686; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
     done
