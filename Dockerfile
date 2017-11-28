@@ -51,9 +51,10 @@ RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
+ENV TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 RUN cd mingw-w64/mingw-w64-headers && \
-    for arch in armv7 aarch64 i686 x86_64; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-${arch} && cd build-${arch} && \
         ../configure --host=${arch}-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/${arch}-w64-mingw32 \
             --enable-secure-api --with-default-win32-winnt=0x600 && \
@@ -64,7 +65,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
 # Install the usual $TUPLE-clang binaries
 RUN mkdir wrappers
 COPY wrappers/clang-target-wrapper /build/wrappers
-RUN for arch in armv7 aarch64 i686 x86_64; do \
+RUN for arch in $TOOLCHAIN_ARCHS; do \
         for exec in clang clang++; do \
             cp wrappers/clang-target-wrapper $TOOLCHAIN_PREFIX/bin/${arch}-w64-mingw32-${exec}; \
         done; \
@@ -72,7 +73,7 @@ RUN for arch in armv7 aarch64 i686 x86_64; do \
 
 # Build mingw with our freshly built cross compiler
 RUN cd mingw-w64/mingw-w64-crt && \
-    for arch in armv7 aarch64 i686 x86_64; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-$arch && cd build-$arch && \
         case $arch in \
         armv7) \
@@ -107,7 +108,7 @@ RUN cd $TOOLCHAIN_PREFIX && ln -s i686-w64-mingw32 i386-w64-mingw32
 
 # Manually build compiler-rt as a standalone project
 RUN cd compiler-rt && \
-    for arch in armv7 aarch64 i686 x86_64; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         buildarchname=$arch && \
         libarchname=$arch && \
         case $arch in \
@@ -158,7 +159,7 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
 
 
 RUN cd libcxxabi && \
-    for arch in armv7 aarch64 i686 x86_64; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -185,7 +186,7 @@ RUN cd libcxxabi && \
     done
 
 RUN cd libcxx && \
-    for arch in armv7 aarch64 i686 x86_64; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -217,10 +218,10 @@ RUN cd libcxx && \
         cd .. || exit 1; \
     done
 
-RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../armv7-w64-mingw32/include/c++ .
+RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../$(echo $TOOLCHAIN_ARCHS | awk '{print $1}')-w64-mingw32/include/c++ .
 
 RUN cd libunwind && \
-    for arch in armv7 aarch64 i686 x86_64; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-$arch && cd build-$arch && cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
@@ -250,17 +251,17 @@ RUN cd libunwind && \
 RUN mkdir -p hello
 COPY hello.c hello.cpp hello-exception.cpp /build/hello/
 RUN cd hello && \
-    for arch in armv7 aarch64 x86_64 i686; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
     done
 
 RUN cd hello && \
-    for arch in armv7 aarch64 x86_64 i686; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -lpsapi || exit 1; \
     done
 
 RUN cd hello && \
-    for arch in armv7 aarch64 x86_64 i686; do \
+    for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -lpsapi || exit 1; \
     done
 
