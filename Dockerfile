@@ -157,6 +157,7 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     cd ../libunwind && \
     git checkout 2ddcf2461daa5d61c543474aed06b12a8b9ad816
 
+COPY merge_archives.sh /build
 RUN cd libunwind && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-$arch && cd build-$arch && cmake \
@@ -179,6 +180,9 @@ RUN cd libunwind && \
             -DCMAKE_CXX_FLAGS="-I/build/libcxx/include" \
             .. && \
         make -j4 && make install && \
+        /build/merge_archives.sh \
+            $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libunwind.a \
+            $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libpsapi.a && \
         cd .. || exit 1; \
     done
 
@@ -239,9 +243,7 @@ RUN cd libcxx && \
             -DCMAKE_CXX_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
         make -j4 && make install && \
-        ../utils/merge_archives.py \
-            --ar llvm-ar \
-            -o $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
+        /build/merge_archives.sh \
             $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
             $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libunwind.a && \
         cd .. || exit 1; \
@@ -258,12 +260,12 @@ RUN cd hello && \
 
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions -lpsapi || exit 1; \
+        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
     done
 
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe -lpsapi || exit 1; \
+        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
     done
 
 ENV AR=llvm-ar
