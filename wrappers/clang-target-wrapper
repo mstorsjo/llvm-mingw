@@ -5,11 +5,20 @@ EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
 # We could set these defaults in the clang frontend driver, but that's not yet merged upstream
 ARCH=$(echo $TARGET | sed 's/-.*//')
 case $ARCH in
-i686|x86_64)
+i686)
+	# Dwarf is the default for i686, but currently there's an issue
+	# in libunwind with unwinding clang generated dwarf opcodes on 32 bit
+	# x86, pending resolution at https://reviews.llvm.org/D38680.
 	EH_FLAG=-fsjlj-exceptions
 	;;
 armv7|aarch64)
+	# Dwarf is the default for these targets.
 	EH_FLAG=
+	;;
+x86_64)
+	# Explicitly request dwarf on x86_64; SEH is the default there but
+	# libcxxabi lacks support for it.
+	EH_FLAG=-fdwarf-exceptions
 	;;
 esac
 $DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $EH_FLAG -Qunused-arguments "$@"
