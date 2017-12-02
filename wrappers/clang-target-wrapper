@@ -21,4 +21,4 @@ x86_64)
 	EH_FLAG=-fdwarf-exceptions
 	;;
 esac
-$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $EH_FLAG -Qunused-arguments "$@"
+$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $EH_FLAG -Qunused-arguments -femulated-tls "$@"
