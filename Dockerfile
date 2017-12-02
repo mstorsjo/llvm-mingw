@@ -63,8 +63,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
     done
 
 # Install the usual $TUPLE-clang binaries
-RUN mkdir wrappers
-COPY wrappers/clang-target-wrapper /build/wrappers
+COPY wrappers/clang-target-wrapper /build/wrappers/
 RUN for arch in $TOOLCHAIN_ARCHS; do \
         for exec in clang clang++; do \
             cp wrappers/clang-target-wrapper $TOOLCHAIN_PREFIX/bin/${arch}-w64-mingw32-${exec}; \
@@ -251,7 +250,6 @@ RUN cd libcxx && \
 
 RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../$(echo $TOOLCHAIN_ARCHS | awk '{print $1}')-w64-mingw32/include/c++ .
 
-RUN mkdir -p hello
 COPY hello.c hello.cpp hello-exception.cpp /build/hello/
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
