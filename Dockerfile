@@ -250,7 +250,7 @@ RUN cd libcxx && \
 
 RUN cd $TOOLCHAIN_PREFIX/include && ln -s ../$(echo $TOOLCHAIN_ARCHS | awk '{print $1}')-w64-mingw32/include/c++ .
 
-COPY hello.c hello.cpp hello-exception.cpp /build/hello/
+COPY hello.c hello.cpp hello-exception.cpp hello-tls.c /build/hello/
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
@@ -264,6 +264,11 @@ RUN cd hello && \
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
+    done
+
+RUN cd hello && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe || exit 1; \
     done
 
 ENV AR=llvm-ar
