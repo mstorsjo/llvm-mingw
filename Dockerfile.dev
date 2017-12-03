@@ -150,7 +150,7 @@ RUN mkdir -p /build/demo/bin && \
         cd .. || exit 1; \
     done
 
-ENV TEST_ARCH=armv7
+ENV TEST_ARCH=aarch64
 ENV TEST_TRIPLET=$TEST_ARCH-w64-mingw32
 ENV TEST_ROOT=/build/demo
 ENV PKG_CONFIG_LIBDIR=/build/demo/lib/pkgconfig
