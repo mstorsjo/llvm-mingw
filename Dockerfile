@@ -24,14 +24,14 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout 685c102164544ca0d08ac37f049fef441ab64d07 && \
+    git checkout ed043734401e9177d3456b123dfd90282557359b && \
     cd tools/clang && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout 2e029fd699d0f2a0dfa93e80929b06d0cd0a8b3b && \
+    git checkout 6a217e4c25e66055338c0c58d33d8a7e793f8b28 && \
     cd ../lld && \
-    git checkout 8fdb9a250383356b085a2d783a87e7ea6b96b6e3
+    git checkout 8ed8fd509abe054b9e54ede9151ca41143868aa3
 
 
 # Build LLVM
@@ -46,7 +46,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout ed415ac93648a91589551f3f07d1e3a0c414ce30
+    git checkout 124a62c7cc32909b7c6c57e901579de48e3a35d8
 
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
