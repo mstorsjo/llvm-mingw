@@ -24,14 +24,14 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout ed043734401e9177d3456b123dfd90282557359b && \
+    git checkout 94240acddc937163335dbd919f2d6833bd9079b0 && \
     cd tools/clang && \
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk && \
     git config svn-remote.svn.fetch :refs/remotes/origin/master && \
     git svn rebase -l && \
-    git checkout 6a217e4c25e66055338c0c58d33d8a7e793f8b28 && \
+    git checkout ce59979560afc7f4cb497bf4b93146e56e607d65 && \
     cd ../lld && \
-    git checkout 8ed8fd509abe054b9e54ede9151ca41143868aa3
+    git checkout 71a2c05567f9c6cda8c075b238540dd4195a031e
 
 
 # Build LLVM
