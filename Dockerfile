@@ -31,6 +31,9 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn rebase -l && \
     git checkout ce59979560afc7f4cb497bf4b93146e56e607d65 && \
     cd ../lld && \
+    git svn init https://llvm.org/svn/llvm-project/lld/trunk && \
+    git config svn-remote.svn.fetch :refs/remotes/origin/master && \
+    git svn rebase -l && \
     git checkout 71a2c05567f9c6cda8c075b238540dd4195a031e
 
 
