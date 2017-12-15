@@ -60,7 +60,7 @@ RUN cd mingw-w64/mingw-w64-headers && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir build-$arch && cd build-$arch && \
         ../configure --host=$arch-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 \
-            --enable-secure-api --with-default-win32-winnt=0x600 && \
+            --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 && \
         make install && \
         cd .. || exit 1; \
     done
