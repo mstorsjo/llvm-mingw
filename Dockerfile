@@ -63,10 +63,11 @@ RUN cd mingw-w64/mingw-w64-headers && \
     done
 
 # Install the usual $TUPLE-clang binaries
-COPY wrappers/clang-target-wrapper /build/wrappers/
-RUN for arch in $TOOLCHAIN_ARCHS; do \
+COPY wrappers/clang-target-wrapper /build/prefix/bin
+RUN cd $TOOLCHAIN_PREFIX/bin && \
+    for arch in $TOOLCHAIN_ARCHS; do \
         for exec in clang clang++; do \
-            cp wrappers/clang-target-wrapper $TOOLCHAIN_PREFIX/bin/${arch}-w64-mingw32-${exec}; \
+            ln -s clang-target-wrapper $arch-w64-mingw32-$exec; \
         done; \
     done
 
