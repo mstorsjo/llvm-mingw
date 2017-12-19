@@ -62,3 +62,14 @@ for arch in $ARCHS; do
     make install
     cd ..
 done
+cd ..
+
+cd mingw-w64-tools/widl
+for arch in $ARCHS; do
+    mkdir -p build-$arch
+    cd build-$arch
+    ../configure --prefix=$PREFIX --target=$arch-w64-mingw32
+    make -j$CORES
+    make install
+    cd ..
+done
