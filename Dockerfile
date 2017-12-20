@@ -36,6 +36,7 @@ RUN git clone -b master https://github.com/llvm-mirror/llvm.git && \
     git svn rebase -l && \
     git checkout f4208caae12f685c06657aa6e2b9b1eda4adcdb4
 
+ARG CORES=4
 
 # Build LLVM
 RUN cd llvm && mkdir build && cd build && cmake \
@@ -44,7 +45,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     ../ && \
-    make -j4 && \
+    make -j$CORES && \
     make install
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
@@ -94,7 +95,7 @@ RUN cd mingw-w64/mingw-w64-crt && \
         esac && \
         CC=$arch-w64-mingw32-clang \
         AR=llvm-ar RANLIB=llvm-ranlib DLLTOOL=llvm-dlltool ../configure --host=$arch-w64-mingw32 --prefix=$TOOLCHAIN_PREFIX/$arch-w64-mingw32 $FLAGS && \
-        make -j4 && make install && \
+        make -j$CORES && make install && \
         cd .. || exit 1; \
     done
 
@@ -132,7 +133,7 @@ RUN cd compiler-rt && \
             -DCMAKE_C_COMPILER_TARGET=$buildarchname-windows-gnu \
             -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
             ../lib/builtins && \
-        make -j4 && \
+        make -j$CORES && \
         mkdir -p $TOOLCHAIN_PREFIX/lib/clang/6.0.0/lib/windows && \
         cp lib/windows/libclang_rt.builtins-$buildarchname.a $TOOLCHAIN_PREFIX/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
         cd .. || exit 1; \
@@ -147,7 +148,7 @@ RUN cd compiler-rt && \
 #    mkdir build && cd build && \
 #    CC=gcc \
 #    ../configure --prefix=$TOOLCHAIN_PREFIX --target=$TARGET_TUPLE && \
-#    make -j4 && \
+#    make -j$CORES && \
 #    make install
 
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
@@ -182,7 +183,7 @@ RUN cd libunwind && \
             -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
             -DCMAKE_CXX_FLAGS="-I/build/libcxx/include" \
             .. && \
-        make -j4 && make install && \
+        make -j$CORES && make install && \
         /build/merge_archives.sh \
             $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libunwind.a \
             $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libpsapi.a && \
@@ -212,7 +213,7 @@ RUN cd libcxxabi && \
             -DCXX_SUPPORTS_CXX11=TRUE \
             -DCMAKE_CXX_FLAGS="-D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
-        make -j4 && \
+        make -j$CORES && \
         cd .. || exit 1; \
     done
 
@@ -245,7 +246,7 @@ RUN cd libcxx && \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch/lib \
             -DCMAKE_CXX_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS" \
             .. && \
-        make -j4 && make install && \
+        make -j$CORES && make install && \
         /build/merge_archives.sh \
             $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libc++.a \
             $TOOLCHAIN_PREFIX/$arch-w64-mingw32/lib/libunwind.a && \
