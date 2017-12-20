@@ -36,9 +36,13 @@ demo apps to show and verify that the toolchain works.
 
 Other branches in this repo contain patches that might not have been
 merged upstream yet, and tests of building third party projects using
-the toolchain. This includes more tool frontends/wrappers with the
-usual binutils names, to allow using it as a drop-in replacement for
-a normal MinGW toolchain.
+the toolchain (in the branch `demoapps`).
+
+For building projects that need more than just specifying
+`CC=<triplet>-clang`, there is more (more or less hacky and in-progress)
+setup for providing a larger selection of the tools that GNU binutils
+normally provides, in the branch `tools`.
+
 
 
 If the toolchain is used in an environment that already have got a
