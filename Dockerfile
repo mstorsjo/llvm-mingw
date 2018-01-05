@@ -47,7 +47,7 @@ RUN cd llvm && mkdir build && cd build && cmake \
 
 RUN git clone git://git.code.sf.net/p/mingw-w64/mingw-w64 && \
     cd mingw-w64 && \
-    git checkout 578e5837be72de29994d5931bd22541696de4ba5
+    git checkout 66fab9591c250ade399e9fe91ceda239a735649c
 
 
 ENV TOOLCHAIN_PREFIX=/build/prefix
@@ -138,7 +138,7 @@ RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
     git clone -b master https://github.com/llvm-mirror/libunwind.git && \
     cd libcxx && \
-    git checkout f45f32b0254e4107b4165ddc99ca2503ab9bd754 && \
+    git checkout 16eb426933cdb1c54fd6fbba5fc06cc5a4ca52b3 && \
     cd ../libcxxabi && \
     git checkout 05ba3281482304ae8de31123a594972a495da06d && \
     cd ../libunwind && \
