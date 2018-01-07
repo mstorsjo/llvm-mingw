@@ -3,6 +3,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="$(basename $0 | sed 's/-clang.*//')"
 EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
 ARCH=$(echo $TARGET | sed 's/-.*//')
+SYSROOT="$(cd "$DIR"/../$TARGET && pwd)"
 case $ARCH in
 i686)
 	# Dwarf is the default for i686, but currently there's an issue
@@ -25,4 +26,4 @@ aarch64)
 	ARCH_FLAGS=-femulated-tls
 	;;
 esac
-$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $ARCH_FLAGS -Qunused-arguments "$@"
+$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld --sysroot="$SYSROOT" $ARCH_FLAGS -Qunused-arguments "$@"

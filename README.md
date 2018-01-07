@@ -45,11 +45,6 @@ normally provides, in the branch `tools`.
 
 
 
-If the toolchain is used in an environment that already have got a
-normal GCC based MinGW toolchain with the same triplet prefix in
-the same path, you may need to add
-`--sysroot=path/to/prefix/x86_64-w64-mingw32` to the clang commands.
-
 Status
 ------
 
