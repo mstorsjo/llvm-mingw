@@ -1,11 +1,8 @@
 FROM ubuntu:16.04
 
-#FIXME: Remove vim once debuging is complete
-# git-svn is only used to get sensible version numbers in clang version printouts
 RUN apt-get update -qq && apt-get install -qqy \
-    git wget bzip2 file libwine-development-dev unzip libtool pkg-config cmake \
-    build-essential automake texinfo ragel yasm p7zip-full gettext autopoint \
-    vim python git-svn
+    git wget bzip2 file unzip libtool pkg-config cmake build-essential \
+    automake yasm gettext autopoint vim python git-svn
 
 
 RUN git config --global user.name "LLVM MinGW" && \
