@@ -96,8 +96,6 @@ RUN cd mingw-w64/mingw-w64-crt && \
         cd .. || exit 1; \
     done
 
-#RUN cp /build/mingw-w64/mingw-w64-libraries/winpthreads/include/* $MINGW_PREFIX/include/
-
 RUN git clone -b master https://github.com/llvm-mirror/compiler-rt.git && \
     cd compiler-rt && \
     git checkout 1d871d6cd3fed01cd50dd63e743bd2ea6e65eab6
@@ -135,18 +133,6 @@ RUN cd compiler-rt && \
         cp lib/windows/libclang_rt.builtins-$buildarchname.a $TOOLCHAIN_PREFIX/lib/clang/6.0.0/lib/windows/libclang_rt.builtins-$libarchname.a && \
         cd .. || exit 1; \
     done
-
-#RUN cd mingw-w64/mingw-w64-libraries && cd winstorecompat && \
-#    autoreconf -vif && \
-#    mkdir build && cd build && \
-#    ../configure --host=$TARGET_TUPLE --prefix=$MINGW_PREFIX && make && make install
-
-#RUN cd /build/mingw-w64/mingw-w64-tools/widl && \
-#    mkdir build && cd build && \
-#    CC=gcc \
-#    ../configure --prefix=$TOOLCHAIN_PREFIX --target=$TARGET_TUPLE && \
-#    make -j$CORES && \
-#    make install
 
 RUN git clone -b master https://github.com/llvm-mirror/libcxx.git && \
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git && \
