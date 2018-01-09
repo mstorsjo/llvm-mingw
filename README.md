@@ -21,18 +21,20 @@ the exact same goal but with a slightly different mechanism for
 building it, allowing a full from-scratch build of all components
 in one command.
 
-The only prerequisite for building is Docker; you can also follow the
-steps of the Dockerfile and build manually within a normal linux
-environment, but Docker provides reproducibility by building in a known,
-empty environment.
+The toolchain can be reproducibly built into a Docker image, or be
+built and installed in the host environment (currently only tested
+on Linux and macOS).
 
-To build, just do:
+To build and install all components, just do:
+
+    ./build-all.sh <target-dir>
+
+To build the toolchain in Docker, run:
 
     docker build .
 
-This will download and build all parts of the toolchain, and build a few
-demo apps to show and verify that the toolchain works.
-
+In addition to building the toolchain itself (just like `build-all.sh` does),
+this also builds a few demo apps to show and verify that the toolchain works.
 
 Other branches in this repo contain patches that might not have been
 merged upstream yet, and tests of building third party projects using
@@ -42,6 +44,14 @@ For building projects that need more than just specifying
 `CC=<triplet>-clang`, there is more (more or less hacky and in-progress)
 setup for providing a larger selection of the tools that GNU binutils
 normally provides, in the branch `tools`.
+
+Individual components of the toolchain can be (re)built by running
+the standalone shellscripts listed within `build-all.sh`. However, if
+the source already is checked out, no effort is made to check out a
+different version (if the build scripts have been updated to prefer
+a different version) - and likewise, if configure flags in the build-*.sh
+scripts have changed, you might need to wipe the build directory under
+each project for the new configure options to be taken into use.
 
 
 
@@ -69,32 +79,3 @@ normal GCC/binutils based MinGW.
   at the moment.
 
 Additionally, one may run into other minor differences between GCC and clang.
-
-
-Use outside of Docker
----------------------
-
-To use a similar toolchain outside of Docker, you can run the same build
-commands as the dockerfile in probably most recent linux distributions.
-The build procedure is currently only maintained as a Dockerfile, for ease
-of verification, reproducibility and ease of maintainance though.
-
-The toolchain that was built within the docker image can also be
-extracted from the image into the surrounding host environment.
-The `extract-docker.sh` script can copy out a directory from a
-built docker image, either for getting the toolchain or built test
-binaries, when given a docker tag or image id.
-
-If the `docker build` command ended with e.g.
-`Successfully built d8b13aad965a`, you can run:
-
-    ./extract-docker.sh d8b13aad965a prefix
-
-This copies the directory `prefix` (which contains the whole toolchain,
-with headers and link libraries for all four architectures) from the
-built docker image into the current directory.
-The Dockerfile currently builds in an Ubuntu 16.04 environment, so the
-extracted toolchain can at least be used in such an environment.
-
-The extracted toolchain can be used by adding `prefix/bin` to `$PATH`
-and calling e.g. `x86_64-w64-ming32-clang`.
