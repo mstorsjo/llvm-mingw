@@ -2,7 +2,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TARGET="$(basename $0 | sed 's/-clang.*//')"
 EXE=$(basename $0 | sed 's/.*-\(clang.*\)/\1/')
-# We could set these defaults in the clang frontend driver, but that's not yet merged upstream
 ARCH=$(echo $TARGET | sed 's/-.*//')
 case $ARCH in
 i686)
