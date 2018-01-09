@@ -40,7 +40,7 @@ RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 WORKDIR /build
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
-COPY hello.c hello.cpp hello-exception.cpp hello-tls.c ./hello/
+COPY hello/*.c hello/*.cpp ./hello/
 RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
