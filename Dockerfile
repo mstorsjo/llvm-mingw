@@ -34,7 +34,7 @@ COPY build-compiler-rt.sh .
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX 6.0.0
 
 # Build libunwind/libcxxabi/libcxx
-COPY build-libcxx.sh merge_archives.sh ./
+COPY build-libcxx.sh merge-archives.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 
 WORKDIR /build

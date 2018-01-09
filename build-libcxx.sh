@@ -32,7 +32,7 @@ if [ ! -d libcxx ]; then
 fi
 
 LIBCXX=$(pwd)/libcxx
-MERGE_ARCHIVES=$(pwd)/merge_archives.sh
+MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
 cd libunwind
 for arch in $ARCHS; do
