@@ -259,8 +259,3 @@ RUN cd hello && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe || exit 1; \
     done
-
-ENV AR=llvm-ar
-ENV RANLIB=llvm-ranlib
-ENV AS=llvm-as
-ENV NM=llvm-nm
