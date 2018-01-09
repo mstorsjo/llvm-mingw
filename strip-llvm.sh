@@ -74,9 +74,11 @@ if [ -n "$EXEEXT" ]; then
 fi
 cd ..
 rm -rf share libexec
-cd include
-rm -rf clang clang-c lld llvm llvm-c
-cd ..
+if [ -d include ]; then
+    cd include
+    rm -rf clang clang-c lld llvm llvm-c
+    cd ..
+fi
 cd lib
 rm -rf lib*.a *.so* *.dylib* cmake
 cd ..

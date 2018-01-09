@@ -114,6 +114,12 @@ if [ -n "$HOST" ]; then
     BUILDDIR=$BUILDDIR-$HOST
 fi
 
+LLVM_TOOLS="llvm-ar llvm-objdump llvm-rc llvm-cvtres llvm-nm llvm-strings llvm-readobj llvm-pdbutil"
+LLVM_SYMLINKS="llvm-ranlib llvm-dlltool"
+TOOLS="clang clang-headers lld $LLVM_TOOLS"
+LLVM_TOOLCHAIN_TOOLS="$(echo $LLVM_TOOLS $LLVM_SYMLINKS | sed 's/ /;/g')"
+INSTALL_TOOLS="$(echo $TOOLS | sed 's/[^ ]*/install-&-stripped/g') $(echo $LLVM_SYMLINKS | sed 's/[^ ]*/install-&/g')"
+
 cd llvm
 mkdir -p $BUILDDIR
 cd $BUILDDIR
@@ -124,11 +130,12 @@ cmake \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-    -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil" \
+    -DLLVM_TOOLCHAIN_TOOLS="$LLVM_TOOLCHAIN_TOOLS" \
     $CMAKEFLAGS \
     ..
 
-: ${BUILDTARGETS:=install/strip}
+: ${BUILDTARGETS:=$INSTALL_TOOLS}
+
 if [ -n "$NINJA" ]; then
     ninja $BUILDTARGETS
 else
