@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update -qq && apt-get install -qqy \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim python git-svn
+    automake yasm gettext autopoint vim python git-svn ninja-build
 
 
 RUN git config --global user.name "LLVM MinGW" && \

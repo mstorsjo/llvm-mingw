@@ -36,13 +36,23 @@ if [ ! -d llvm ]; then
     cd ../../..
 fi
 
+if [ "$(which ninja)" != "" ]; then
+    CMAKE_GENERATOR="-G Ninja"
+    NINJA=1
+fi
+
 cd llvm
 mkdir -p build
 cd build
 cmake \
+    $CMAKE_GENERATOR \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     ..
-make -j$CORES install
+if [ -n "$NINJA" ]; then
+    ninja install
+else
+    make -j$CORES install
+fi
