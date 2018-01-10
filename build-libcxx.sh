@@ -55,7 +55,7 @@ for arch in $ARCHS; do
         -DLIBUNWIND_ENABLE_THREADS=TRUE \
         -DLIBUNWIND_ENABLE_SHARED=FALSE \
         -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
-        -DCMAKE_CXX_FLAGS="-I$LIBCXX/include" \
+        -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include" \
         ..
     make -j$CORES
     make install
