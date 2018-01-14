@@ -24,21 +24,16 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     git checkout 66fab9591c250ade399e9fe91ceda239a735649c
 fi
 
-if [ -z "$NOHEADERS" ]; then
-    # TODO: Only install if they have changed? Otherwise this forces the CRT
-    # to be rebuilt even if headers haven't changed. Currently set $NOHEADERS
-    # to skip this part.
-    cd mingw-w64-headers
-    for arch in $ARCHS; do
-        mkdir -p build-$arch
-        cd build-$arch
-        ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 \
-            --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrtbase
-        make install
-        cd ..
-    done
+cd mingw-w64-headers
+for arch in $ARCHS; do
+    mkdir -p build-$arch
+    cd build-$arch
+    ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 \
+        --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrtbase INSTALL="install -C"
+    make install
     cd ..
-fi
+done
+cd ..
 
 cd mingw-w64-crt
 for arch in $ARCHS; do
