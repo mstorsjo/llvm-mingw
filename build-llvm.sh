@@ -22,16 +22,27 @@ if [ ! -d llvm ]; then
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk
     git config svn-remote.svn.fetch :refs/remotes/origin/master
     git svn rebase -l
-    git checkout c8f103e52b297f3e3e0ed1756e11373c68af3566
     cd tools/clang
     git svn init https://llvm.org/svn/llvm-project/cfe/trunk
     git config svn-remote.svn.fetch :refs/remotes/origin/master
     git svn rebase -l
-    git checkout fdd60aee9c0ea40fa0423d6e43821f53d07961d5
     cd ../lld
     git svn init https://llvm.org/svn/llvm-project/lld/trunk
     git config svn-remote.svn.fetch :refs/remotes/origin/master
     git svn rebase -l
+    cd ../../..
+    CHECKOUT=1
+fi
+
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
+    cd llvm
+    [ -z "$SYNC" ] || git fetch
+    git checkout c8f103e52b297f3e3e0ed1756e11373c68af3566
+    cd tools/clang
+    [ -z "$SYNC" ] || git fetch
+    git checkout fdd60aee9c0ea40fa0423d6e43821f53d07961d5
+    cd ../lld
+    [ -z "$SYNC" ] || git fetch
     git checkout f4208caae12f685c06657aa6e2b9b1eda4adcdb4
     cd ../../..
 fi

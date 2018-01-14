@@ -14,12 +14,15 @@ export PATH=$PREFIX/bin:$PATH
 
 if [ ! -d mingw-w64 ]; then
     git clone git://git.code.sf.net/p/mingw-w64/mingw-w64
-    cd mingw-w64
-    git checkout 66fab9591c250ade399e9fe91ceda239a735649c
-    cd ..
+    CHECKOUT=1
 fi
 
 cd mingw-w64
+
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
+    [ -z "$SYNC" ] || git fetch
+    git checkout 66fab9591c250ade399e9fe91ceda239a735649c
+fi
 
 if [ -z "$NOHEADERS" ]; then
     # TODO: Only install if they have changed? Otherwise this forces the CRT

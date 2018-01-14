@@ -14,27 +14,25 @@ export PATH=$PREFIX/bin:$PATH
 
 if [ ! -d libunwind ]; then
     git clone -b master https://github.com/llvm-mirror/libunwind.git
-    cd libunwind
-    git checkout 2ddcf2461daa5d61c543474aed06b12a8b9ad816
-    cd ..
+    CHECKOUT_LIBUNWIND=1
 fi
 if [ ! -d libcxxabi ]; then
     git clone -b master https://github.com/llvm-mirror/libcxxabi.git
-    cd libcxxabi
-    git checkout 05ba3281482304ae8de31123a594972a495da06d
-    cd ..
+    CHECKOUT_LIBCXXABI=1
 fi
 if [ ! -d libcxx ]; then
     git clone -b master https://github.com/llvm-mirror/libcxx.git
-    cd libcxx
-    git checkout 16eb426933cdb1c54fd6fbba5fc06cc5a4ca52b3
-    cd ..
+    CHECKOUT_LIBCXX=1
 fi
 
 LIBCXX=$(pwd)/libcxx
 MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
 cd libunwind
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBUNWIND" ]; then
+    [ -z "$SYNC" ] || git fetch
+    git checkout 2ddcf2461daa5d61c543474aed06b12a8b9ad816
+fi
 for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
@@ -69,6 +67,10 @@ done
 cd ..
 
 cd libcxxabi
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXXABI" ]; then
+    [ -z "$SYNC" ] || git fetch
+    git checkout 05ba3281482304ae8de31123a594972a495da06d
+fi
 for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
@@ -99,6 +101,10 @@ done
 cd ..
 
 cd libcxx
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
+    [ -z "$SYNC" ] || git fetch
+    git checkout 16eb426933cdb1c54fd6fbba5fc06cc5a4ca52b3
+fi
 for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch

@@ -15,9 +15,7 @@ export PATH=$PREFIX/bin:$PATH
 
 if [ ! -d compiler-rt ]; then
     git clone -b master https://github.com/llvm-mirror/compiler-rt.git
-    cd compiler-rt
-    git checkout 1d871d6cd3fed01cd50dd63e743bd2ea6e65eab6
-    cd ..
+    CHECKOUT=1
 fi
 
 # Add a symlink for i386 -> i686; we normally name the toolchain
@@ -26,6 +24,12 @@ fi
 ln -sf i686-w64-mingw32 $PREFIX/i386-w64-mingw32
 
 cd compiler-rt
+
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
+    [ -z "$SYNC" ] || git fetch
+    git checkout 1d871d6cd3fed01cd50dd63e743bd2ea6e65eab6
+fi
+
 for arch in $ARCHS; do
     buildarchname=$arch
     libarchname=$arch
