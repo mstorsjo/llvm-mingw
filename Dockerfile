@@ -39,7 +39,7 @@ RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 
 # Build compiler-rt
 COPY build-compiler-rt.sh .
-RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX 6.0.0
+RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 
 # Build C test applications
 WORKDIR /build

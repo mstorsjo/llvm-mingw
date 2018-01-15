@@ -2,16 +2,17 @@
 
 set -e
 
-if [ $# -lt 2 ]; then
-    echo $0 dest clang-version
+if [ $# -lt 1 ]; then
+    echo $0 dest
     exit 1
 fi
 PREFIX="$1"
-CLANG_VERSION="$2"
 export PATH=$PREFIX/bin:$PATH
 
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+
+CLANG_VERSION=$(basename $(dirname $(dirname $(dirname $($PREFIX/bin/clang --print-libgcc-file-name -rtlib=compiler-rt)))))
 
 if [ ! -d compiler-rt ]; then
     git clone -b master https://github.com/llvm-mirror/compiler-rt.git
