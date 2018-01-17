@@ -46,6 +46,7 @@ for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
     cmake \
+        -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_AR=$PREFIX/bin/llvm-ar \
