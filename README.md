@@ -80,5 +80,9 @@ normal GCC/binutils based MinGW.
   the dllimport attributes.
 - The C++ libraries ([libcxxabi](http://libcxxabi.llvm.org/), [libcxx](http://libcxx.llvm.org/)) can only be linked statically
   at the moment.
+- The C++ exception unwinding in libunwind uses APIs that aren't available
+  in the UWP/WinRT API subset.
+- The windres wrapper requires a copy of a normal GNU binutils windres,
+  see above for more details.
 
 Additionally, one may run into other minor differences between GCC and clang.
