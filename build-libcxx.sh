@@ -39,7 +39,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
     cd libcxx
     [ -z "$SYNC" ] || git fetch
-    git checkout 16eb426933cdb1c54fd6fbba5fc06cc5a4ca52b3
+    git checkout a351d793abce1ecaead0fd947fe17f75b0c41ae5
     cd ..
 fi
 
