@@ -96,6 +96,11 @@ RUN cd test && \
         done; \
     done
 
+RUN cd test && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        cp $TOOLCHAIN_PREFIX/$arch-w64-mingw32/bin/*.dll $arch || exit 1; \
+    done
+
 # Cheating: Pull strip and objcopy from the normal binutils package.
 RUN apt-get update -qq && \
     apt-get install -qqy binutils-mingw-w64-x86-64 && \
