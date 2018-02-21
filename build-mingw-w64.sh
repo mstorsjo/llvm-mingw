@@ -21,7 +21,7 @@ cd mingw-w64
 
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
-    git checkout 66fab9591c250ade399e9fe91ceda239a735649c
+    git checkout 409500c17cc7a5e10ad3e305dfeda4a3c941853b
 fi
 
 cd mingw-w64-headers
