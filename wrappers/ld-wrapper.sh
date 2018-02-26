@@ -1,17 +1,17 @@
 #!/bin/sh
 
 if [ "$1" = "--help" ]; then
-	cat<<EOF
+    cat<<EOF
 GNU ld impersonation
 We don't support --enable-auto-import, but libtool may look for this flag.
 EOF
-	exit 0
+    exit 0
 fi
 if [ "$1" = "-v" ]; then
-	# This isn't implemented in the lld mingw frontend, so don't
-	# pass the -m <machine> option in this case.
-	ld.lld -v
-	exit 0
+    # This isn't implemented in the lld mingw frontend, so don't
+    # pass the -m <machine> option in this case.
+    ld.lld -v
+    exit 0
 fi
 
 TARGET="$(basename $0 | sed 's/-[^-]*$//')"
