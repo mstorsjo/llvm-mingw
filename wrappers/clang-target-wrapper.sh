@@ -36,4 +36,8 @@ aarch64)
     ARCH_FLAGS=-femulated-tls
     ;;
 esac
-$DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld --sysroot="$SYSROOT" $ARCH_FLAGS -Qunused-arguments "$@"
+# Allow setting e.g. CCACHE=1 to wrap all building in ccache.
+if [ -n "$CCACHE" ]; then
+    CCACHE=ccache
+fi
+$CCACHE $DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld --sysroot="$SYSROOT" $ARCH_FLAGS -Qunused-arguments "$@"
