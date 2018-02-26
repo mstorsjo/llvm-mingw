@@ -2,6 +2,6 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]) {
-	printf("hello world! %f\n", 42.0);
-	return 0;
+    printf("hello world! %f\n", 42.0);
+    return 0;
 }
