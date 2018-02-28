@@ -1,0 +1,43 @@
+From 78485f5e2d7956bdcef6040e94b176a5fcfbcccd Mon Sep 17 00:00:00 2001
+From: Martin Storsjo <martin@martin.st>
+Date: Wed, 28 Feb 2018 11:37:21 +0200
+Subject: [PATCH] [CMake] Support building out of tree without any llvm-config
+ available
+
+---
+ CMakeLists.txt | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3a132be..092b272 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -65,17 +65,12 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+           "${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/llvm")
+     endif()
+   else()
+-    message(FATAL_ERROR "llvm-config not found and LLVM_MAIN_SRC_DIR not defined. "
+-                        "Reconfigure with -DLLVM_CONFIG=path/to/llvm-config "
+-                        "or -DLLVM_PATH=path/to/llvm-source-root.")
+   endif()
+ 
+   if (EXISTS ${LLVM_CMAKE_PATH})
+     list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_PATH}")
+     include("${LLVM_CMAKE_PATH}/AddLLVM.cmake")
+     include("${LLVM_CMAKE_PATH}/HandleLLVMOptions.cmake")
+-  else()
+-    message(FATAL_ERROR "Not found: ${LLVM_CMAKE_PATH}")
+   endif()
+ 
+   set(PACKAGE_NAME libunwind)
+@@ -350,4 +345,6 @@ if (LIBUNWIND_INCLUDE_DOCS)
+   add_subdirectory(docs)
+ endif()
+ 
+-add_subdirectory(test)
++if (EXISTS ${LLVM_CMAKE_PATH})
++  add_subdirectory(test)
++endif()
+-- 
+2.7.4
+

@@ -39,6 +39,7 @@ RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 
 # Build compiler-rt
 COPY build-compiler-rt.sh .
+COPY patches/compiler-rt-*.patch ./patches/
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 
 # Build C test applications
@@ -59,6 +60,7 @@ WORKDIR /build/llvm-mingw
 
 # Build libunwind/libcxxabi/libcxx
 COPY build-libcxx.sh merge-archives.sh ./
+COPY patches/libunwind-*.patch ./patches/
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 
 WORKDIR /build

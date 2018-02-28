@@ -29,6 +29,7 @@ cd compiler-rt
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
     git checkout 97adb78eaae40595d052cfa76514db8256063bea
+    git am ../patches/compiler-rt-*.patch
 fi
 
 for arch in $ARCHS; do
