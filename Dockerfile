@@ -18,6 +18,9 @@ ENV TOOLCHAIN_PREFIX=/build/prefix
 COPY build-llvm.sh .
 RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 
+COPY strip-llvm.sh .
+RUN ./strip-llvm.sh $TOOLCHAIN_PREFIX
+
 ENV TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 # Install the usual $TUPLE-clang binaries
