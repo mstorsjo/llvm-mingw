@@ -63,3 +63,8 @@ RUN cd test && \
             $arch-w64-mingw32-clang++ $test.cpp -o $test-$arch.exe || exit 1; \
         done; \
     done
+
+# Strip the final toolchain. (This doesn't reduce the total docker image
+# size as long as it is in a separate RUN layer though.)
+COPY strip-llvm.sh .
+RUN ./strip-llvm.sh $TOOLCHAIN_PREFIX
