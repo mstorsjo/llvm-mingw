@@ -33,3 +33,36 @@ cd ..
 cd lib
 rm -rf lib*.a *.so* *.dylib* cmake
 cd ..
+
+if false; then
+cat <<EOF > bin/llvm-config
+#!/bin/sh
+ROOT="$PREFIX"
+while [ \$# -gt 0 ]; do
+    case \$1 in
+    --obj-root|--prefix)
+        echo \$ROOT
+        ;;
+    --bindir)
+        echo \$ROOT/bin
+        ;;
+    --includedir)
+        echo \$ROOT/include
+        ;;
+    --libdir)
+        echo \$ROOT/lib
+        ;;
+    --src-root)
+        echo \$ROOT/src
+        ;;
+    --cmakedir)
+        echo \$ROOT/lib/cmake/llvm
+        ;;
+    esac
+    shift
+done
+EOF
+chmod a+x bin/llvm-config
+mkdir -p lib/cmake/llvm
+touch lib/cmake/llvm/LLVMConfig.cmake
+fi
