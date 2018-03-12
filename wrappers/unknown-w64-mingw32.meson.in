@@ -1,0 +1,12 @@
+[binaries]
+c = '@PREFIX@/bin/@ARCH@-gcc'
+cpp = '@PREFIX@/bin/@ARCH@-g++'
+ar = '@PREFIX@/bin/@ARCH@-ar'
+strip = '@PREFIX@/bin/@ARCH@-strip'
+windres = '@PREFIX@/bin/@ARCH@-windres'
+pkgconfig = '@PREFIX@/bin/@ARCH@-pkg-config'
+# exe_wrapper = 'wine'
+
+[host_machine]
+system = 'windows'
+cpu = '@ARCH@'
