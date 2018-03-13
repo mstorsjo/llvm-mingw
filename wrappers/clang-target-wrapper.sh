@@ -31,9 +31,8 @@ armv7)
     ARCH_FLAGS=
     ;;
 aarch64)
-    # Dwarf is the default on aarch64; enable emulated TLS since native
-    # TLS isn't implemented yet.
-    ARCH_FLAGS=-femulated-tls
+    # Dwarf is the default here.
+    ARCH_FLAGS=
     ;;
 esac
 # Allow setting e.g. CCACHE=1 to wrap all building in ccache.
