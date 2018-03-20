@@ -12,7 +12,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 cd test
-TESTS_C="hello hello-tls crt-test"
+TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_NO_BUILTIN="crt-test"
 TESTS_CPP="hello-cpp hello-exception"
 for arch in $ARCHS; do

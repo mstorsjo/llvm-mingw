@@ -46,7 +46,7 @@ ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 COPY test/*.c ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        for test in hello hello-tls crt-test; do \
+        for test in hello hello-tls crt-test setjmp; do \
             $arch-w64-mingw32-clang $test.c -o $test-$arch.exe || exit 1; \
         done; \
     done
