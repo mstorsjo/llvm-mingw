@@ -48,11 +48,9 @@ ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 COPY test/*.c ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
-    done
-RUN cd test && \
-    for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe || exit 1; \
+        for test in hello hello-tls crt-test; do \
+            $arch-w64-mingw32-clang $test.c -o $test-$arch.exe || exit 1; \
+        done; \
     done
 
 WORKDIR /build/llvm-mingw
@@ -67,9 +65,7 @@ WORKDIR /build
 COPY test/*.cpp ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang++ hello-cpp.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
-    done
-RUN cd test && \
-    for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
+        for test in hello-cpp hello-exception; do \
+            $arch-w64-mingw32-clang++ $test.cpp -o $test-$arch.exe || exit 1; \
+        done; \
     done
