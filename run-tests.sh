@@ -15,7 +15,7 @@ cd test
 for arch in $ARCHS; do
     $arch-w64-mingw32-clang hello.c -o hello-$arch.exe
     $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe
-    $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions
+    $arch-w64-mingw32-clang++ hello-cpp.cpp -o hello-cpp-$arch.exe -fno-exceptions
     $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe
     case $arch in
     i686|x86_64)

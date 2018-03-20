@@ -67,7 +67,7 @@ WORKDIR /build
 COPY test/*.cpp ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
+        $arch-w64-mingw32-clang++ hello-cpp.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
     done
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
