@@ -11,7 +11,7 @@ export PATH=$PREFIX/bin:$PATH
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
-cd hello
+cd test
 for arch in $ARCHS; do
     $arch-w64-mingw32-clang hello.c -o hello-$arch.exe
     $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe

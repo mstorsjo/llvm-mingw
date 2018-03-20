@@ -45,12 +45,12 @@ RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 WORKDIR /build
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
-COPY hello/*.c ./hello/
-RUN cd hello && \
+COPY test/*.c ./test/
+RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang hello.c -o hello-$arch.exe || exit 1; \
     done
-RUN cd hello && \
+RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang hello-tls.c -o hello-tls-$arch.exe || exit 1; \
     done
@@ -64,12 +64,12 @@ RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 WORKDIR /build
 
 # Build C++ test applications
-COPY hello/*.cpp ./hello/
-RUN cd hello && \
+COPY test/*.cpp ./test/
+RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello.cpp -o hello-cpp-$arch.exe -fno-exceptions || exit 1; \
     done
-RUN cd hello && \
+RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         $arch-w64-mingw32-clang++ hello-exception.cpp -o hello-exception-$arch.exe || exit 1; \
     done
