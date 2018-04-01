@@ -151,4 +151,4 @@ for arch in $ARCHS; do
 done
 cd ..
 
-ln -sf ../$(echo $ARCHS | awk '{print $1}')-w64-mingw32/include/c++ $PREFIX/include/c++
+ln -sf ../generic-w64-mingw32/include/c++ $PREFIX/include/c++

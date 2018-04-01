@@ -25,15 +25,16 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
 fi
 
 cd mingw-w64-headers
+mkdir -p build
+cd build
+../configure --prefix=$PREFIX/generic-w64-mingw32 \
+    --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrtbase INSTALL="install -C"
+make install
+cd ../..
 for arch in $ARCHS; do
-    mkdir -p build-$arch
-    cd build-$arch
-    ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 \
-        --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrtbase INSTALL="install -C"
-    make install
-    cd ..
+    mkdir -p $PREFIX/$arch-w64-mingw32
+    ln -sf ../generic-w64-mingw32/include $PREFIX/$arch-w64-mingw32/include
 done
-cd ..
 
 cd mingw-w64-crt
 for arch in $ARCHS; do
