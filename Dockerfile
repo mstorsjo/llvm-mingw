@@ -30,8 +30,7 @@ RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 RUN apt-get update -qq && \
     apt-get install -qqy binutils-mingw-w64-x86-64 && \
     cp /usr/bin/x86_64-w64-mingw32-windres $TOOLCHAIN_PREFIX/bin/x86_64-w64-mingw32-windresreal && \
-    apt-get remove -qqy binutils-mingw-w64-x86-64 && \
-    cd $TOOLCHAIN_PREFIX/bin
+    apt-get remove -qqy binutils-mingw-w64-x86-64
 
 # Build MinGW-w64
 COPY build-mingw-w64.sh .
