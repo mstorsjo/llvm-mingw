@@ -2,7 +2,9 @@ FROM ubuntu:16.04
 
 RUN apt-get update -qq && apt-get install -qqy \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim python git-svn ninja-build
+    automake yasm gettext autopoint vim python git-svn ninja-build && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
 
 RUN git config --global user.name "LLVM MinGW" && \
@@ -30,7 +32,9 @@ RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 RUN apt-get update -qq && \
     apt-get install -qqy binutils-mingw-w64-x86-64 && \
     cp /usr/bin/x86_64-w64-mingw32-windres $TOOLCHAIN_PREFIX/bin/x86_64-w64-mingw32-windresreal && \
-    apt-get remove -qqy binutils-mingw-w64-x86-64
+    apt-get remove -qqy binutils-mingw-w64-x86-64 && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Build MinGW-w64
 COPY build-mingw-w64.sh .
