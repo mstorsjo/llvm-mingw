@@ -8,7 +8,7 @@ RUN apt-get update -qq && apt-get install -qqy \
 RUN git config --global user.name "LLVM MinGW" && \
     git config --global user.email root@localhost
 
-WORKDIR /build/llvm-mingw
+WORKDIR /build
 
 ARG CORES=4
 
@@ -41,7 +41,6 @@ COPY build-compiler-rt.sh .
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 
 # Build C test applications
-WORKDIR /build
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
 COPY test/*.c ./test/
@@ -52,13 +51,9 @@ RUN cd test && \
         done; \
     done
 
-WORKDIR /build/llvm-mingw
-
 # Build libunwind/libcxxabi/libcxx
 COPY build-libcxx.sh merge-archives.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
-
-WORKDIR /build
 
 # Build C++ test applications
 COPY test/*.cpp ./test/
