@@ -12,7 +12,7 @@ WORKDIR /build/llvm-mingw
 
 ARG CORES=4
 
-ENV TOOLCHAIN_PREFIX=/build/prefix
+ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
 # Build LLVM
 COPY build-llvm.sh .
