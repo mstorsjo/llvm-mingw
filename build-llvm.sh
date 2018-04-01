@@ -63,7 +63,7 @@ cmake \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     ..
 if [ -n "$NINJA" ]; then
-    ninja install
+    ninja install/strip
 else
-    make -j$CORES install
+    make -j$CORES install/strip
 fi
