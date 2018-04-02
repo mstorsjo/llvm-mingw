@@ -29,6 +29,11 @@ To build and install all components, just do:
 
     ./build-all.sh <target-dir>
 
+To reduce the size of the installation, removing some files that
+aren't necessary after building, run:
+
+    ./strip-llvm.sh <target-dir>
+
 To build a Docker image with the toolchain, run:
 
     docker build .
