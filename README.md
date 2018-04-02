@@ -29,7 +29,7 @@ To build and install all components, just do:
 
     ./build-all.sh <target-dir>
 
-To build the toolchain in Docker, run:
+To build a Docker image with the toolchain, run:
 
     docker build .
 
