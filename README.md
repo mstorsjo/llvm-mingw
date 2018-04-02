@@ -33,13 +33,6 @@ To build a Docker image with the toolchain, run:
 
     docker build .
 
-In addition to building the toolchain itself (just like `build-all.sh` does),
-this also builds a few demo apps to show and verify that the toolchain works.
-
-Other branches in this repo might contain patches that might not have been
-merged upstream yet, and tests of building third party projects using
-the toolchain (in the branch `demoapps`).
-
 Individual components of the toolchain can be (re)built by running
 the standalone shellscripts listed within `build-all.sh`. However, if
 the source already is checked out, no effort is made to check out a
