@@ -11,6 +11,7 @@ Benefits of a LLVM based MinGW toolchain are:
 - A single toolchain targeting all four architectures (i686, x86_64,
   armv7 and arm64) instead of separate compiler binaries for each
   architecture
+- Support for generating debug info in PDB format
 
 Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
@@ -76,3 +77,33 @@ normal GCC/binutils based MinGW.
   everything that GNU windres does.
 
 Additionally, one may run into other minor differences between GCC and clang.
+
+PDB support
+-----------
+
+LLVM does [support](http://blog.llvm.org/2017/08/llvm-on-windows-now-supports-pdb-debug.html)
+generating debug info in the PDB format. Since GNU binutils based mingw
+environments don't support this, there's no predecent for what command
+line parameters to use for this, and llvm-mingw produces debug info in
+DWARF format by default.
+
+To produce debug info in PDB format, you currently need to do the following
+changes:
+
+- Add `-gcodeview` to the compilation commands (e.g. in
+  `wrappers/clang-target-wrapper.sh`), together with using `-g` as usual to
+  enable debug info in general.
+- Add `-Wl,-pdb:module.pdb` to linking commands.
+
+Even though LLVM supports this, there are a few caveats with using it when
+building in MinGW mode:
+
+- Call stack unwinding on x86_64 requires the binaries to be built with SEH.
+  This toolchain currently uses DWARF for exception unwinding instead of SEH,
+  since libcxxabi doesn't support unwinding using SEH. Thus currently, on
+  x86_64, one can only inspect the actual crashed function, not callers further
+  up. On i686, things seem to work fine though.
+- Microsoft debuggers might have assumptions about the C++ ABI used, which
+  doesn't hold up with the Itanium ABI used in MinGW.
+- This is unimplemented for the armv7 target, and while implemented for aarch64,
+  it doesn't seem to work properly there yet.
