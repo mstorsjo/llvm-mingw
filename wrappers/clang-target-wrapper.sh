@@ -13,7 +13,6 @@ g++)
     ;;
 esac
 ARCH=$(echo $TARGET | sed 's/-.*//')
-SYSROOT="$(cd "$DIR"/../$TARGET && pwd)"
 case $ARCH in
 i686)
     # Dwarf is the default for i686, but currently there's an issue
@@ -39,4 +38,4 @@ esac
 if [ -n "$CCACHE" ]; then
     CCACHE=ccache
 fi
-$CCACHE $DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld --sysroot="$SYSROOT" $ARCH_FLAGS -Qunused-arguments "$@"
+$CCACHE $DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $ARCH_FLAGS -Qunused-arguments "$@"
