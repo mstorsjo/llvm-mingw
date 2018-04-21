@@ -50,7 +50,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
     }
 
-    int max_arg = argc + 22;
+    int max_arg = argc + 18;
     const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
     if (getenv("CCACHE"))
@@ -66,16 +66,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     else if (!_tcscmp(exe, _T("c11")))
         exec_argv[arg++] = _T("-std=c11");
 
-    if (!_tcscmp(arch, _T("i686"))) {
-        // Dwarf is the default for i686.
-    } else if (!_tcscmp(arch, _T("x86_64"))) {
-        // SEH is the default for x86_64.
-    } else if (!_tcscmp(arch, _T("armv7"))) {
-        // SEH is the default for armv7.
-    } else if (!_tcscmp(arch, _T("aarch64"))) {
-        // SEH is the default for aarch64.
-    }
-
     if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
         // the UWP target is for Windows 10
         exec_argv[arg++] = _T("-D_WIN32_WINNT=0x0A00");
@@ -88,12 +78,8 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-D_UCRT");
     }
 
-    exec_argv[arg++] = _T("-target");
-    exec_argv[arg++] = target;
-    exec_argv[arg++] = _T("-rtlib=compiler-rt");
-    exec_argv[arg++] = _T("-unwindlib=libunwind");
-    exec_argv[arg++] = _T("-stdlib=libc++");
-    exec_argv[arg++] = _T("-fuse-ld=lld");
+    exec_argv[arg++] = _T("--config");
+    exec_argv[arg++] = concat(arch, _T("-w64-mingw32.cfg"));
     exec_argv[arg++] = _T("--end-no-unused-arguments");
 
     for (int i = 1; i < argc; i++)
