@@ -92,7 +92,7 @@ mingw32uwp)
     ;;
 esac
 
-FLAGS="$FLAGS --config $ARCH-w64-mingw32.cfg"
+FLAGS="$FLAGS -target $TARGET"
 FLAGS="$FLAGS --end-no-unused-arguments"
 
 $CCACHE "$CLANG" $FLAGS "$@" $LINKER_FLAGS
