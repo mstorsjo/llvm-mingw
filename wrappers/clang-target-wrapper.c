@@ -78,8 +78,8 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-D_UCRT");
     }
 
-    exec_argv[arg++] = _T("--config");
-    exec_argv[arg++] = concat(arch, _T("-w64-mingw32.cfg"));
+    exec_argv[arg++] = _T("-target");
+    exec_argv[arg++] = target;
     exec_argv[arg++] = _T("--end-no-unused-arguments");
 
     for (int i = 1; i < argc; i++)
