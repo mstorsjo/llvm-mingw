@@ -123,6 +123,9 @@ fi
 
 mkdir -p "$PREFIX/bin"
 cp wrappers/*-wrapper.sh "$PREFIX/bin"
+for arch in $ARCHS; do
+    cp wrappers/$arch-w64-mingw32.cfg $PREFIX/bin
+done
 if [ -n "$HOST" ] && [ -n "$EXEEXT" ]; then
     # TODO: If building natively on msys, pick up the default HOST value from there.
     WRAPPER_FLAGS="$WRAPPER_FLAGS -DDEFAULT_TARGET=\"$HOST\""

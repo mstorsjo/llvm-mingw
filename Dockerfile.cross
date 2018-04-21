@@ -54,7 +54,7 @@ ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 COPY build-mingw-w64.sh build-mingw-w64-tools.sh ./
 RUN ./build-mingw-w64-tools.sh $CROSS_TOOLCHAIN_PREFIX --skip-include-triplet-prefix --host=$HOST
 
-COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
+COPY wrappers/*.sh wrappers/*.c wrappers/*.h wrappers/*.cfg ./wrappers/
 COPY install-wrappers.sh .
 RUN ./install-wrappers.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
