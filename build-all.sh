@@ -13,3 +13,4 @@ PREFIX="$1"
 ./build-mingw-w64.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX
 ./build-libcxx.sh $PREFIX
+./build-libssp.sh $PREFIX

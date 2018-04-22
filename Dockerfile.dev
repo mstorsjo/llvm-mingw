@@ -2,7 +2,8 @@ FROM ubuntu:16.04
 
 RUN apt-get update -qq && apt-get install -qqy \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim python git-svn ninja-build && \
+    automake yasm gettext autopoint vim python git-svn ninja-build \
+    subversion && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
@@ -67,6 +68,10 @@ RUN cd test && \
             $arch-w64-mingw32-clang++ $test.cpp -o $test-$arch.exe || exit 1; \
         done; \
     done
+
+# Build libssp
+COPY build-libssp.sh libssp-Makefile ./
+RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 
 # Strip the final toolchain. (This doesn't reduce the total docker image
 # size as long as it is in a separate RUN layer though.)

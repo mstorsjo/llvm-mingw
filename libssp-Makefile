@@ -1,0 +1,16 @@
+SRC_PATH=$(word 1, $(dir $(MAKEFILE_LIST)))
+vpath %.c $(SRC_PATH)
+
+CC = $(CROSS)gcc
+AR = $(CROSS)ar
+
+CFLAGS = -O2 -Wall -Wundef -I$(SRC_PATH) -D_FORTIFY_SOURCE=0 -D__SSP_FORTIFY_LEVEL=0
+
+SOURCES = $(patsubst $(SRC_PATH)%,%,$(wildcard $(SRC_PATH)*.c))
+OBJS = $(SOURCES:%.c=%.o)
+
+libssp.a: $(OBJS)
+	$(AR) rcs $@ $+
+
+clean:
+	rm -f *.a *.o
