@@ -1,3 +1,7 @@
+#You may have to set up docker
+#sudo apt-get install docker.io
+#sudo usermod -a -G docker $USER
+#log out and then log back in
 FROM ubuntu:16.04
 
 RUN apt-get update -qq && apt-get install -qqy \
