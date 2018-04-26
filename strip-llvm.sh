@@ -16,6 +16,15 @@ for i in bugpoint c-index-test clang-* dsymutil git-clang-format llc lli llvm-* 
         ;;
     clang++|clang-*.*|clang-cpp)
         ;;
+    clang-*)
+        suffix="${i#*-}"
+        # Test removing all numbers from the suffix; if it is empty, the suffix
+        # was a plain number (as if the original name was clang-7); if it wasn't
+        # empty, remove the tool.
+        if [ "$(echo $suffix | tr -d '[0-9]')" != "" ]; then
+            rm $i
+        fi
+        ;;
     llvm-ar|llvm-cvtres|llvm-dlltool|llvm-nm|llvm-objdump|llvm-ranlib|llvm-rc|llvm-readobj|llvm-strings)
         ;;
     *)
