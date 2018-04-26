@@ -4,3 +4,4 @@ compiler-rt
 libunwind
 libcxxabi
 libcxx
+libssp
