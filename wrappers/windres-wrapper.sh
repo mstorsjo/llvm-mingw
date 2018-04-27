@@ -168,6 +168,10 @@ if $VERBOSE; then
     set -x
 fi
 
+for i in $INCLUDE; do
+    CPP_OPTIONS="$CPP_OPTIONS -I$i"
+    RC_OPTIONS="$RC_OPTIONS -I $i"
+done
 
 TMPDIR="$(mktemp -d /tmp/windres.XXXXXXXXX)" || error "couldn't create temp dir"
 
@@ -212,11 +216,11 @@ case "${INPUT_FORMAT}" in
 
         case "${OUTPUT_FORMAT}" in
             "res")
-                llvm-rc "${TMPDIR}/in.rc" /FO "${TMPDIR}/out.res"
+                llvm-rc $RC_OPTIONS "${TMPDIR}/in.rc" /FO "${TMPDIR}/out.res"
                 cat "${TMPDIR}/out.res" > "${OUTPUT}"
                 ;;
             "coff")
-                llvm-rc "${TMPDIR}/in.rc" /FO "${TMPDIR}/in.res"
+                llvm-rc $RC_OPTIONS "${TMPDIR}/in.rc" /FO "${TMPDIR}/in.res"
                 llvm-cvtres "${TMPDIR}/in.res" /OUT:"${TMPDIR}/out.o"
                 cat "${TMPDIR}/out.o" > "${OUTPUT}"
                 ;;
