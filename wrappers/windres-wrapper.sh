@@ -157,8 +157,36 @@ TMPDIR="$(mktemp -d /tmp/windres.XXXXXXXXX)" || error "couldn't create temp dir"
 
 case "${INPUT_FORMAT}" in
     "rc")
-        $CC -E -P -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
-        sed '/^#/d;/^$/d' "${TMPDIR}/post.rc" > "${TMPDIR}/in.rc"
+        $CC -E $CPP_OPTIONS -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
+
+        # Parse the preprocessor output, looking for source file/line markers,
+        # and discard output from *.h files. This matches what rc.exe and binutils windres
+        # do.
+        IFS='
+'
+        output=0
+        rm -f "${TMPDIR}/in.rc"
+        for line in $(cat "${TMPDIR}/post.rc"); do
+            case $line in
+            \#\ *)
+                file="$(echo "$line" | awk '{print $3}' | sed 's/^"//;s/"$//')"
+                case $file in
+                *.h)
+                    output=0
+                    ;;
+                *)
+                    output=1
+                    ;;
+                esac
+                ;;
+            *)
+                if [ $output -ne 0 ]; then
+                    echo "$line" >> "${TMPDIR}/in.rc"
+                fi
+                ;;
+            esac
+        done
+
         case "${OUTPUT_FORMAT}" in
             "res")
                 llvm-rc "${TMPDIR}/in.rc" /FO "${TMPDIR}/out.res"
