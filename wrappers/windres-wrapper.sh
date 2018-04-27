@@ -91,6 +91,7 @@ INPUT_FORMAT=rc
 OUTPUT_FORMAT=res
 TARGET=X64
 CODEPAGE=
+CPP_OPTIONS=
 
 while [ $# != 0 ]; do
     case "$1" in
@@ -132,6 +133,12 @@ while [ $# != 0 ]; do
         "--preprocessor-arg")
             error "ENOSYS"
             ;;
+        "-D"*)
+            CPP_OPTIONS="$CPP_OPTIONS $1";
+            ;;
+        "-D"|"--define")
+            CPP_OPTIONS="$CPP_OPTIONS -D$2"; shift
+            ;;
         "-v"|"--verbose")
             VERBOSE=true
             ;;
@@ -143,7 +150,11 @@ while [ $# != 0 ]; do
             error "unrecognized option: \`$1'"
             ;;
         *)
-            error "rip: \`$1'"
+            if [ "$INPUT" = "-" ]; then
+                INPUT="$1"
+            else
+                error "rip: \`$1'"
+            fi
     esac;
     shift
 done
