@@ -208,6 +208,7 @@ case "${INPUT_FORMAT}" in
                 ;;
             esac
         done
+        unset IFS
 
         case "${OUTPUT_FORMAT}" in
             "res")
