@@ -152,6 +152,8 @@ while [ $# != 0 ]; do
         *)
             if [ "$INPUT" = "-" ]; then
                 INPUT="$1"
+            elif [ "$OUTPUT" = "/dev/stdout" ]; then
+                OUTPUT="$1"
             else
                 error "rip: \`$1'"
             fi
