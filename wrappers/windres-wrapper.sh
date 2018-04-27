@@ -116,10 +116,13 @@ while [ $# != 0 ]; do
         "-O"|"--output-format")
             TARGET="${2}"; shift;;
         "-I"|"--include-dir")
+            INCLUDE="${INCLUDE} ${2}"; shift
+            ;;
+        "--include-dir="*)
             INCLUDE="${INCLUDE} ${1#*=}"
             ;;
-        "-I="*|"--include-dir="*)
-            INCLUDE="${INCLUDE} ${2}"; shift
+        "-I"*)
+            INCLUDE="${INCLUDE} ${1#-I}"
             ;;
         "-c"|"--codepage")
             CODEPAGE="${1#*=}"
