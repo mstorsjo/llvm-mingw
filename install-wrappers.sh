@@ -21,7 +21,7 @@ for arch in $ARCHS; do
         ln -sf llvm-$exec $arch-w64-mingw32-$exec
     done
     for exec in strip; do
-        ln -sf /bin/true $arch-w64-mingw32-$exec
+        ln -sf $(which true) $arch-w64-mingw32-$exec
     done
     for exec in ld objdump windres dlltool; do
         ln -sf $exec-wrapper.sh $arch-w64-mingw32-$exec
