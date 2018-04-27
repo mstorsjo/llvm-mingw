@@ -174,7 +174,7 @@ trap 'cleanup' EXIT
 
 case "${INPUT_FORMAT}" in
     "rc")
-        $CC -E $CPP_OPTIONS -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
+        $CC -E $(echo $CPP_OPTIONS | sed 's/\\"/"/g') -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
 
         # Parse the preprocessor output, looking for source file/line markers,
         # and discard output from *.h files. This matches what rc.exe and binutils windres
