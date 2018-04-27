@@ -155,6 +155,12 @@ fi
 
 TMPDIR="$(mktemp -d /tmp/windres.XXXXXXXXX)" || error "couldn't create temp dir"
 
+cleanup() {
+    rm -rf "$TMPDIR"
+}
+
+trap 'cleanup' EXIT
+
 case "${INPUT_FORMAT}" in
     "rc")
         $CC -E $CPP_OPTIONS -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
