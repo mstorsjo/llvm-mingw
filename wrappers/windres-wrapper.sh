@@ -85,7 +85,7 @@ INPUT=-
 OUTPUT=/dev/stdout
 INPUT_FORMAT=rc
 OUTPUT_FORMAT=coff
-CODEPAGE=
+CODEPAGE=1252
 CPP_OPTIONS=
 TARGET="$(basename $0 | sed 's/-[^-]*$//')"
 
@@ -211,7 +211,7 @@ case "${INPUT_FORMAT}" in
         done
         unset IFS
 
-        llvm-rc $RC_OPTIONS "${TMPDIR}/in.rc" /FO "${TMPDIR}/in.res"
+        llvm-rc $RC_OPTIONS "${TMPDIR}/in.rc" /C $CODEPAGE /FO "${TMPDIR}/in.res"
         case "${OUTPUT_FORMAT}" in
             "res")
                 cat "${TMPDIR}/in.res" > "${OUTPUT}"
