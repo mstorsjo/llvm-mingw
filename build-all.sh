@@ -12,5 +12,6 @@ PREFIX="$1"
 ./install-wrappers.sh $PREFIX
 ./build-mingw-w64.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX
+./build-mingw-w64-winpthreads.sh $PREFIX
 ./build-libcxx.sh $PREFIX
 ./build-libssp.sh $PREFIX
