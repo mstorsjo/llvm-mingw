@@ -51,6 +51,10 @@ RUN cd test && \
         done; \
     done
 
+COPY test/*.rc ./test/
+COPY test-windres.sh .
+RUN ./test-windres.sh $TOOLCHAIN_PREFIX
+
 # Build libunwind/libcxxabi/libcxx
 COPY build-libcxx.sh merge-archives.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX

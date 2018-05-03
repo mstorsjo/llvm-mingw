@@ -1,0 +1,34 @@
+#include <windows.h>
+
+VS_VERSION_INFO         VERSIONINFO
+  FILEVERSION           VER_MAJOR,VER_MINOR,VER_REVISION,0
+  PRODUCTVERSION        VER_MAJOR,VER_MINOR,VER_REVISION,0
+  FILEFLAGSMASK         VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+  FILEFLAGS             1
+#else
+  FILEFLAGS             0
+#endif
+  FILEOS                VOS__WINDOWS32
+  FILETYPE              VFT_DLL
+  FILESUBTYPE           0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "FileDescription",  "description\0"
+      VALUE "FileVersion",      VERSION "\0"
+      VALUE "InternalName",     "internal\0"
+      VALUE "LegalCopyright",   "\251 1990-2018 Foo & Bar\0"
+      VALUE "OriginalFilename", "internal\0"
+      VALUE "ProductName",      "foo\0"
+      VALUE "ProductVersion",   VERSION "\0"
+      VALUE "Comments",         "Comments\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 1252
+  END
+END
