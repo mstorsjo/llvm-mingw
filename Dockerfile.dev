@@ -76,3 +76,15 @@ RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 # size as long as it is in a separate RUN layer though.)
 COPY strip-llvm.sh .
 RUN ./strip-llvm.sh $TOOLCHAIN_PREFIX
+
+ENV TEST_ARCH=x86_64
+ENV TEST_TRIPLET=$TEST_ARCH-w64-mingw32
+ENV TEST_ROOT=/build/demo
+ENV PKG_CONFIG_LIBDIR=/build/demo/lib/pkgconfig
+
+RUN wget http://zlib.net/zlib-1.2.11.tar.gz && \
+    tar -zxvf zlib-1.2.11.tar.gz
+
+RUN cd zlib-1.2.11 && \
+    make -f win32/Makefile.gcc PREFIX=$TEST_TRIPLET- SHARED_MODE=1 -j4 && \
+    make -f win32/Makefile.gcc install SHARED_MODE=1 INCLUDE_PATH=$TEST_ROOT/include LIBRARY_PATH=$TEST_ROOT/lib BINARY_PATH=$TEST_ROOT/bin
