@@ -88,3 +88,17 @@ RUN wget http://zlib.net/zlib-1.2.11.tar.gz && \
 RUN cd zlib-1.2.11 && \
     make -f win32/Makefile.gcc PREFIX=$TEST_TRIPLET- SHARED_MODE=1 -j4 && \
     make -f win32/Makefile.gcc install SHARED_MODE=1 INCLUDE_PATH=$TEST_ROOT/include LIBRARY_PATH=$TEST_ROOT/lib BINARY_PATH=$TEST_ROOT/bin
+
+COPY winemine/ ./winemine/
+# We must build winemine with ucrtbase regardless of what the default is,
+# since the arm msvcrt.dll (or the def file in mingw-w64 at least) doesn't
+# include _winitenv.
+RUN mkdir -p /build/demo/bin && \
+    cd winemine && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        mkdir build-$arch && \
+        cd build-$arch && \
+        make -f ../Makefile CROSS=$arch-w64-mingw32- && \
+        cp winemine.exe /build/demo/bin/winemine-$arch.exe && \
+        cd .. || exit 1; \
+    done
