@@ -21,7 +21,7 @@ ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 COPY build-llvm.sh .
 RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 
-ENV TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
+ENV TOOLCHAIN_ARCHS="x86_64"
 
 # Install the usual $TUPLE-clang binaries
 COPY wrappers/*.sh ./wrappers/
