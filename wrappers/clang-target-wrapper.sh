@@ -3,13 +3,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="$(basename $0 | sed 's/-[^-]*$//')"
 EXE=$(basename $0 | sed 's/.*-\([^-]*\)/\1/')
 case $EXE in
-clang*)
-    ;;
-gcc)
-    EXE=clang
-    ;;
-g++)
-    EXE=clang++
+clang++|g++)
+    DRIVER_MODE=--driver-mode=g++
     ;;
 esac
 ARCH=$(echo $TARGET | sed 's/-.*//')
@@ -38,4 +33,4 @@ esac
 if [ -n "$CCACHE" ]; then
     CCACHE=ccache
 fi
-$CCACHE $DIR/$EXE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $ARCH_FLAGS -Qunused-arguments "$@"
+$CCACHE $DIR/clang $DRIVER_MODE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $ARCH_FLAGS -Qunused-arguments "$@"
