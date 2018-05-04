@@ -46,14 +46,6 @@ a different version) - and likewise, if configure flags in the build-*.sh
 scripts have changed, you might need to wipe the build directory under
 each project for the new configure options to be taken into use.
 
-If building without the dockerfile, manually install a copy of normal
-GNU binutils windres with the name `x86_64-w64-mingw32-windresreal`.
-Wrappers named `<triplet>-windres` are installed that call this binary
-with the necessary options to make it output in the arch independent
-res format, allowing using it for all architectures, even those that
-GNU binutils don't support. (LLVM does provide a similar tool, llvm-rc,
-but it's not yet ready to actually replace windres in all cases.)
-
 
 
 Status
@@ -80,7 +72,8 @@ normal GCC/binutils based MinGW.
   at the moment.
 - The C++ exception unwinding in libunwind uses APIs that aren't available
   in the UWP/WinRT API subset.
-- The windres wrapper requires a copy of a normal GNU binutils windres,
-  see above for more details.
+- The windres replacement, llvm-rc, isn't very mature and doesn't support
+  everything that GNU windres does. Additionally, some part of the preprocessing
+  is currently implemented in shell script, making it a bit slow.
 
 Additionally, one may run into other minor differences between GCC and clang.
