@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#!/bin/sh
+DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET="$(basename $0 | sed 's/-[^-]*$//')"
 EXE=$(basename $0 | sed 's/.*-\([^-]*\)/\1/')
 case $EXE in
