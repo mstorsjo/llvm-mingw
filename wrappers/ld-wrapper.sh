@@ -1,5 +1,8 @@
 #!/bin/sh
 
+DIR="$(cd "$(dirname "$0")" && pwd)"
+export PATH=$DIR:$PATH
+
 if [ "$1" = "--help" ]; then
     cat<<EOF
 GNU ld impersonation

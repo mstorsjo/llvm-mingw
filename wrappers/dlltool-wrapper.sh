@@ -1,5 +1,8 @@
 #!/bin/sh
 
+DIR="$(cd "$(dirname "$0")" && pwd)"
+export PATH=$DIR:$PATH
+
 TARGET="$(basename $0 | sed 's/-[^-]*$//')"
 ARCH=$(echo $TARGET | sed 's/-.*//')
 case $ARCH in

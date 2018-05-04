@@ -27,6 +27,9 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+DIR="$(cd "$(dirname "$0")" && pwd)"
+export PATH=$DIR:$PATH
+
 print_version () {
     cat <<EOF >&2
 version: LLVM windres (GNU Binutils compatible) 0.1
