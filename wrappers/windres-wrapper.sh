@@ -238,7 +238,7 @@ EOF
         esac
         ;;
     "res")
-        cat "${INPUT}" > "${TMPDIR}/in.rc"
+        cat "${INPUT}" > "${TMPDIR}/in.res"
         llvm-cvtres "${TMPDIR}/in.res" -machine:${M} -out:"${TMPDIR}/out.o"
         cat "${TMPDIR}/out.o" > "${OUTPUT}"
         ;;
