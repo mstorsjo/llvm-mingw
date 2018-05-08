@@ -189,42 +189,7 @@ case "${INPUT_FORMAT}" in
         # called with parameters like this: -DSTRING=\\\"1.2.3\\\"
         $CC -E $(echo $CPP_OPTIONS | sed 's/\\"/"/g') -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
 
-        # Parse the preprocessor output, looking for source file/line markers,
-        # and discard output from *.h files. This matches what rc.exe and binutils windres
-        # do.
-        IFS='
-'
-        output=0
-        rm -f "${TMPDIR}/in.rc"
-        for line in $(cat "${TMPDIR}/post.rc"); do
-            case $line in
-            \#\ *|\#line\ *)
-                file="$(echo "$line" | awk '{print $3}' | sed 's/^"//;s/"$//')"
-                case $file in
-                *.h)
-                    output=0
-                    ;;
-                *)
-                    output=1
-                    ;;
-                esac
-                ;;
-            \#*)
-                ;;
-            *)
-                if [ $output -ne 0 ]; then
-                    # Plain "echo" affects potential quotes and escapes in the
-                    # content, with posix sh.
-                    cat<<EOF >> "${TMPDIR}/in.rc"
-$line
-EOF
-                fi
-                ;;
-            esac
-        done
-        unset IFS
-
-        llvm-rc $RC_OPTIONS "${TMPDIR}/in.rc" -c $CODEPAGE -fo "${TMPDIR}/in.res"
+        llvm-rc $RC_OPTIONS "${TMPDIR}/post.rc" -c $CODEPAGE -fo "${TMPDIR}/in.res"
         case "${OUTPUT_FORMAT}" in
             "res")
                 cat "${TMPDIR}/in.res" > "${OUTPUT}"

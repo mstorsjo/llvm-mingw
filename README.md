@@ -73,7 +73,6 @@ normal GCC/binutils based MinGW.
 - The C++ exception unwinding in libunwind uses APIs that aren't available
   in the UWP/WinRT API subset.
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
-  everything that GNU windres does. Additionally, some part of the preprocessing
-  is currently implemented in shell script, making it a bit slow.
+  everything that GNU windres does.
 
 Additionally, one may run into other minor differences between GCC and clang.
