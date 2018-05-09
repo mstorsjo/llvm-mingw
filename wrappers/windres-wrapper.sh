@@ -189,7 +189,7 @@ case "${INPUT_FORMAT}" in
         # called with parameters like this: -DSTRING=\\\"1.2.3\\\"
         $CC -E $(echo $CPP_OPTIONS | sed 's/\\"/"/g') -xc -DRC_INVOKED=1 "${INPUT}" -o "${TMPDIR}/post.rc" || error "preprocessor failed"
 
-        llvm-rc $RC_OPTIONS "${TMPDIR}/post.rc" -c $CODEPAGE -fo "${TMPDIR}/in.res"
+        llvm-rc $RC_OPTIONS -I "$(dirname "${INPUT}")" "${TMPDIR}/post.rc" -c $CODEPAGE -fo "${TMPDIR}/in.res"
         case "${OUTPUT_FORMAT}" in
             "res")
                 cat "${TMPDIR}/in.res" > "${OUTPUT}"
