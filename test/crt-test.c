@@ -88,6 +88,14 @@ const char *context = "";
         } \
     } while (0)
 
+#define TEST_PTR(x, expect) do { \
+        tests++; \
+        if (x != expect) { \
+            fails++; \
+            printf("%s:%d: %s%s failed, expected %p, got %p\n", __FILE__, __LINE__, context, #x, expect, x); \
+        } \
+    } while (0)
+
 #define F(x) strtod(#x, NULL)
 #define L(x) strtol(#x, NULL, 0)
 #define UL(x) strtoul(#x, NULL, 0)
@@ -904,43 +912,174 @@ int main(int argc, char* argv[]) {
 
 #ifdef _WIN32
     long value = 0;
-    InterlockedBitTestAndSet(&value, 0);
-    TEST_INT(value, 1);
     __int64 ret;
-    ret = InterlockedBitTestAndSet(&value, 2);
-    TEST_INT(ret, 0);
-    TEST_INT(value, 5);
-    ret = InterlockedBitTestAndSet(&value, 2);
-    TEST_INT(ret, 1);
-    TEST_INT(value, 5);
     __int64 value64 = 0;
-#if !defined(__MINGW32__) || !defined(__arm__)
-    ret = InterlockedIncrement64(&value64);
-    TEST_INT(ret, 1);
-    TEST_INT(value64, 1);
-    ret = InterlockedIncrement64(&value64);
-    TEST_INT(ret, 2);
-#else
-    // InterlockedIncrement64 is missing on mingw on arm
-    value64 = 2;
+    void *ptr = NULL;
+    void *ptr1 = &value;
+    void *ptr2 = &value64;
+    void *ret_ptr;
+#define TEST_FUNC(expr, var, expected, expected_ret) do { \
+        ret = expr; \
+        TEST_INT(var, expected); \
+        TEST_INT(ret, expected_ret); \
+        var = expected; \
+    } while (0)
+#define TEST_FUNC_PTR(expr, var, expected, expected_ret) do { \
+        ret_ptr = expr; \
+        TEST_PTR(var, expected); \
+        TEST_PTR(ret_ptr, expected_ret); \
+        var = expected; \
+    } while (0)
+    TEST_FUNC(InterlockedBitTestAndSet(&value, 0), value, 1, 0);
+    TEST_FUNC(InterlockedBitTestAndSet(&value, 2), value, 5, 0);
+    TEST_FUNC(InterlockedBitTestAndSet(&value, 2), value, 5, 1);
+    TEST_FUNC(InterlockedBitTestAndReset(&value, 2), value, 1, 1);
+    TEST_FUNC(InterlockedBitTestAndReset(&value, 2), value, 1, 0);
+    TEST_FUNC(InterlockedBitTestAndReset(&value, 0), value, 0, 1);
+#ifdef _WIN64
+    TEST_FUNC(InterlockedBitTestAndSet64(&value64, 0), value64, 1, 0);
+    TEST_FUNC(InterlockedBitTestAndSet64(&value64, 2), value64, 5, 0);
+    TEST_FUNC(InterlockedBitTestAndSet64(&value64, 2), value64, 5, 1);
+    TEST_FUNC(InterlockedBitTestAndSet64(&value64, 40), value64, 0x10000000005, 0);
+    TEST_FUNC(InterlockedBitTestAndReset64(&value64, 40), value64, 5, 1);
+    TEST_FUNC(InterlockedBitTestAndReset64(&value64, 2), value64, 1, 1);
+    TEST_FUNC(InterlockedBitTestAndReset64(&value64, 2), value64, 1, 0);
+    TEST_FUNC(InterlockedBitTestAndReset64(&value64, 0), value64, 0, 1);
 #endif
-    TEST_INT(value64, 2);
-#if !defined(__MINGW32__) || defined(_WIN64)
-    ret = InterlockedAdd64(&value64, 3);
-    TEST_INT(ret, 5);
-    TEST_INT(value64, 5);
-#else
-    // InterlockedAdd64 is missing on mingw on i386 and arm
-    value64 += 3;
+    TEST_FUNC(InterlockedIncrement(&value), value, 1, 1);
+    TEST_FUNC(InterlockedDecrement(&value), value, 0, 0);
+    TEST_FUNC(InterlockedAdd(&value, 7), value, 7, 7);
+    TEST_FUNC(InterlockedAdd(&value, -2), value, 5, 5);
+    TEST_FUNC(InterlockedAdd64(&value64, 7), value64, 7, 7);
+    TEST_FUNC(InterlockedAdd64(&value64, 0x10000000000), value64, 0x10000000007, 0x10000000007);
+    TEST_FUNC(InterlockedIncrement64(&value64), value64, 0x10000000008, 0x10000000008);
+    TEST_FUNC(InterlockedDecrement64(&value64), value64, 0x10000000007, 0x10000000007);
+    TEST_FUNC(InterlockedAdd64(&value64, -0x10000000002), value64, 5, 5);
+    // Exchange functions return the previous value
+    TEST_FUNC(InterlockedExchangeAdd(&value, 1), value, 6, 5);
+    TEST_FUNC(InterlockedExchange(&value, 2), value, 2, 6);
+    TEST_FUNC(InterlockedCompareExchange(&value, 7, 1), value, 2, 2);
+    TEST_FUNC(InterlockedCompareExchange(&value, 5, 2), value, 5, 2);
+    TEST_FUNC_PTR(InterlockedExchangePointer(&ptr, ptr1), ptr, ptr1, NULL);
+    TEST_FUNC_PTR(InterlockedExchangePointer(&ptr, ptr2), ptr, ptr2, ptr1);
+    TEST_FUNC_PTR(InterlockedCompareExchangePointer(&ptr, NULL, ptr1), ptr, ptr2, ptr2);
+    TEST_FUNC_PTR(InterlockedCompareExchangePointer(&ptr, NULL, ptr2), ptr, NULL, ptr2);
+    TEST_FUNC(InterlockedExchangeAdd64(&value64, 0x10000000000), value64, 0x10000000005, 5);
+    TEST_FUNC(InterlockedExchange64(&value64, 0x10000000000), value64, 0x10000000000, 0x10000000005);
+    TEST_FUNC(InterlockedCompareExchange64(&value64, 7, 1), value64, 0x10000000000, 0x10000000000);
+    TEST_FUNC(InterlockedCompareExchange64(&value64, 0x20000000005, 0x10000000000), value64, 0x20000000005, 0x10000000000);
+    // Logical operations returns the previous value
+    TEST_FUNC(InterlockedOr(&value, 2), value, 7, 5);
+    TEST_FUNC(InterlockedOr(&value, 2), value, 7, 7);
+    TEST_FUNC(InterlockedAnd(&value, 2), value, 2, 7);
+    TEST_FUNC(InterlockedAnd(&value, 2), value, 2, 2);
+    TEST_FUNC(InterlockedXor(&value, 2), value, 0, 2);
+    TEST_FUNC(InterlockedXor(&value, 2), value, 2, 0);
+    TEST_FUNC(InterlockedXor(&value, 2), value, 0, 2);
+    TEST_FUNC(InterlockedOr64(&value64, 2), value64, 0x20000000007, 0x20000000005);
+    TEST_FUNC(InterlockedOr64(&value64, 0x10000000000), value64, 0x30000000007, 0x20000000007);
+    TEST_FUNC(InterlockedAnd64(&value64, 0x20000000000), value64, 0x20000000000, 0x30000000007);
+    TEST_FUNC(InterlockedAnd64(&value64, 0x20000000000), value64, 0x20000000000, 0x20000000000);
+    TEST_FUNC(InterlockedXor64(&value64, 0x20000000000), value64, 0, 0x20000000000);
+    TEST_FUNC(InterlockedXor64(&value64, 0x20000000000), value64, 0x20000000000, 0);
+    TEST_FUNC(InterlockedXor64(&value64, 0x20000000000), value64, 0, 0x20000000000);
+
+    unsigned long idx = 42;
+    // If no bit is set, idx is set to an undefined value.
+    TEST_INT(BitScanForward(&idx, UL(0)), 0);
+    TEST_FUNC(BitScanForward(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(BitScanForward(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(BitScanForward(&idx, UL(0x80000001)), idx, 0, 1);
+    TEST_INT(BitScanReverse(&idx, UL(0)), 0);
+    TEST_FUNC(BitScanReverse(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(BitScanReverse(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(BitScanReverse(&idx, UL(0x80000001)), idx, 31, 1);
+#if !defined(_M_ARM) && !defined(__arm__) && !defined(__i386__)
+    // These seem to be unavailable on 32 bit arm even in MSVC. They're also missing
+    // on i386 mingw.
+    TEST_INT(BitScanForward64(&idx, UL(0)), 0);
+    TEST_FUNC(BitScanForward64(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(BitScanForward64(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(BitScanForward64(&idx, UL(0x80000001)), idx, 0, 1);
+    TEST_FUNC(BitScanForward64(&idx, ULL(0x8000000000000000)), idx, 63, 1);
+    TEST_INT(BitScanReverse64(&idx, UL(0)), 0);
+    TEST_FUNC(BitScanReverse64(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(BitScanReverse64(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(BitScanReverse64(&idx, UL(0x80000001)), idx, 31, 1);
+    TEST_FUNC(BitScanReverse64(&idx, ULL(0x8000000000000000)), idx, 63, 1);
 #endif
-#if !defined(__MINGW32__) || !defined(__arm__)
-    // Or returns the previous value
-    ret = InterlockedOr64(&value64, 2);
-    TEST_INT(ret, 5);
-    TEST_INT(value64, 7);
-    ret = InterlockedOr64(&value64, 2);
-    TEST_INT(ret, 7);
-    TEST_INT(value64, 7);
+
+    // Test intrinsics versions. Not all combinations are available.
+    TEST_FUNC(_interlockedbittestandset(&value, 0), value, 1, 0);
+    TEST_FUNC(_interlockedbittestandset(&value, 2), value, 5, 0);
+    TEST_FUNC(_interlockedbittestandset(&value, 2), value, 5, 1);
+    TEST_FUNC(_interlockedbittestandreset(&value, 2), value, 1, 1);
+    TEST_FUNC(_interlockedbittestandreset(&value, 2), value, 1, 0);
+    TEST_FUNC(_interlockedbittestandreset(&value, 0), value, 0, 1);
+    TEST_FUNC(_InterlockedIncrement(&value), value, 1, 1);
+    TEST_FUNC(_InterlockedDecrement(&value), value, 0, 0);
+#ifdef _WIN64
+    TEST_FUNC(_interlockedbittestandset64(&value64, 0), value64, 1, 0);
+    TEST_FUNC(_interlockedbittestandset64(&value64, 2), value64, 5, 0);
+    TEST_FUNC(_interlockedbittestandset64(&value64, 2), value64, 5, 1);
+    TEST_FUNC(_interlockedbittestandset64(&value64, 40), value64, 0x10000000005, 0);
+    TEST_FUNC(_interlockedbittestandset64(&value64, 41), value64, 0x30000000005, 0);
+    TEST_FUNC(_interlockedbittestandreset64(&value64, 40), value64, 0x20000000005, 1);
+    TEST_FUNC(_interlockedbittestandreset64(&value64, 2), value64, 0x20000000001, 1);
+    TEST_FUNC(_interlockedbittestandreset64(&value64, 2), value64, 0x20000000001, 0);
+    TEST_FUNC(_interlockedbittestandreset64(&value64, 0), value64, 0x20000000000, 1);
+    TEST_FUNC(_InterlockedIncrement64(&value64), value64, 0x20000000001, 0x20000000001);
+    TEST_FUNC(_InterlockedDecrement64(&value64), value64, 0x20000000000, 0x20000000000);
+    TEST_FUNC(_interlockedbittestandreset64(&value64, 41), value64, 0, 1);
+#endif
+    TEST_FUNC(_InterlockedExchangeAdd(&value, 1), value, 1, 0);
+    TEST_FUNC(_InterlockedExchange(&value, 2), value, 2, 1);
+    TEST_FUNC(_InterlockedCompareExchange(&value, 7, 1), value, 2, 2);
+    TEST_FUNC(_InterlockedCompareExchange(&value, 0, 2), value, 0, 2);
+    TEST_FUNC_PTR(_InterlockedExchangePointer(&ptr, ptr1), ptr, ptr1, NULL);
+    TEST_FUNC_PTR(_InterlockedExchangePointer(&ptr, ptr2), ptr, ptr2, ptr1);
+    TEST_FUNC_PTR(_InterlockedCompareExchangePointer(&ptr, NULL, ptr1), ptr, ptr2, ptr2);
+    TEST_FUNC_PTR(_InterlockedCompareExchangePointer(&ptr, NULL, ptr2), ptr, NULL, ptr2);
+#ifdef _WIN64
+    TEST_FUNC(_InterlockedExchangeAdd64(&value64, 0x20000000000), value64, 0x20000000000, 0);
+    TEST_FUNC(_InterlockedExchange64(&value64, 0x10000000000), value64, 0x10000000000, 0x20000000000);
+    TEST_FUNC(_InterlockedCompareExchange64(&value64, 7, 1), value64, 0x10000000000, 0x10000000000);
+    TEST_FUNC(_InterlockedCompareExchange64(&value64, 0x20000000000, 0x10000000000), value64, 0x20000000000, 0x10000000000);
+#endif
+    TEST_FUNC(_InterlockedOr(&value, 2), value, 2, 0);
+    TEST_FUNC(_InterlockedOr(&value, 5), value, 7, 2);
+    TEST_FUNC(_InterlockedAnd(&value, 2), value, 2, 7);
+    TEST_FUNC(_InterlockedAnd(&value, 2), value, 2, 2);
+    TEST_FUNC(_InterlockedXor(&value, 2), value, 0, 2);
+    TEST_FUNC(_InterlockedXor(&value, 2), value, 2, 0);
+    TEST_FUNC(_InterlockedXor(&value, 2), value, 0, 2);
+#ifdef _WIN64
+    TEST_FUNC(_InterlockedOr64(&value64, 0x10000000000), value64, 0x30000000000, 0x20000000000);
+    TEST_FUNC(_InterlockedAnd64(&value64, 0x10000000000), value64, 0x10000000000, 0x30000000000);
+    TEST_FUNC(_InterlockedXor64(&value64, 0x10000000000), value64, 0, 0x10000000000);
+    TEST_FUNC(_InterlockedXor64(&value64, 0x10000000000), value64, 0x10000000000, 0);
+    TEST_FUNC(_InterlockedXor64(&value64, 0x10000000000), value64, 0, 0x10000000000);
+#endif
+
+    TEST_INT(_BitScanForward(&idx, UL(0)), 0);
+    TEST_FUNC(_BitScanForward(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(_BitScanForward(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(_BitScanForward(&idx, UL(0x80000001)), idx, 0, 1);
+    TEST_INT(_BitScanReverse(&idx, UL(0)), 0);
+    TEST_FUNC(_BitScanReverse(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(_BitScanReverse(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(_BitScanReverse(&idx, UL(0x80000001)), idx, 31, 1);
+#ifdef _WIN64
+    TEST_INT(_BitScanForward64(&idx, UL(0)), 0);
+    TEST_FUNC(_BitScanForward64(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(_BitScanForward64(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(_BitScanForward64(&idx, UL(0x80000001)), idx, 0, 1);
+    TEST_FUNC(_BitScanForward64(&idx, ULL(0x8000000000000000)), idx, 63, 1);
+    TEST_INT(_BitScanReverse64(&idx, UL(0)), 0);
+    TEST_FUNC(_BitScanReverse64(&idx, UL(1)), idx, 0, 1);
+    TEST_FUNC(_BitScanReverse64(&idx, UL(0x80000000)), idx, 31, 1);
+    TEST_FUNC(_BitScanReverse64(&idx, UL(0x80000001)), idx, 31, 1);
+    TEST_FUNC(_BitScanReverse64(&idx, ULL(0x8000000000000000)), idx, 63, 1);
 #endif
 #endif
 
