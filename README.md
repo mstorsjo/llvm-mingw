@@ -93,7 +93,7 @@ changes:
 - Add `-gcodeview` to the compilation commands (e.g. in
   `wrappers/clang-target-wrapper.sh`), together with using `-g` as usual to
   enable debug info in general.
-- Add `-Wl,-pdb:module.pdb` to linking commands.
+- Add `-Wl,-pdb,module.pdb` to linking commands.
 
 Even though LLVM supports this, there are a few caveats with using it when
 building in MinGW mode:
