@@ -66,7 +66,7 @@ const char *context = "";
         tests++; \
         if (!isnan(x)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, got %f\n", __FILE__, __LINE__, context, #x, (double)x); \
+            printf("%s:%d: %s%s failed, got %f, expected NAN\n", __FILE__, __LINE__, context, #x, (double)x); \
         } \
     } while (0)
 
