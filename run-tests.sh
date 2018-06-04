@@ -13,10 +13,16 @@ export PATH=$PREFIX/bin:$PATH
 
 cd test
 TESTS_C="hello hello-tls crt-test"
+TESTS_C_NO_BUILTIN="crt-test"
 TESTS_CPP="hello-cpp hello-exception"
 for arch in $ARCHS; do
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $test-$arch.exe
+    done
+    TESTS_EXTRA=""
+    for test in $TESTS_C_NO_BUILTIN; do
+        $arch-w64-mingw32-clang $test.c -o $test-no-builtin-$arch.exe -fno-builtin
+        TESTS_EXTRA="$TESTS_EXTRA $test-no-builtin"
     done
     for test in $TESTS_CPP; do
         $arch-w64-mingw32-clang++ $test.cpp -o $test-$arch.exe
@@ -35,7 +41,7 @@ for arch in $ARCHS; do
         COPY="$COPY_AARCH64"
         ;;
     esac
-    for test in $TESTS_C $TESTS_CPP; do
+    for test in $TESTS_C $TESTS_CPP $TESTS_EXTRA; do
         file=$test-$arch.exe
         if [ -n "$COPY" ]; then
             $COPY $file
