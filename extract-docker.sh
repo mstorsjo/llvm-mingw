@@ -12,5 +12,5 @@ fi
 image=$1
 dir=$2
 
-rm -rf $dir
+rm -rf $(echo $dir | sed 's,^/,,')
 docker run --rm $image tar -cf - $dir | tar -xvf -
