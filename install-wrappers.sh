@@ -18,7 +18,7 @@ for arch in $ARCHS; do
         ln -sf clang-target-wrapper.sh $arch-w64-mingw32-$exec
     done
     for exec in ar ranlib nm strings; do
-        ln -sf llvm-$exec $arch-w64-mingw32-$exec
+        ln -sf llvm-$exec $arch-w64-mingw32-$exec || true
     done
     for exec in strip; do
         ln -sf $(which true) $arch-w64-mingw32-$exec
