@@ -18,7 +18,14 @@ rm -f $SCRIPT
 
 echo "CREATE $OUT" >> $SCRIPT
 while [ $# -gt 0 ]; do
-    echo "ADDLIB $1" >> $SCRIPT
+    case $(uname) in
+    MINGW*)
+        echo "ADDLIB $(cygpath -w $1)" >> $SCRIPT
+        ;;
+    *)
+        echo "ADDLIB $1" >> $SCRIPT
+        ;;
+    esac
     shift
 done
 echo "SAVE" >> $SCRIPT
