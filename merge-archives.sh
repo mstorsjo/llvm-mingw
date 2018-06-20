@@ -17,10 +17,20 @@ TARGET=$1
 rm -f $SCRIPT
 
 echo "CREATE $OUT" >> $SCRIPT
-while [ $# -gt 0 ]; do
-    echo "ADDLIB $1" >> $SCRIPT
-    shift
-done
+case $(uname) in
+MINGW*)
+    while [ $# -gt 0 ]; do
+        echo "ADDLIB $(cygpath -w $1)" >> $SCRIPT
+        shift
+    done
+    ;;
+*)
+    while [ $# -gt 0 ]; do
+        echo "ADDLIB $1" >> $SCRIPT
+        shift
+    done
+    ;;
+esac
 echo "SAVE" >> $SCRIPT
 echo "END" >> $SCRIPT
 $AR -M < $SCRIPT
