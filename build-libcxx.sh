@@ -64,6 +64,14 @@ fi
 LIBCXX=$(pwd)/libcxx
 MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
+case $(uname) in
+MINGW*)
+    echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+    ;;
+*)
+    ;;
+esac
+
 build_all() {
     type="$1"
     if [ "$type" = "shared" ]; then
@@ -78,6 +86,7 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
+        if [ -f ../../PreLoad.cmake ]; then cp ../../PreLoad.cmake .; fi
         # If llvm-config and the llvm cmake files are available, -w gets added
         # to the compiler flags; manually add it here to avoid noisy warnings
         # that normally are suppressed.
@@ -123,6 +132,7 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
+        if [ -f ../../PreLoad.cmake ]; then cp ../../PreLoad.cmake .; fi
         # If llvm-config and the llvm cmake files are available, -w gets added
         # to the compiler flags; manually add it here to avoid noisy warnings
         # that normally are suppressed.
@@ -163,6 +173,7 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
+        if [ -f ../../PreLoad.cmake ]; then cp ../../PreLoad.cmake .; fi
         if [ "$type" = "shared" ]; then
             LIBCXX_VISIBILITY_FLAGS="-D_LIBCXXABI_BUILDING_LIBRARY"
         else
@@ -222,3 +233,4 @@ build_all() {
 # work when linking against the DLL, but not vice versa.
 [ -z "$BUILD_SHARED" ] || build_all shared
 [ -z "$BUILD_STATIC" ] || build_all static
+rm -f PreLoad.cmake

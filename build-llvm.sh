@@ -63,9 +63,21 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     cd ../../..
 fi
 
+cd llvm
+mkdir -p $BUILDDIR
+cd $BUILDDIR
+
 if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="-G Ninja"
     NINJA=1
+else
+    case $(uname) in
+    MINGW*)
+        echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+        ;;
+    *)
+        ;;
+    esac
 fi
 
 if [ -n "$HOST" ]; then
@@ -116,9 +128,6 @@ if [ -n "$HOST" ]; then
     BUILDDIR=$BUILDDIR-$HOST
 fi
 
-cd llvm
-mkdir -p $BUILDDIR
-cd $BUILDDIR
 cmake \
     $CMAKE_GENERATOR \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \

@@ -67,6 +67,15 @@ for arch in $ARCHS; do
         libarchname=i386
         ;;
     esac
+
+    case $(uname) in
+    MINGW*)
+        echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+        ;;
+    *)
+        ;;
+    esac
+
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX
     cmake \
