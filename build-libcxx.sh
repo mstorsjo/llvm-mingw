@@ -68,6 +68,14 @@ fi
 LIBCXX=$(pwd)/libcxx
 MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
+case $(uname) in
+MINGW*)
+    CMAKE_GENERATOR="MSYS Makefiles"
+    ;;
+*)
+    ;;
+esac
+
 build_all() {
     type="$1"
     if [ "$type" = "shared" ]; then
@@ -86,6 +94,7 @@ build_all() {
         # to the compiler flags; manually add it here to avoid noisy warnings
         # that normally are suppressed.
         cmake \
+            ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
@@ -137,6 +146,7 @@ build_all() {
             LIBCXXABI_VISIBILITY_FLAGS="-D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS"
         fi
         cmake \
+            ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
@@ -174,6 +184,7 @@ build_all() {
             LIBCXX_VISIBILITY_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
         fi
         cmake \
+            ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \

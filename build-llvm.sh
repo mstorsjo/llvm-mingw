@@ -69,6 +69,14 @@ fi
 if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
+else
+    case $(uname) in
+    MINGW*)
+        CMAKE_GENERATOR="MSYS Makefiles"
+        ;;
+    *)
+        ;;
+    esac
 fi
 
 if [ -n "$HOST" ]; then

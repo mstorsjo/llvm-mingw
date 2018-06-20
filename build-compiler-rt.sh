@@ -70,9 +70,19 @@ for arch in $ARCHS; do
         libarchname=i386
         ;;
     esac
+
+    case $(uname) in
+    MINGW*)
+        CMAKE_GENERATOR="MSYS Makefiles"
+        ;;
+    *)
+        ;;
+    esac
+
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX
     cmake \
+        ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
