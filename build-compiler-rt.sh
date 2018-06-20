@@ -45,6 +45,15 @@ for arch in $ARCHS; do
     esac
     mkdir -p build-$arch
     cd build-$arch
+
+    case $(uname) in
+    MINGW*)
+        echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+        ;;
+    *)
+        ;;
+    esac
+
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
