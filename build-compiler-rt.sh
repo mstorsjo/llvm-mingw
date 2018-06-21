@@ -54,9 +54,11 @@ for arch in $ARCHS; do
         ;;
     esac
 
+    export CC="$PREFIX/bin/clang -target $arch-w64-mingw32 -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -Qunused-arguments"
+    export ASM="$CC"
+
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_AR=$PREFIX/bin/llvm-ar \
         -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
