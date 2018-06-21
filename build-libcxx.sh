@@ -27,19 +27,19 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBUNWIND" ]; then
     cd libunwind
     [ -z "$SYNC" ] || git fetch
-    git checkout 86ab23972978242b6f9e27cebc239f3e8428b1af
+    git checkout 24591a76cd3c13b05c8454425135988b1c2622ba
     cd ..
 fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXXABI" ]; then
     cd libcxxabi
     [ -z "$SYNC" ] || git fetch
-    git checkout 05ba3281482304ae8de31123a594972a495da06d
+    git checkout 60abed6914ca441063e1061a02b092b2676afe6c
     cd ..
 fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
     cd libcxx
     [ -z "$SYNC" ] || git fetch
-    git checkout a351d793abce1ecaead0fd947fe17f75b0c41ae5
+    git checkout 7ef8270ddac1d8eb91647b9abd5e1cfc9d5a48ec
     cd ..
 fi
 
