@@ -41,6 +41,13 @@ RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 COPY build-mingw-w64.sh .
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 
+RUN wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz && \
+    tar -zxvf cmake*.tar.gz && \
+    rm cmake*.tar.gz && \
+    mv cmake-* cmake
+
+ENV PATH=/build/cmake/bin:$PATH
+
 # Build compiler-rt
 COPY build-compiler-rt.sh .
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
