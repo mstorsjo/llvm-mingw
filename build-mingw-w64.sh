@@ -28,7 +28,7 @@ cd mingw-w64-headers
 mkdir -p build
 cd build
 ../configure --prefix=$PREFIX/generic-w64-mingw32 \
-    --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrtbase INSTALL="install -C"
+    --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrt INSTALL="install -C"
 make install
 cd ../..
 for arch in $ARCHS; do
@@ -54,7 +54,7 @@ for arch in $ARCHS; do
         FLAGS="--disable-lib32 --enable-lib64"
         ;;
     esac
-    FLAGS="$FLAGS --with-default-msvcrt=ucrtbase"
+    FLAGS="$FLAGS --with-default-msvcrt=ucrt"
     ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 $FLAGS \
         CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib DLLTOOL=llvm-dlltool
     make -j$CORES
