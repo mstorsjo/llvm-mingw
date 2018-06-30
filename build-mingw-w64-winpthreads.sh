@@ -17,7 +17,7 @@ for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
     ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 \
-        CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib DLLTOOL=llvm-dlltool
+        CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib
     make -j$CORES
     make install
     cd ..
