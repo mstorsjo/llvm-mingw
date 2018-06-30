@@ -36,9 +36,9 @@ RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 COPY build-compiler-rt.sh .
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 
-# Build mingw-w64's winpthreads
-COPY build-mingw-w64-winpthreads.sh .
-RUN ./build-mingw-w64-winpthreads.sh $TOOLCHAIN_PREFIX
+# Build mingw-w64's extra libraries
+COPY build-mingw-w64-libraries.sh .
+RUN ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX
 
 # Build C test applications
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
