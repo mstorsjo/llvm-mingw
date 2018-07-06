@@ -71,11 +71,6 @@ for arch in $ARCHS; do
         ..
     make -j$CORES
     make install
-    # Merge libpsapi.a into the static library libunwind.a, to
-    # avoid having to specify -lpsapi when linking to it.
-    $MERGE_ARCHIVES \
-        $PREFIX/$arch-w64-mingw32/lib/libunwind.a \
-        $PREFIX/$arch-w64-mingw32/lib/libpsapi.a
     cd ..
 done
 cd ..
