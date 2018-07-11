@@ -132,6 +132,10 @@ while [ $# != 0 ]; do
             CPP_OPTIONS="$CPP_OPTIONS $1";;
         "-D"|"--define")
             CPP_OPTIONS="$CPP_OPTIONS -D$2"; shift;;
+        "-U"*)
+            CPP_OPTIONS="$CPP_OPTIONS $1";;
+        "-U"|"--undefine")
+            CPP_OPTIONS="$CPP_OPTIONS -U$2"; shift;;
         "-v"|"--verbose")
             VERBOSE=true;;
         "-V"|"--version")
