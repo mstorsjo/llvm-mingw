@@ -71,8 +71,6 @@ normal GCC/binutils based MinGW.
   the dllimport attributes.
 - The C++ libraries ([libcxxabi](http://libcxxabi.llvm.org/), [libcxx](http://libcxx.llvm.org/)) can only be linked statically
   at the moment.
-- The C++ exception unwinding in libunwind uses APIs that aren't available
-  in the UWP/WinRT API subset.
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
   everything that GNU windres does.
 
