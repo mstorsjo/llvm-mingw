@@ -27,7 +27,8 @@ cp config.h.in config.h
 for i in HAVE_FCNTL_H HAVE_INTTYPES_H HAVE_LIMITS_H HAVE_MALLOC_H \
     HAVE_MEMMOVE HAVE_MEMORY_H HAVE_MEMPCPY HAVE_STDINT_H HAVE_STDIO_H \
     HAVE_STDLIB_H HAVE_STRINGS_H HAVE_STRING_H HAVE_STRNCAT HAVE_STRNCPY \
-    HAVE_SYS_STAT_H HAVE_SYS_TYPES_H HAVE_UNISTD_H HAVE_USABLE_VSNPRINTF; do
+    HAVE_SYS_STAT_H HAVE_SYS_TYPES_H HAVE_UNISTD_H HAVE_USABLE_VSNPRINTF \
+    HAVE_HIDDEN_VISIBILITY; do
     cat config.h | sed 's/^#undef '$i'$/#define '$i' 1/' > tmp
     mv tmp config.h
 done
@@ -37,7 +38,10 @@ for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
     make -f ../Makefile -j$CORES CROSS=$arch-w64-mingw32-
+    mkdir -p $PREFIX/$arch-w64-mingw32/bin
     cp libssp.a $PREFIX/$arch-w64-mingw32/lib
-    cp libssp.a $PREFIX/$arch-w64-mingw32/lib/libssp_nonshared.a
+    cp libssp_nonshared.a $PREFIX/$arch-w64-mingw32/lib
+    cp libssp.dll.a $PREFIX/$arch-w64-mingw32/lib
+    cp libssp-0.dll $PREFIX/$arch-w64-mingw32/bin
     cd ..
 done
