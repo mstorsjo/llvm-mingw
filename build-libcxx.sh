@@ -67,6 +67,7 @@ for arch in $ARCHS; do
         -DLIBUNWIND_ENABLE_THREADS=TRUE \
         -DLIBUNWIND_ENABLE_SHARED=FALSE \
         -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
+        -DLIBUNWIND_STANDALONE_BUILD=TRUE \
         -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include" \
         ..
     make -j$CORES
