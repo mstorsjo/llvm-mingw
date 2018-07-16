@@ -22,7 +22,7 @@ fi
 # Add a symlink for i386 -> i686; we normally name the toolchain
 # i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
 # need to refer to it as i386 at this stage.
-ln -sf i686-w64-mingw32 $PREFIX/i386-w64-mingw32 || true
+ln -sfn i686-w64-mingw32 $PREFIX/i386-w64-mingw32 || true
 
 cd compiler-rt
 

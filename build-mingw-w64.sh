@@ -33,7 +33,7 @@ make install
 cd ../..
 for arch in $ARCHS; do
     mkdir -p $PREFIX/$arch-w64-mingw32
-    ln -sf ../generic-w64-mingw32/include $PREFIX/$arch-w64-mingw32/include
+    ln -sfn ../generic-w64-mingw32/include $PREFIX/$arch-w64-mingw32/include
 done
 
 cd mingw-w64-crt
