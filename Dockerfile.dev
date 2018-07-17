@@ -25,6 +25,7 @@ ENV TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 # Install the usual $TUPLE-clang binaries
 COPY wrappers/*.sh ./wrappers/
+COPY wrappers/*.c ./wrappers/
 COPY install-wrappers.sh .
 RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 
@@ -72,3 +73,12 @@ RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 # size as long as it is in a separate RUN layer though.)
 COPY strip-llvm.sh .
 RUN ./strip-llvm.sh $TOOLCHAIN_PREFIX
+
+# Cheating: Pull strip and objcopy from the normal binutils package.
+RUN apt-get update -qq && \
+    apt-get install -qqy binutils-mingw-w64-x86-64 && \
+    cp /usr/bin/x86_64-w64-mingw32-strip $TOOLCHAIN_PREFIX/bin/binutils-strip && \
+    cp /usr/bin/x86_64-w64-mingw32-objcopy $TOOLCHAIN_PREFIX/bin/binutils-objcopy && \
+    apt-get remove -qqy binutils-mingw-w64-x86-64 && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
