@@ -14,9 +14,8 @@ i686)
     ARCH_FLAGS=
     ;;
 x86_64)
-    # Explicitly request dwarf on x86_64; SEH is the default there but
-    # libcxxabi lacks support for it.
-    ARCH_FLAGS=-fdwarf-exceptions
+    # SEH is the default here.
+    ARCH_FLAGS=
     ;;
 armv7)
     # Dwarf is the default here.
