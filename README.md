@@ -96,11 +96,6 @@ changes:
 Even though LLVM supports this, there are a few caveats with using it when
 building in MinGW mode:
 
-- Call stack unwinding on x86_64 requires the binaries to be built with SEH.
-  This toolchain currently uses DWARF for exception unwinding instead of SEH,
-  since libcxxabi doesn't support unwinding using SEH. Thus currently, on
-  x86_64, one can only inspect the actual crashed function, not callers further
-  up. On i686, things seem to work fine though.
 - Microsoft debuggers might have assumptions about the C++ ABI used, which
   doesn't hold up with the Itanium ABI used in MinGW.
 - This is unimplemented for the armv7 target, and while implemented for aarch64,
