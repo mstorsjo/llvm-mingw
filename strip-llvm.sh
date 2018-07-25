@@ -10,7 +10,7 @@ PREFIX="$1"
 cd "$PREFIX"
 
 cd bin
-for i in bugpoint c-index-test clang-* dsymutil git-clang-format llc lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder yaml2obj; do
+for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmaptool llc lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder yaml2obj; do
     case $i in
     *.sh)
         ;;
