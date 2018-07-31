@@ -31,4 +31,4 @@ esac
 if [ -n "$CCACHE" ]; then
     CCACHE=ccache
 fi
-$CCACHE $DIR/clang $DRIVER_MODE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld $ARCH_FLAGS -Qunused-arguments "$@"
+$CCACHE $DIR/clang $DRIVER_MODE -target $TARGET -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -fuse-cxa-atexit $ARCH_FLAGS -Qunused-arguments "$@"
