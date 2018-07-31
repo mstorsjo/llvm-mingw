@@ -14,7 +14,7 @@ export PATH=$PREFIX/bin:$PATH
 cd test
 TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_NO_BUILTIN="crt-test"
-TESTS_CPP="hello-cpp hello-exception"
+TESTS_CPP="hello-cpp hello-exception tlstest-main"
 for arch in $ARCHS; do
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $test-$arch.exe
@@ -27,6 +27,7 @@ for arch in $ARCHS; do
     for test in $TESTS_CPP; do
         $arch-w64-mingw32-clang++ $test.cpp -o $test-$arch.exe
     done
+    $arch-w64-mingw32-clang++ tlstest-lib.cpp -shared -o tlstest-lib-$arch.dll
     case $arch in
     i686|x86_64)
         RUN=wine
@@ -41,6 +42,10 @@ for arch in $ARCHS; do
         COPY="$COPY_AARCH64"
         ;;
     esac
+    cp tlstest-lib-$arch.dll tlstest-lib.dll
+    if [ -n "$COPY" ]; then
+        $COPY tlstest-lib.dll
+    fi
     for test in $TESTS_C $TESTS_CPP $TESTS_EXTRA; do
         file=$test-$arch.exe
         if [ -n "$COPY" ]; then
@@ -50,4 +55,5 @@ for arch in $ARCHS; do
             $RUN $file
         fi
     done
+    rm -f tlstest-lib.dll
 done
