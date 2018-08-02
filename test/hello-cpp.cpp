@@ -30,6 +30,14 @@ public:
 
 Hello global_h;
 
+__attribute__((constructor)) static void attr_ctor(void) {
+    printf("attr_ctor\n");
+}
+
+__attribute__((destructor)) static void attr_dtor(void) {
+    printf("attr_dtor\n");
+}
+
 int main(int argc, char* argv[]) {
     std::cout<<"Hello world C++"<<std::endl;
     return 0;
