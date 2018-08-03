@@ -50,6 +50,9 @@ cd libunwind
 for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
+    # If llvm-config and the llvm cmake files are available, -w gets added
+    # to the compiler flags; manually add it here to avoid noisy warnings
+    # that normally are suppressed.
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
@@ -68,7 +71,8 @@ for arch in $ARCHS; do
         -DLIBUNWIND_ENABLE_SHARED=FALSE \
         -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
         -DLIBUNWIND_STANDALONE_BUILD=TRUE \
-        -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include" \
+        -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include -w" \
+        -DCMAKE_C_FLAGS="-w" \
         ..
     make -j$CORES
     make install
@@ -85,6 +89,9 @@ cd libcxxabi
 for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
+    # If llvm-config and the llvm cmake files are available, -w gets added
+    # to the compiler flags; manually add it here to avoid noisy warnings
+    # that normally are suppressed.
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
@@ -104,7 +111,7 @@ for arch in $ARCHS; do
         -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
         -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
         -DCXX_SUPPORTS_CXX11=TRUE \
-        -DCMAKE_CXX_FLAGS="-D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -D_LIBCPP_HAS_THREAD_API_WIN32" \
+        -DCMAKE_CXX_FLAGS="-D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -D_LIBCPP_HAS_THREAD_API_WIN32 -w" \
         ..
     make -j$CORES
     cd ..
