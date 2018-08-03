@@ -25,7 +25,7 @@ for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmapto
             rm $i
         fi
         ;;
-    llvm-ar|llvm-cvtres|llvm-dlltool|llvm-nm|llvm-objdump|llvm-ranlib|llvm-rc|llvm-readobj|llvm-strings)
+    llvm-ar|llvm-cvtres|llvm-dlltool|llvm-nm|llvm-objdump|llvm-ranlib|llvm-rc|llvm-readobj|llvm-strings|llvm-pdbutil)
         ;;
     *)
         if [ -f $i ]; then
