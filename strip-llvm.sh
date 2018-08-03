@@ -30,6 +30,9 @@ for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmapto
     *)
         if [ -f $i ]; then
             rm $i
+        elif [ -L $i ] && [ ! -e $(readlink $i) ]; then
+            # Remove dangling symlinks
+            rm $i
         fi
         ;;
     esac
