@@ -24,9 +24,6 @@ if [ ! -d libcxx ]; then
     git clone -b master https://github.com/llvm-mirror/libcxx.git
     CHECKOUT_LIBCXX=1
 fi
-if [ ! -d libgcc ]; then
-    svn checkout -q svn://gcc.gnu.org/svn/gcc/tags/gcc_7_3_0_release/libgcc
-fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBUNWIND" ]; then
     cd libunwind
     [ -z "$SYNC" ] || git fetch
@@ -51,24 +48,6 @@ MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
 cd libunwind
 for arch in $ARCHS; do
-    if $arch-w64-mingw32-clang -E -dM - < /dev/null 2>/dev/null | grep -q __SEH__; then
-        cd ../libgcc
-        mkdir -p build-$arch
-        cd build-$arch
-        rm -f *.h
-        cp ../unwind-seh.c .
-        cp ../unwind-generic.h unwind.h
-        touch tconfig.h
-        touch tsystem.h
-        touch coretypes.h
-        touch tm.h
-        echo "#define ATTRIBUTE_UNUSED __attribute__ ((__unused__))" >> tconfig.h
-        $arch-w64-mingw32-clang -O2 -Wall -c unwind-seh.c -o unwind-seh.o
-        llvm-ar rcs libunwind.a unwind-seh.o
-        cp libunwind.a $PREFIX/$arch-w64-mingw32/lib
-        cd ../../libunwind
-        continue
-    fi
     mkdir -p build-$arch
     cd build-$arch
     # If llvm-config and the llvm cmake files are available, -w gets added
