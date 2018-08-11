@@ -33,13 +33,13 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXXABI" ]; then
     cd libcxxabi
     [ -z "$SYNC" ] || git fetch
-    git checkout 1839f48cee24173f2cc06120778b2920dd2b257a
+    git checkout 5f7425947f303be5ca9b1a6471471d92d209f498
     cd ..
 fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
     cd libcxx
     [ -z "$SYNC" ] || git fetch
-    git checkout e25adff05a0c53f92f0ca353a97f14ac90111a88
+    git checkout 8220dac54c22c42a5ec2a32a0ed50343a2ea4775
     cd ..
 fi
 
