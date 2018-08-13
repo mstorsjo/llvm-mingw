@@ -13,7 +13,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 if [ ! -d libssp ]; then
-    svn checkout svn://gcc.gnu.org/svn/gcc/tags/gcc_7_3_0_release/libssp
+    svn checkout -q svn://gcc.gnu.org/svn/gcc/tags/gcc_7_3_0_release/libssp
 fi
 
 cp libssp-Makefile libssp/Makefile

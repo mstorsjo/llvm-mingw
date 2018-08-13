@@ -25,7 +25,7 @@ if [ ! -d libcxx ]; then
     CHECKOUT_LIBCXX=1
 fi
 if [ ! -d libgcc ]; then
-    svn checkout svn://gcc.gnu.org/svn/gcc/tags/gcc_7_3_0_release/libgcc
+    svn checkout -q svn://gcc.gnu.org/svn/gcc/tags/gcc_7_3_0_release/libgcc
 fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBUNWIND" ]; then
     cd libunwind
