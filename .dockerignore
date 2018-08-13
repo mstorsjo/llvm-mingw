@@ -5,3 +5,6 @@ libunwind
 libcxxabi
 libcxx
 libssp
+*.exe
+*.dll
+*.lib
