@@ -67,12 +67,11 @@ LLD, the LLVM linker, is what causes most of the major differences to the
 normal GCC/binutils based MinGW.
 
 - LLD doesn't support using import libraries created by GNU tools.
-- LLD doesn't automatically fix up use of data symbols from DLLs without
-  the dllimport attributes.
-- The C++ libraries ([libcxxabi](http://libcxxabi.llvm.org/), [libcxx](http://libcxx.llvm.org/)) can only be linked statically
-  at the moment.
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
   everything that GNU windres does.
+- The DLL version of libc++ doesn't have a fixed supported ABI, so in theory,
+  code built against an older version of the DLL is not guaranteed to work
+  with a newer version of the DLL.
 
 Additionally, one may run into other minor differences between GCC and clang.
 
