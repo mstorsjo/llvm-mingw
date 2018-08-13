@@ -80,6 +80,14 @@ RUN cd test && \
 COPY build-libssp.sh libssp-Makefile ./
 RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 
+RUN cd test && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        mkdir -p $arch && \
+        for test in ssp; do \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong || exit 1; \
+        done; \
+    done
+
 # Cheating: Pull strip and objcopy from the normal binutils package.
 RUN apt-get update -qq && \
     apt-get install -qqy binutils-mingw-w64-x86-64 && \

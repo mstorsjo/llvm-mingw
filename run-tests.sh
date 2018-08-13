@@ -16,6 +16,7 @@ TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_NO_BUILTIN="crt-test"
 TESTS_CPP="hello-cpp hello-exception tlstest-main"
 TESTS_CPP_DLL="tlstest-lib"
+TESTS_SSP="ssp"
 for arch in $ARCHS; do
     mkdir -p $arch
     for test in $TESTS_C; do
@@ -31,6 +32,9 @@ for arch in $ARCHS; do
     done
     for test in $TESTS_CPP_DLL; do
         $arch-w64-mingw32-clang++ $test.cpp -shared -o $arch/$test.dll
+    done
+    for test in $TESTS_SSP; do
+        $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong
     done
     DLL="$TESTS_CPP_DLL"
     case $arch in
@@ -53,7 +57,7 @@ for arch in $ARCHS; do
             $COPY $i.dll
         done
     fi
-    for test in $TESTS_C $TESTS_CPP $TESTS_EXTRA; do
+    for test in $TESTS_C $TESTS_CPP $TESTS_EXTRA $TESTS_SSP; do
         file=$test.exe
         if [ -n "$COPY" ]; then
             $COPY $file
