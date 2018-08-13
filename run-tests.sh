@@ -59,6 +59,12 @@ for arch in $ARCHS; do
         COPY="$COPY_AARCH64"
         ;;
     esac
+    for i in libc++ libunwind libssp-0; do
+        if [ -f $PREFIX/$arch-w64-mingw32/bin/$i.dll ]; then
+            cp $PREFIX/$arch-w64-mingw32/bin/$i.dll $arch
+            DLL="$DLL $i"
+        fi
+    done
     cd $arch
     if [ -n "$COPY" ]; then
         for i in $DLL; do
