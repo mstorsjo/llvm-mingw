@@ -55,8 +55,9 @@ ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 COPY test/*.c ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
+        mkdir -p $arch && \
         for test in hello hello-tls crt-test setjmp; do \
-            $arch-w64-mingw32-clang $test.c -o $test-$arch.exe || exit 1; \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe || exit 1; \
         done; \
     done
 
@@ -68,8 +69,9 @@ RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 COPY test/*.cpp ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
+        mkdir -p $arch && \
         for test in hello-cpp hello-exception tlstest-main; do \
-            $arch-w64-mingw32-clang++ $test.cpp -o $test-$arch.exe || exit 1; \
+            $arch-w64-mingw32-clang++ $test.cpp -o $arch/$test.exe || exit 1; \
         done; \
         $arch-w64-mingw32-clang++ tlstest-lib.cpp -shared -o tlstest-lib-$arch.dll || exit 1; \
     done
