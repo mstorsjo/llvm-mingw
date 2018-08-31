@@ -12,6 +12,7 @@ Benefits of a LLVM based MinGW toolchain are:
   armv7 and arm64) instead of separate compiler binaries for each
   architecture
 - Support for generating debug info in PDB format
+- Support for Address Sanitizer
 
 Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
@@ -80,6 +81,9 @@ normal GCC/binutils based MinGW.
   variables.
 - The runtime libraries libunwind, libcxxabi and libcxx also assume that the
   target is Vista or newer.
+- Address Sanitizer doesn't produce working backtraces for i686. Address
+  Sanitizer requires using a PDB file for symbolizing the error location and
+  backtraces.
 
 Additionally, one may run into other minor differences between GCC and clang.
 

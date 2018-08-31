@@ -2,11 +2,23 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
-    echo $0 dest
+SRC_DIR=../lib/builtins
+BUILD_SUFFIX=
+
+while [ $# -gt 0 ]; do
+    if [ "$1" = "--build-sanitizers" ]; then
+        SRC_DIR=..
+        BUILD_SUFFIX=-sanitizers
+        SANITIZERS=1
+    else
+        PREFIX="$1"
+    fi
+    shift
+done
+if [ -z "$PREFIX" ]; then
+    echo $0 [--build-sanitizers] dest
     exit 1
 fi
-PREFIX="$1"
 export PATH=$PREFIX/bin:$PATH
 
 : ${CORES:=4}
@@ -34,6 +46,16 @@ fi
 for arch in $ARCHS; do
     buildarchname=$arch
     libarchname=$arch
+    if [ -n "$SANITIZERS" ]; then
+        case $arch in
+        i686|x86_64)
+            # Sanitizers on windows only support x86.
+            ;;
+        *)
+            continue
+            ;;
+        esac
+    fi
     case $arch in
     armv7)
         libarchname=arm
@@ -43,20 +65,31 @@ for arch in $ARCHS; do
         libarchname=i386
         ;;
     esac
-    mkdir -p build-$arch
-    cd build-$arch
+    mkdir -p build-$arch$BUILD_SUFFIX
+    cd build-$arch$BUILD_SUFFIX
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
+        -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_AR=$PREFIX/bin/llvm-ar \
         -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
         -DCMAKE_C_COMPILER_WORKS=1 \
+        -DCMAKE_CXX_COMPILER_WORKS=1 \
         -DCMAKE_C_COMPILER_TARGET=$buildarchname-windows-gnu \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
-        ../lib/builtins
+        -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
+        $SRC_DIR
     make -j$CORES
     mkdir -p $PREFIX/lib/clang/$CLANG_VERSION/lib/windows
-    cp lib/windows/libclang_rt.builtins-$buildarchname.a $PREFIX/lib/clang/$CLANG_VERSION/lib/windows/libclang_rt.builtins-$libarchname.a
+    mkdir -p $PREFIX/$arch-w64-mingw32/bin
+    for i in lib/windows/libclang_rt.*-$buildarchname*.a; do
+        cp $i $PREFIX/lib/clang/$CLANG_VERSION/lib/windows/$(basename $i | sed s/$buildarchname/$libarchname/)
+    done
+    for i in lib/windows/libclang_rt.*-$buildarchname*.dll; do
+        if [ -f $i ]; then
+            cp $i $PREFIX/$arch-w64-mingw32/bin
+        fi
+    done
     cd ..
 done

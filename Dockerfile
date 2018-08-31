@@ -43,6 +43,11 @@ COPY build-libcxx.sh merge-archives.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build
 
+# Build sanitizers
+COPY build-compiler-rt.sh .
+RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
+    rm -rf /build
+
 # Build libssp
 COPY build-libssp.sh libssp-Makefile ./
 RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \

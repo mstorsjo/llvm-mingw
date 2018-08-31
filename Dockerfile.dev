@@ -83,6 +83,25 @@ RUN cd test && \
         done; \
     done
 
+# Build sanitizers. Ubsan includes <typeinfo> from the C++ headers, so
+# we need to build this after libcxx.
+RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers
+
+# Sanitizers on windows only support x86.
+RUN cd test && \
+    for arch in $TOOLCHAIN_ARCHS; do \
+        case $arch in \
+        i686|x86_64) \
+            ;; \
+        *) \
+            continue \
+            ;; \
+        esac && \
+        for test in stacksmash; do \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$arch/$test-asan.pdb || exit 1; \
+        done; \
+    done
+
 # Build libssp
 COPY build-libssp.sh libssp-Makefile ./
 RUN ./build-libssp.sh $TOOLCHAIN_PREFIX

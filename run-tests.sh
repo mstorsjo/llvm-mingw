@@ -19,6 +19,7 @@ TESTS_C_NO_BUILTIN="crt-test"
 TESTS_CPP="hello-cpp hello-exception tlstest-main exception-locale"
 TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="stacksmash"
+TESTS_ASAN="stacksmash"
 for arch in $ARCHS; do
     mkdir -p $arch
     for test in $TESTS_C; do
@@ -44,6 +45,18 @@ for arch in $ARCHS; do
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong
     done
+    # These aren't run, since asan doesn't work within wine.
+    for test in $TESTS_ASAN; do
+        case $arch in
+        i686|x86_64)
+            # Sanitizers on windows only support x86.
+            ;;
+        *)
+            continue
+            ;;
+        esac
+        $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$arch/$test-asan.pdb
+    done
     DLL="$TESTS_C_DLL $TESTS_CPP_DLL"
     case $arch in
     i686|x86_64)
@@ -59,7 +72,11 @@ for arch in $ARCHS; do
         COPY="$COPY_AARCH64"
         ;;
     esac
-    for i in libc++ libunwind libssp-0; do
+    compiler_rt_arch=$arch
+    if [ "$arch" = "i686" ]; then
+        compiler_rt_arch=i386
+    fi
+    for i in libc++ libunwind libssp-0 libclang_rt.asan_dynamic-$compiler_rt_arch; do
         if [ -f $PREFIX/$arch-w64-mingw32/bin/$i.dll ]; then
             cp $PREFIX/$arch-w64-mingw32/bin/$i.dll $arch
             DLL="$DLL $i"
