@@ -2,11 +2,22 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
-    echo $0 dest
+ASSERTS=ON
+BUILDDIR=build
+
+while [ $# -gt 0 ]; do
+    if [ "$1" = "--disable-asserts" ]; then
+        ASSERTS=OFF
+        BUILDDIR=build-noasserts
+    else
+        PREFIX="$1"
+    fi
+    shift
+done
+if [ -z "$PREFIX" ]; then
+    echo $0 [--disable-asserts] dest
     exit 1
 fi
-PREFIX="$1"
 
 : ${CORES:=4}
 
@@ -53,13 +64,13 @@ if [ "$(which ninja)" != "" ]; then
 fi
 
 cd llvm
-mkdir -p build
-cd build
+mkdir -p $BUILDDIR
+cd $BUILDDIR
 cmake \
     $CMAKE_GENERATOR \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_ENABLE_ASSERTIONS=ON \
+    -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil" \
