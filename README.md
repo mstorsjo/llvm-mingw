@@ -72,6 +72,15 @@ normal GCC/binutils based MinGW.
 - The DLL version of libc++ doesn't have a fixed supported ABI, so in theory,
   code built against an older version of the DLL is not guaranteed to work
   with a newer version of the DLL.
+- The toolchain defaults to using the Universal CRT (which is only available
+  out of the box since Windows 10, but can be installed on Vista or newer)
+  and defaults to targeting Vista. These defaults can be changed in
+  `build-mingw-w64.sh` though.
+- The toolchain uses Windows native TLS support, which doesn't work properly
+  until Windows Vista. This has no effect on code not using thread local
+  variables.
+- The runtime libraries libunwind, libcxxabi and libcxx also assume that the
+  target is Vista or newer.
 
 Additionally, one may run into other minor differences between GCC and clang.
 
