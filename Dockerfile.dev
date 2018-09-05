@@ -73,7 +73,9 @@ RUN cd test && \
         for test in hello-cpp hello-exception tlstest-main; do \
             $arch-w64-mingw32-clang++ $test.cpp -o $arch/$test.exe || exit 1; \
         done; \
-        $arch-w64-mingw32-clang++ tlstest-lib.cpp -shared -o $arch/tlstest-lib.dll || exit 1; \
+        for test in tlstest-lib; do \
+            $arch-w64-mingw32-clang++ $test.cpp -shared -o $arch/$test.dll || exit 1; \
+        done; \
     done
 
 # Build libssp
