@@ -43,7 +43,7 @@ Individual components of the toolchain can be (re)built by running
 the standalone shellscripts listed within `build-all.sh`. However, if
 the source already is checked out, no effort is made to check out a
 different version (if the build scripts have been updated to prefer
-a different version) - and likewise, if configure flags in the build-*.sh
+a different version) - and likewise, if configure flags in the build-\*.sh
 scripts have changed, you might need to wipe the build directory under
 each project for the new configure options to be taken into use.
 
