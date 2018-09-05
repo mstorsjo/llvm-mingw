@@ -52,12 +52,18 @@ RUN ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX
 # Build C test applications
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
-COPY test/*.c ./test/
+COPY test/*.c test/*.h ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir -p $arch && \
         for test in hello hello-tls crt-test setjmp; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe || exit 1; \
+        done; \
+        for test in autoimport-lib; do \
+            $arch-w64-mingw32-clang $test.c -shared -o $arch/$test.dll -Wl,--out-implib,$arch/lib$test.dll.a || exit 1; \
+        done; \
+        for test in autoimport-main; do \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -L$arch -l${test%-main}-lib || exit 1; \
         done; \
     done
 

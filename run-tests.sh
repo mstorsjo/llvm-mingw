@@ -13,6 +13,8 @@ export PATH=$PREFIX/bin:$PATH
 
 cd test
 TESTS_C="hello hello-tls crt-test setjmp"
+TESTS_C_DLL="autoimport-lib"
+TESTS_C_LINK_DLL="autoimport-main"
 TESTS_C_NO_BUILTIN="crt-test"
 TESTS_CPP="hello-cpp hello-exception tlstest-main"
 TESTS_CPP_DLL="tlstest-lib"
@@ -21,6 +23,12 @@ for arch in $ARCHS; do
     mkdir -p $arch
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $arch/$test.exe
+    done
+    for test in $TESTS_C_DLL; do
+        $arch-w64-mingw32-clang $test.c -shared -o $arch/$test.dll -Wl,--out-implib,$arch/lib$test.dll.a
+    done
+    for test in $TESTS_C_LINK_DLL; do
+        $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -L$arch -l${test%-main}-lib
     done
     TESTS_EXTRA=""
     for test in $TESTS_C_NO_BUILTIN; do
@@ -36,7 +44,7 @@ for arch in $ARCHS; do
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong
     done
-    DLL="$TESTS_CPP_DLL"
+    DLL="$TESTS_C_DLL $TESTS_CPP_DLL"
     case $arch in
     i686|x86_64)
         RUN=wine
@@ -57,7 +65,7 @@ for arch in $ARCHS; do
             $COPY $i.dll
         done
     fi
-    for test in $TESTS_C $TESTS_CPP $TESTS_EXTRA $TESTS_SSP; do
+    for test in $TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_EXTRA $TESTS_SSP; do
         file=$test.exe
         if [ -n "$COPY" ]; then
             $COPY $file
