@@ -14,15 +14,15 @@ export PATH=$PREFIX/bin:$PATH
 
 cd mingw-w64/mingw-w64-libraries
 for lib in winpthreads winstorecompat; do
-cd $lib
-for arch in $ARCHS; do
-    mkdir -p build-$arch
-    cd build-$arch
-    ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 \
-        CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib
-    make -j$CORES
-    make install
+    cd $lib
+    for arch in $ARCHS; do
+        mkdir -p build-$arch
+        cd build-$arch
+        ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 \
+            CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib
+        make -j$CORES
+        make install
+        cd ..
+    done
     cd ..
-done
-cd ..
 done
