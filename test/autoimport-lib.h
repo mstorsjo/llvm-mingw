@@ -20,7 +20,10 @@
 #define AUTOIMPORT_LIB_H
 
 extern int var;
+extern int array[10];
 int getVar(void);
 void setVar(int val);
+int getArray(int index);
+void setArray(int index, int val);
 
 #endif

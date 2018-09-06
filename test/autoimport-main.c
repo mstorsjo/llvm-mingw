@@ -20,6 +20,8 @@
 
 int *ptr = &var;
 
+int *arrayptr = &array[3];
+
 int main(int argc, char *argv[]) {
     setVar(42);
     if (var != 42) return 1;
@@ -27,5 +29,14 @@ int main(int argc, char *argv[]) {
     if (getVar() != 43) return 1;
     (*ptr)++;
     if (getVar() != 44) return 1;
+
+    setArray(3, 100);
+    if (array[3] != 100) return 1;
+    if (*arrayptr != 100) return 1;
+    array[3]++;
+    if (*arrayptr != 101) return 1;
+    if (getArray(3) != 101) return 1;
+    (*arrayptr)++;
+    if (getArray(3) != 102) return 1;
     return 0;
 }

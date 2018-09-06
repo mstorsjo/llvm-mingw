@@ -20,10 +20,20 @@
 
 int var;
 
+int array[10];
+
 int getVar(void) {
     return var;
 }
 
 void setVar(int val) {
     var = val;
+}
+
+int getArray(int index) {
+    return array[index];
+}
+
+void setArray(int index, int val) {
+    array[index] = val;
 }
