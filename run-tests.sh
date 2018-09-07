@@ -18,7 +18,7 @@ TESTS_C_LINK_DLL="autoimport-main"
 TESTS_C_NO_BUILTIN="crt-test"
 TESTS_CPP="hello-cpp hello-exception tlstest-main exception-locale"
 TESTS_CPP_DLL="tlstest-lib"
-TESTS_SSP="ssp"
+TESTS_SSP="stacksmash"
 for arch in $ARCHS; do
     mkdir -p $arch
     for test in $TESTS_C; do

@@ -90,7 +90,7 @@ RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir -p $arch && \
-        for test in ssp; do \
+        for test in stacksmash; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong || exit 1; \
         done; \
     done
