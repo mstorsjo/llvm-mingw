@@ -40,7 +40,7 @@ done
 cd ..
 rm -rf share libexec
 cd include
-rm -rf clang clang-c lld llvm llvm-c
+rm -rf clang clang-c lld llvm llvm-c c++
 cd ..
 cd lib
 rm -rf lib*.a *.so* *.dylib* cmake

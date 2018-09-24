@@ -17,9 +17,12 @@ ARG CORES=4
 
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
-# Build LLVM
-COPY build-llvm.sh .
-RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
+# Download a prebuilt LLVM
+RUN wget http://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
+    mkdir -p $TOOLCHAIN_PREFIX && \
+    cd $TOOLCHAIN_PREFIX && \
+    tar -Jxvf /build/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz --strip-components=1 && \
+    rm -f /build/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 
 # Strip the LLVM install output immediately. (This doesn't reduce the
 # total docker image size as long as it is in a separate RUN layer though,
