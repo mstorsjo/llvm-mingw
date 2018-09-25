@@ -11,13 +11,27 @@ cd "$PREFIX"
 
 cd bin
 for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmaptool llc lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder yaml2obj; do
-    case $i in
+    basename=$i
+    if [ -n "$EXEEXT" ]; then
+        # Some in the list are expanded globs, some are plain names we list.
+        case $i in
+        *$EXEEXT)
+            basename=$(echo $i | sed s/$EXEEXT//)
+            ;;
+        esac
+        i=$basename
+        if [ -e $basename$EXEEXT ]; then
+            i=$basename$EXEEXT
+        fi
+    fi
+    # Basename has got $EXEEXT stripped, but any other suffix kept intact.
+    case $basename in
     *.sh)
         ;;
     clang++|clang-*.*|clang-cpp)
         ;;
     clang-*)
-        suffix="${i#*-}"
+        suffix="${basename#*-}"
         # Test removing all numbers from the suffix; if it is empty, the suffix
         # was a plain number (as if the original name was clang-7); if it wasn't
         # empty, remove the tool.
