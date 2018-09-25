@@ -10,16 +10,21 @@ PREFIX="$1"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
+if [ -n "$HOST" ] && [ -z "$CC" ]; then
+    CC=${HOST}-gcc
+fi
+: ${CC:=cc}
+
 mkdir -p $PREFIX/bin
 cp wrappers/*-wrapper.sh $PREFIX/bin
-cc wrappers/change-pe-arch.c -o $PREFIX/bin/change-pe-arch
+$CC wrappers/change-pe-arch.c -o $PREFIX/bin/change-pe-arch$EXEEXT
 cd $PREFIX/bin
 for arch in $ARCHS; do
     for exec in clang clang++ gcc g++; do
         ln -sf clang-target-wrapper.sh $arch-w64-mingw32-$exec
     done
     for exec in ar ranlib nm strings; do
-        ln -sf llvm-$exec $arch-w64-mingw32-$exec || true
+        ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec || true
     done
     for exec in ld objdump windres dlltool; do
         ln -sf $exec-wrapper.sh $arch-w64-mingw32-$exec
