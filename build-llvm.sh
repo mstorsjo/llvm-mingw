@@ -66,6 +66,39 @@ if [ -n "$(which ninja)" ]; then
     NINJA=1
 fi
 
+if [ -n "$HOST" ]; then
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_NAME=Windows"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CROSSCOMPILE=1"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_RC_COMPILER=$HOST-windres"
+    if [ -d llvm/build/bin ]; then
+        native=$(pwd)/llvm/build/bin
+    elif [ -d llvm/build-asserts/bin ]; then
+        native=$(pwd)/llvm/build-asserts/bin
+    elif [ -d llvm/build-noasserts/bin ]; then
+        native=$(pwd)/llvm/build-noasserts/bin
+    else
+        native=$(dirname $(which llvm-tblgen))
+    fi
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_TABLEGEN=$native/llvm-tblgen"
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TABLEGEN=$native/clang-tblgen"
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config"
+    CROSS_ROOT=$(cd $(dirname $(which $HOST-gcc))/../$HOST && pwd)
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$CROSS_ROOT"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+
+    # Custom, llvm-mingw specific defaults. We normally set these in
+    # the frontend wrappers, but this makes sure they are enabled by
+    # default if that wrapper is bypassed as well.
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_RTLIB=compiler-rt"
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_CXX_STDLIB=libc++"
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_LINKER=lld"
+    BUILDDIR=$BUILDDIR-$HOST
+fi
+
 cd llvm
 mkdir -p $BUILDDIR
 cd $BUILDDIR
@@ -77,6 +110,7 @@ cmake \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil" \
+    $CMAKEFLAGS \
     ..
 if [ -n "$NINJA" ]; then
     ninja install/strip
