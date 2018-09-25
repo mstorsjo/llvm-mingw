@@ -37,7 +37,7 @@ COPY install-wrappers.sh .
 RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 
 # Build MinGW-w64
-COPY build-mingw-w64.sh .
+COPY build-mingw-w64.sh build-mingw-w64-widl.sh ./
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 
 # Build compiler-rt
