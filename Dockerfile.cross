@@ -1,0 +1,56 @@
+# Cross compile an llvm-mingw toolchain for windows.
+#
+# This needs to be built with --build-arg BASE=<image>, where image is the name
+# of a docker image that contains a working llvm-mingw cross compiler
+# from a similar enough version.
+#
+# This builds LLVM and all other build tools that need to run on the target
+# platform, but just copies over the runtime libraries from the existing
+# toolchain in the base docker image.
+
+ARG BASE=mstorsjo/llvm-mingw:dev
+FROM $BASE
+
+RUN apt-get update -qq && \
+    apt-get install -qqy zip && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+ARG CROSS_ARCH=x86_64
+ENV CROSS_TOOLCHAIN_PREFIX=/opt/llvm-mingw-$CROSS_ARCH
+
+ENV EXEEXT=.exe
+ENV HOST=$CROSS_ARCH-w64-mingw32
+
+ARG CORES=4
+
+COPY build-llvm.sh .
+RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX
+COPY strip-llvm.sh .
+RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX
+
+ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
+
+COPY build-mingw-w64.sh ./
+RUN ./build-mingw-w64.sh $CROSS_TOOLCHAIN_PREFIX --skip-include-triplet-prefix
+
+COPY wrappers/*.sh wrappers/*.c ./wrappers/
+COPY install-wrappers.sh .
+RUN ./install-wrappers.sh $CROSS_TOOLCHAIN_PREFIX
+
+COPY prepare-cross-toolchain.sh .
+RUN ./prepare-cross-toolchain.sh $TOOLCHAIN_PREFIX $CROSS_TOOLCHAIN_PREFIX $CROSS_ARCH
+
+# Cheating: Build binutils for an x86 target and take strip and objcopy
+# from there. The wrapper script can use them for any arch.
+RUN wget -q https://ftp.gnu.org/gnu/binutils/binutils-2.31.1.tar.xz && \
+    tar -Jxf binutils-2.31.1.tar.xz && \
+    cd binutils-2.31.1 && \
+    ./configure --host=$HOST --target=x86_64-w64-mingw32 --prefix=/opt/binutils LDFLAGS="-Wl,-s" && \
+    make -j$CORES && \
+    make install && \
+    cp /opt/binutils/x86_64-w64-mingw32/bin/objcopy.exe $CROSS_TOOLCHAIN_PREFIX/bin/binutils-objcopy.exe && \
+    cp /opt/binutils/x86_64-w64-mingw32/bin/strip.exe $CROSS_TOOLCHAIN_PREFIX/bin/binutils-strip.exe
+ARG TAG
+RUN ln -s $CROSS_TOOLCHAIN_PREFIX llvm-mingw && \
+    zip -9r /llvm-mingw-$TAG$CROSS_ARCH.zip llvm-mingw
