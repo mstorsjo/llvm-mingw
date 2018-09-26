@@ -15,13 +15,28 @@ if [ -n "$HOST" ] && [ -z "$CC" ]; then
 fi
 : ${CC:=cc}
 
+case $(uname) in
+MINGW*)
+    EXEEXT=.exe
+    ;;
+esac
+
 mkdir -p $PREFIX/bin
 cp wrappers/*-wrapper.sh $PREFIX/bin
 $CC wrappers/change-pe-arch.c -o $PREFIX/bin/change-pe-arch$EXEEXT
+$CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s
+if [ -n "$EXEEXT" ]; then
+    # For Windows, we should prefer the executable wrapper, which also works
+    # when invoked from outside of MSYS.
+    CTW_SUFFIX=$EXEEXT
+    CTW_LINK_SUFFIX=$EXEEXT
+else
+    CTW_SUFFIX=.sh
+fi
 cd $PREFIX/bin
 for arch in $ARCHS; do
     for exec in clang clang++ gcc g++; do
-        ln -sf clang-target-wrapper.sh $arch-w64-mingw32-$exec
+        ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-mingw32-$exec$CTW_LINK_SUFFIX
     done
     for exec in ar ranlib nm strings; do
         ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec || true

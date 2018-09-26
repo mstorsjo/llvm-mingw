@@ -9,6 +9,7 @@ if [ -n "$CCACHE" ]; then
     CCACHE=ccache
 fi
 
+# If changing this wrapper, change clang-target-wrapper.c accordingly.
 CLANG="$DIR/clang"
 FLAGS=""
 case $EXE in
