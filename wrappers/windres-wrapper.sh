@@ -121,9 +121,9 @@ while [ $# != 0 ]; do
         "-I"*)
             INCLUDE="${INCLUDE} ${1#-I}";;
         "-c"|"--codepage")
-            CODEPAGE="${1#*=}";;
-        "-c="*|"--codepage="*)
             CODEPAGE="${2}"; shift;;
+        "-c="*|"--codepage="*)
+            CODEPAGE="${1#*=}";;
         "--preprocessor")
             error "ENOSYS";;
         "--preprocessor-arg")
