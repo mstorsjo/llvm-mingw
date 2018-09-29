@@ -126,8 +126,10 @@ while [ $# != 0 ]; do
             CODEPAGE="${1#*=}";;
         "--preprocessor")
             error "ENOSYS";;
+        "--preprocessor-arg="*)
+            CPP_OPTIONS="$CPP_OPTIONS ${1#*=}";;
         "--preprocessor-arg")
-            error "ENOSYS";;
+            CPP_OPTIONS="$CPP_OPTIONS $2"; shift;;
         "-D"*)
             CPP_OPTIONS="$CPP_OPTIONS $1";;
         "-D"|"--define")
