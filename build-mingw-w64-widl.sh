@@ -22,7 +22,7 @@ cd mingw-w64/mingw-w64-tools/widl
 for arch in $ARCHS; do
     mkdir -p build-$CROSS_NAME$arch
     cd build-$CROSS_NAME$arch
-    ../configure --prefix=$PREFIX --target=$arch-w64-mingw32 $CONFIGFLAGS INSTALL="install -s"
+    ../configure --prefix=$PREFIX --target=$arch-w64-mingw32 $CONFIGFLAGS LDFLAGS="-Wl,-s"
     make -j$CORES
     make install
     cd ..
