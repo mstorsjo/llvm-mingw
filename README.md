@@ -66,7 +66,6 @@ Known issues
 LLD, the LLVM linker, is what causes most of the major differences to the
 normal GCC/binutils based MinGW.
 
-- LLD doesn't support using import libraries created by GNU tools.
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
   everything that GNU windres does.
 - The DLL version of libc++ doesn't have a fixed supported ABI, so in theory,
