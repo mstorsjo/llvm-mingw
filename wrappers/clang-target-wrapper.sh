@@ -12,7 +12,7 @@ fi
 CLANG="$DIR/clang"
 FLAGS=""
 case $EXE in
-clang++|g++)
+clang++|g++|c++)
     FLAGS="$FLAGS --driver-mode=g++"
     ;;
 esac
