@@ -16,7 +16,7 @@ TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_DLL="autoimport-lib"
 TESTS_C_LINK_DLL="autoimport-main"
 TESTS_C_NO_BUILTIN="crt-test"
-TESTS_CPP="hello-cpp hello-exception tlstest-main"
+TESTS_CPP="hello-cpp hello-exception tlstest-main exception-locale"
 TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="ssp"
 for arch in $ARCHS; do

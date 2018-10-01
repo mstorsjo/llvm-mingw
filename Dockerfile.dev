@@ -75,7 +75,7 @@ COPY test/*.cpp ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir -p $arch && \
-        for test in hello-cpp hello-exception tlstest-main; do \
+        for test in hello-cpp hello-exception tlstest-main exception-locale; do \
             $arch-w64-mingw32-clang++ $test.cpp -o $arch/$test.exe || exit 1; \
         done; \
         for test in tlstest-lib; do \
