@@ -11,11 +11,14 @@ ARCH=$(echo $TARGET | sed 's/-.*//')
 case $ARCH in
 i686)
     # Dwarf is the default for i686, but libunwind sometimes fails to
-    # to unwind correctly on i686. This issue might be related to cases
-    # of DW_CFA_GNU_args_size (which were adjusted in libunwind SVN r337312).
-    # The issue can be reproduced with test/exception-locale.cpp.
-    # The issue goes away if building libunwind/libcxxabi/libcxx and the
-    # test example with -mstack-alignment=16 -mstackrealign.
+    # to unwind correctly on i686. The issue can be reproduced with
+    # test/exception-locale.cpp. The issue might be related to
+    # DW_CFA_GNU_args_size, since it goes away if building
+    # libunwind/libcxxabi/libcxx and the test example with
+    # -mstack-alignment=16 -mstackrealign. (libunwind SVN r337312 fixed
+    # some handling relating to this dwarf opcode, which made
+    # test/hello-exception.cpp work properly, but apparently there are
+    # still issues with it).
     ARCH_FLAGS=-fsjlj-exceptions
     ;;
 x86_64)
