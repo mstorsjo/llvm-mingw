@@ -16,13 +16,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+
 __attribute__((noinline))
 void func(char *ptr) {
     ptr[10] = 0;
 }
+
 int main(int argc, char *argv[]) {
     char buf[10];
-    if (argc > 1)
+    if (argc > 1) {
+        fprintf(stderr, "smashing stack\n");
+        fflush(stderr);
         func(buf);
+    } else {
+        fprintf(stderr, "%s: A test tool for detecting stack smashing.\n"
+                        "Run this with a command line argument to trigger an "
+                        "error.\n", argv[0]);
+    }
     return 0;
 }
