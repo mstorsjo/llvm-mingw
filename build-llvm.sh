@@ -2,23 +2,23 @@
 
 set -e
 
-ASSERTS=ON
+ASSERTS=OFF
 BUILDDIR=build
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--disable-asserts" ]; then
         ASSERTS=OFF
-        BUILDDIR=build-noasserts
+        BUILDDIR=build
     elif [ "$1" = "--enable-asserts" ]; then
         ASSERTS=ON
-        BUILDDIR=build
+        BUILDDIR=build-asserts
     else
         PREFIX="$1"
     fi
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--disable-asserts] dest
+    echo $0 [--enable-asserts] dest
     exit 1
 fi
 
