@@ -8,8 +8,12 @@ BUILD_SHARED=1
 while [ $# -gt 0 ]; do
     if [ "$1" = "--disable-shared" ]; then
         BUILD_SHARED=
+    elif [ "$1" = "--enable-shared" ]; then
+        BUILD_SHARED=1
     elif [ "$1" = "--disable-static" ]; then
         BUILD_STATIC=
+    elif [ "$1" = "--enable-static" ]; then
+        BUILD_STATIC=1
     else
         PREFIX="$1"
     fi
