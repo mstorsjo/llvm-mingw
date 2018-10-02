@@ -142,6 +142,7 @@ build_all() {
             -DLIBCXXABI_TARGET_TRIPLE=$arch-w64-mingw32 \
             -DLIBCXXABI_ENABLE_SHARED=OFF \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
+            -DLIBCXXABI_LIBDIR_SUFFIX="" \
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
@@ -189,6 +190,7 @@ build_all() {
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
+            -DLIBCXX_LIBDIR_SUFFIX="" \
             -DCMAKE_CXX_FLAGS="$LIBCXX_VISIBILITY_FLAGS" \
             -DCMAKE_SHARED_LINKER_FLAGS="-lunwind -Wl,--export-all-symbols" \
             -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=FALSE \
