@@ -9,6 +9,9 @@ while [ $# -gt 0 ]; do
     if [ "$1" = "--disable-asserts" ]; then
         ASSERTS=OFF
         BUILDDIR=build-noasserts
+    elif [ "$1" = "--enable-asserts" ]; then
+        ASSERTS=ON
+        BUILDDIR=build
     else
         PREFIX="$1"
     fi
