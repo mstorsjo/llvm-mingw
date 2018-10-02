@@ -48,6 +48,9 @@ a different version) - and likewise, if configure flags in the build-\*.sh
 scripts have changed, you might need to wipe the build directory under
 each project for the new configure options to be taken into use.
 
+Prebuilt docker linux images containing llvm-mingw are available from
+[Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/).
+
 
 
 Status
