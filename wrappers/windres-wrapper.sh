@@ -32,7 +32,7 @@ export PATH=$DIR:$PATH
 
 print_version () {
     cat <<EOF >&2
-version: LLVM windres (GNU Binutils compatible) 0.1
+version: LLVM windres (GNU windres compatible) 0.1
 EOF
     exit 1
 }
