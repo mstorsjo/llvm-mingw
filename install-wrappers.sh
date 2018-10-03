@@ -21,10 +21,14 @@ MINGW*)
     ;;
 esac
 
+if [ -n "$EXEEXT" ]; then
+    UNICODE=-municode
+fi
+
 mkdir -p $PREFIX/bin
 cp wrappers/*-wrapper.sh $PREFIX/bin
 $CC wrappers/change-pe-arch.c -o $PREFIX/bin/change-pe-arch$EXEEXT
-$CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s
+$CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s $UNICODE
 if [ -n "$EXEEXT" ]; then
     # For Windows, we should prefer the executable wrapper, which also works
     # when invoked from outside of MSYS.
