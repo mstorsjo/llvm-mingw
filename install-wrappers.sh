@@ -43,7 +43,7 @@ for arch in $ARCHS; do
         ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-mingw32-$exec$CTW_LINK_SUFFIX
     done
     for exec in ar ranlib nm strings; do
-        ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec || true
+        ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec$EXEEXT || true
     done
     for exec in ld objdump windres dlltool; do
         ln -sf $exec-wrapper.sh $arch-w64-mingw32-$exec
