@@ -46,6 +46,25 @@ typedef char TCHAR;
 #define EXECVP_CAST (char **)
 #endif
 
+TCHAR *escape(const TCHAR *str) {
+#ifdef _WIN32
+    TCHAR *out = malloc((_tcslen(str) * 2 + 3) * sizeof(*out));
+    TCHAR *ptr = out;
+    int i;
+    *ptr++ = '"';
+    for (i = 0; str[i]; i++) {
+        if (str[i] == '"')
+            *ptr++ = '\\';
+        *ptr++ = str[i];
+    }
+    *ptr++ = '"';
+    *ptr++ = '\0';
+    return out;
+#else
+    return _tcsdup(str);
+#endif
+}
+
 int _tmain(int argc, TCHAR* argv[]) {
     const TCHAR *argv0 = argv[0];
     const TCHAR *sep = _tcsrchr(argv0, '/');
@@ -124,7 +143,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     exec_argv[arg++] = _T("-Qunused-arguments");
 
     for (int i = 1; i < argc; i++)
-        exec_argv[arg++] = argv[i];
+        exec_argv[arg++] = escape(argv[i]);
 
     exec_argv[arg] = NULL;
     if (arg > max_arg) {
