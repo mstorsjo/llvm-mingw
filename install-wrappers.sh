@@ -11,7 +11,7 @@ PREFIX="$1"
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 if [ -n "$HOST" ] && [ -z "$CC" ]; then
-    CC=${HOST}-gcc
+    CC=$HOST-gcc
 fi
 : ${CC:=cc}
 
