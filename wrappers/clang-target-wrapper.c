@@ -20,6 +20,10 @@
 #define _UNICODE
 #endif
 
+#ifndef CLANG
+#define CLANG "clang"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -82,13 +86,13 @@ int _tmain(int argc, TCHAR* argv[]) {
     const TCHAR *sep = _tcsrchr(argv0, '/');
     if (!sep)
         sep = _tcsrchr(argv0, '\\');
-    TCHAR *clang = _T("clang");
+    TCHAR *clang = _T(CLANG);
     const TCHAR *basename = argv0;
     if (sep) {
         int baselen = sep + 1 - argv0;
         clang = malloc((_tcslen(argv0) + 50) * sizeof(*clang));
         memcpy(clang, argv0, baselen * sizeof(*clang));
-        _tcscpy(clang + baselen, _T("clang"));
+        _tcscpy(clang + baselen, _T(CLANG));
         basename = sep + 1;
     }
 #ifdef _WIN32
@@ -96,7 +100,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     GetModuleFileName(NULL, module_path, sizeof(module_path)/sizeof(module_path[0]));
     TCHAR *sep2 = _tcsrchr(module_path, '\\');
     if (sep2) {
-        _tcscpy(sep2 + 1, _T("clang"));
+        _tcscpy(sep2 + 1, _T(CLANG));
         clang = module_path;
     }
 #endif
