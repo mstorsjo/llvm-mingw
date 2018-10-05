@@ -23,6 +23,9 @@
 #ifndef CLANG
 #define CLANG "clang"
 #endif
+#ifndef DEFAULT_TARGET
+#define DEFAULT_TARGET "x86_64-w64-mingw32"
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -114,6 +117,8 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (dash) {
         *dash = '\0';
         exe = dash + 1;
+    } else {
+        target = _T(DEFAULT_TARGET);
     }
     TCHAR *arch = _tcsdup(target);
     dash = _tcschr(arch, '-');

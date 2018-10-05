@@ -5,6 +5,10 @@ set -e
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BASENAME="$(basename "$0")"
 TARGET="${BASENAME%-*}"
+DEFAULT_TARGET=x86_64-w64-mingw32
+if [ "$TARGET" = "$BASENAME" ]; then
+    TARGET=$DEFAULT_TARGET
+fi
 EXE="${BASENAME##*-}"
 ARCH="${TARGET%%-*}"
 

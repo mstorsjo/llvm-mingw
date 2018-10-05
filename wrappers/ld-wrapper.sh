@@ -21,6 +21,10 @@ fi
 
 BASENAME="$(basename "$0")"
 TARGET="${BASENAME%-*}"
+DEFAULT_TARGET=x86_64-w64-mingw32
+if [ "$TARGET" = "$BASENAME" ]; then
+    TARGET=$DEFAULT_TARGET
+fi
 ARCH="${TARGET%%-*}"
 case $ARCH in
 i686)    M=i386pe   ;;

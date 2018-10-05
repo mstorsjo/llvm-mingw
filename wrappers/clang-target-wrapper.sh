@@ -3,6 +3,10 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 BASENAME="$(basename "$0")"
 TARGET="${BASENAME%-*}"
 EXE="${BASENAME##*-}"
+DEFAULT_TARGET=x86_64-w64-mingw32
+if [ "$TARGET" = "$BASENAME" ]; then
+    TARGET=$DEFAULT_TARGET
+fi
 ARCH="${TARGET%%-*}"
 
 # Allow setting e.g. CCACHE=1 to wrap all building in ccache.
