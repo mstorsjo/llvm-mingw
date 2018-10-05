@@ -64,4 +64,12 @@ if [ -n "$EXEEXT" ]; then
     if [ ! -L clang$EXEEXT ]; then
         mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
+    if [ -n "$HOST" ]; then
+        for exec in clang clang++ gcc g++ ar ranlib nm strings widl; do
+            ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
+        done
+        for exec in ld objdump windres dlltool objcopy strip; do
+            ln -sf $HOST-$exec $exec
+        done
+    fi
 fi
