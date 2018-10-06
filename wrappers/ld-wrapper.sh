@@ -19,8 +19,9 @@ if [ "$1" = "-v" ]; then
     exit 0
 fi
 
-TARGET="$(basename $0 | sed 's/-[^-]*$//')"
-ARCH=$(echo $TARGET | sed 's/-.*//')
+BASENAME="$(basename "$0")"
+TARGET="${BASENAME%-*}"
+ARCH="${TARGET%%-*}"
 case $ARCH in
 i686)    M=i386pe   ;;
 x86_64)  M=i386pep  ;;

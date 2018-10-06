@@ -86,8 +86,9 @@ INPUT_FORMAT=rc
 OUTPUT_FORMAT=coff
 CODEPAGE=1252
 CPP_OPTIONS=
-TARGET="$(basename $0 | sed 's/-[^-]*$//')"
-PROG="$(basename $0)"
+BASENAME="$(basename "$0")"
+TARGET="${BASENAME%-*}"
+PROG="$BASENAME"
 
 while [ $# != 0 ]; do
     case "$1" in
@@ -155,7 +156,7 @@ while [ $# != 0 ]; do
     shift
 done
 
-ARCH=$(echo $TARGET | sed 's/-.*//')
+ARCH="${TARGET%%-*}"
 case $ARCH in
 i686)    M=X86 ;;
 x86_64)  M=X64 ;;

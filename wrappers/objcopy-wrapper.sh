@@ -3,9 +3,10 @@
 set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-TARGET="$(basename $0 | sed 's/-[^-]*$//')"
-EXE=$(basename $0 | sed 's/.*-\([^-]*\)/\1/')
-ARCH=$(echo $TARGET | sed 's/-.*//')
+BASENAME="$(basename "$0")"
+TARGET="${BASENAME%-*}"
+EXE="${BASENAME##*-}"
+ARCH="${TARGET%%-*}"
 
 IN=""
 OUT=""
