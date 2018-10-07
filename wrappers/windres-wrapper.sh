@@ -38,7 +38,7 @@ EOF
 }
 
 print_help () {
- cat <<EOF >&2
+    cat <<EOF >&2
 usage: llvm-windres <OPTION> [INPUT-FILE] [OUTPUT-FILE]
 
 LLVM Tool to manipulate Windows resources with a GNU windres interface.
@@ -78,10 +78,6 @@ error() {
     exit 1
 }
 
-quote() {
-    echo "$1" | sed -e "s|'|'\\\\''|g; 1s/^/'/; \$s/\$/'/"
-}
-
 INCLUDE=
 VERBOSE=${VERBOSE:-false}
 INPUT=-
@@ -91,6 +87,7 @@ OUTPUT_FORMAT=coff
 CODEPAGE=1252
 CPP_OPTIONS=
 TARGET="$(basename $0 | sed 's/-[^-]*$//')"
+PROG="$(basename $0)"
 
 while [ $# != 0 ]; do
     case "$1" in
