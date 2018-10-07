@@ -19,8 +19,8 @@
 #include <stdio.h>
 
 __attribute__((noinline))
-void func(char *ptr) {
-    ptr[10] = 0;
+void func(char *ptr, int idx) {
+    ptr[idx] = 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -28,8 +28,9 @@ int main(int argc, char *argv[]) {
     if (argc > 1) {
         fprintf(stderr, "smashing stack\n");
         fflush(stderr);
-        func(buf);
+        func(buf, 10);
     } else {
+        func(buf, 9);
         fprintf(stderr, "%s: A test tool for detecting stack smashing.\n"
                         "Run this with a command line argument to trigger an "
                         "error.\n", argv[0]);
