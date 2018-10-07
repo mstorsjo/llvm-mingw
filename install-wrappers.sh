@@ -23,20 +23,21 @@ esac
 
 if [ -n "$EXEEXT" ]; then
     CLANG_MAJOR=$(basename $(echo $PREFIX/lib/clang/* | awk '{print $NF}') | cut -f 1 -d .)
-    CTW_FLAGS="$CTW_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
 fi
 
 mkdir -p $PREFIX/bin
 cp wrappers/*-wrapper.sh $PREFIX/bin
 if [ -n "$HOST" ]; then
     # TODO: If building natively on msys, pick up the default HOST value from there.
-    CTW_FLAGS="$CTW_FLAGS -DDEFAULT_TARGET=\"$HOST\""
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -DDEFAULT_TARGET=\"$HOST\""
     for i in wrappers/*-wrapper.sh; do
         cat $i | sed 's/^DEFAULT_TARGET=.*/DEFAULT_TARGET='$HOST/ > $PREFIX/bin/$(basename $i)
     done
 fi
 $CC wrappers/change-pe-arch.c -o $PREFIX/bin/change-pe-arch$EXEEXT
-$CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s $CTW_FLAGS
+$CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/windres-wrapper.c -o $PREFIX/bin/windres-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
 if [ -n "$EXEEXT" ]; then
     # For Windows, we should prefer the executable wrapper, which also works
     # when invoked from outside of MSYS.
@@ -53,7 +54,10 @@ for arch in $ARCHS; do
     for exec in ar ranlib nm strings; do
         ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec$EXEEXT || true
     done
-    for exec in ld objdump windres dlltool; do
+    for exec in windres; do
+        ln -sf $exec-wrapper$EXEEXT $arch-w64-mingw32-$exec$EXEEXT
+    done
+    for exec in ld objdump dlltool; do
         ln -sf $exec-wrapper.sh $arch-w64-mingw32-$exec
     done
     for exec in objcopy strip; do
@@ -65,10 +69,10 @@ if [ -n "$EXEEXT" ]; then
         mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
     if [ -n "$HOST" ]; then
-        for exec in clang clang++ gcc g++ ar ranlib nm strings widl; do
+        for exec in clang clang++ gcc g++ ar ranlib nm strings widl windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
-        for exec in ld objdump windres dlltool objcopy strip; do
+        for exec in ld objdump dlltool objcopy strip; do
             ln -sf $HOST-$exec $exec
         done
     fi

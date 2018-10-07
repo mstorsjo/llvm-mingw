@@ -1,0 +1,484 @@
+/*
+ * author: Josh de Kock <josh@itanimul.li>, Martin Storsjo <martin@martin.st>
+ *
+ * This is free and unencumbered software released into the public domain.
+ *
+ * Anyone is free to copy, modify, publish, use, compile, sell, or
+ * distribute this software, either in source code form or as a compiled
+ * binary, for any purpose, commercial or non-commercial, and by any
+ * means.
+ *
+ * In jurisdictions that recognize copyright laws, the author or authors
+ * of this software dedicate any and all copyright interest in the
+ * software to the public domain. We make this dedication for the benefit
+ * of the public at large and to the detriment of our heirs and
+ * successors. We intend this dedication to be an overt act of
+ * relinquishment in perpetuity of all present and future rights to this
+ * software under copyright law.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * For more information, please refer to <http://unlicense.org/>
+ */
+
+#ifdef UNICODE
+#define _UNICODE
+#endif
+
+#ifndef DEFAULT_TARGET
+#define DEFAULT_TARGET "x86_64-w64-mingw32"
+#endif
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <tchar.h>
+#include <windows.h>
+#include <process.h>
+#else
+#include <unistd.h>
+typedef char TCHAR;
+#define _T(x) x
+#define _tcsrchr strrchr
+#define _tcschr strchr
+#define _tcsdup strdup
+#define _tcscpy strcpy
+#define _tcslen strlen
+#define _tcscmp strcmp
+#define _tcsncmp strncmp
+#define _tperror perror
+#define _texecvp execvp
+#define _tmain main
+#define _tspawnvp _spawnvp
+#define _ftprintf fprintf
+#define _vftprintf vfprintf
+#define _tunlink unlink
+
+#include <sys/wait.h>
+#include <errno.h>
+
+#define _P_WAIT 0
+static int _spawnvp(int mode, const char *filename, const char * const *argv) {
+    pid_t pid;
+    if (!(pid = fork())) {
+        execvp(filename, (char **) argv);
+        perror(filename);
+        exit(1);
+    }
+    int stat = 0;
+    if (waitpid(pid, &stat, 0) == -1)
+        return -1;
+    if (WIFEXITED(stat))
+        return WEXITSTATUS(stat);
+    errno = EIO;
+    return -1;
+}
+#endif
+
+#ifdef _UNICODE
+#define TS "%ls"
+#else
+#define TS "%s"
+#endif
+
+static TCHAR *escape(const TCHAR *str) {
+#ifdef _WIN32
+    TCHAR *out = malloc((_tcslen(str) * 2 + 3) * sizeof(*out));
+    TCHAR *ptr = out;
+    int i;
+    *ptr++ = '"';
+    for (i = 0; str[i]; i++) {
+        if (str[i] == '"') {
+            int j = i - 1;
+            // Before all double quotes, backslashes need to be escaped, but
+            // not elsewhere.
+            while (j >= 0 && str[j--] == '\\')
+                *ptr++ = '\\';
+            // Escape the next double quote.
+            *ptr++ = '\\';
+        }
+        *ptr++ = str[i];
+    }
+    // Any final backslashes, before the quote around the whole argument,
+    // need to be doubled.
+    int j = i - 1;
+    while (j >= 0 && str[j--] == '\\')
+        *ptr++ = '\\';
+    *ptr++ = '"';
+    *ptr++ = '\0';
+    return out;
+#else
+    return _tcsdup(str);
+#endif
+}
+
+static TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix) {
+    int prefixlen = _tcslen(prefix);
+    int suffixlen = _tcslen(suffix);
+    TCHAR *buf = malloc((prefixlen + suffixlen + 1) * sizeof(*buf));
+    _tcscpy(buf, prefix);
+    _tcscpy(buf + prefixlen, suffix);
+    return buf;
+}
+
+// GNU binutils windres seem to require an extra level of escaping of
+// -D options to the preprocessor, which we need to undo here.
+// For defines that produce quoted strings, this windres frontend is
+// called with parameters like this: -DSTRING=\\\"1.2.3\\\"
+static const TCHAR *unescape_cpp(const TCHAR *str) {
+    TCHAR *out = _tcsdup(str);
+    int len = _tcslen(str);
+    int i, outpos = 0;
+    for (i = 0; i < len - 1; i++) {
+        if (str[i] == '\\' && str[i + 1] == '"')
+            continue;
+        out[outpos++] = str[i];
+    }
+    while (i < len)
+        out[outpos++] = str[i++];
+    out[outpos++] = '\0';
+    return out;
+}
+
+static void print_version(void) {
+    printf(
+"version: LLVM windres (GNU windres compatible) 0.1\n"
+    );
+    exit(1);
+}
+
+static void print_help(void) {
+    printf(
+"usage: llvm-windres <OPTION> [INPUT-FILE] [OUTPUT-FILE]\n"
+"\n"
+"LLVM Tool to manipulate Windows resources with a GNU windres interface.\n"
+"\n"
+"Options:\n"
+"  -i, --input <arg>          Name of the input file.\n"
+"  -o, --output <arg>         Name of the output file.\n"
+"  -J, --input-format <arg>   Input format to read.\n"
+"  -O, --output-format <arg>  Output format to generate.\n"
+"  --preprocessor <arg>       Custom preprocessor command.\n"
+"  --preprocessor-arg <arg>   Preprocessor command arguments.\n"
+"  -F, --target <arg>         Target for COFF objects to be compiled for.\n"
+"  -I, --include-dir <arg>    Include directory to pass to preprocessor and resource compiler.\n"
+"  -D, --define <arg[=val]>   Define to pass to preprocessor.\n"
+"  -U, --undefine <arg[=val]> Undefine to pass to preprocessor.\n"
+"  -c, --codepage <arg>       Default codepage to use when reading an rc file (0x0-0xffff).\n"
+"  -v, --verbose              Enable verbose output.\n"
+"  -V, --version              Display version.\n"
+"  -h, --help                 Display this message and exit.\n"
+"Input Formats:\n"
+"  rc                         Text Windows Resource\n"
+"  res                        Binary Windows Resource\n"
+"Output Formats:\n"
+"  res                        Binary Windows Resource\n"
+"  coff                       COFF object\n"
+"Targets:\n"
+"  armv7-w64-mingw32\n"
+"  aarch64-w64-mingw32\n"
+"  i686-w64-mingw32\n"
+"  x86_86-w64-mingw32\n"
+    );
+    exit(1);
+}
+
+static void error(const TCHAR *basename, const TCHAR *fmt, ...) {
+    _ftprintf(stderr, _T(TS": error: "), basename);
+    va_list ap;
+    va_start(ap, fmt);
+    _vftprintf(stderr, fmt, ap);
+    _ftprintf(stderr, _T("\n"));
+    va_end(ap);
+    exit(1);
+}
+
+static void print_argv(const TCHAR **exec_argv) {
+    while (*exec_argv) {
+        _ftprintf(stderr, _T(TS" "), *exec_argv);
+        exec_argv++;
+    }
+    _ftprintf(stderr, _T("\n"));
+}
+
+static TCHAR *_tcsrchrs(const TCHAR *str, TCHAR char1, TCHAR char2) {
+    TCHAR *ptr1 = _tcsrchr(str, char1);
+    TCHAR *ptr2 = _tcsrchr(str, char2);
+    if (!ptr1)
+        return ptr2;
+    if (!ptr2)
+        return ptr1;
+    if (ptr1 < ptr2)
+        return ptr2;
+    return ptr1;
+}
+
+int _tmain(int argc, TCHAR* argv[]) {
+    const TCHAR *argv0 = argv[0];
+    const TCHAR *sep = _tcsrchrs(argv0, '/', '\\');
+    TCHAR *dir = _tcsdup(_T(""));
+    const TCHAR *basename = argv0;
+    if (sep) {
+        dir = _tcsdup(argv0);
+        dir[sep + 1 - argv0] = '\0';
+        basename = sep + 1;
+    }
+#ifdef _WIN32
+    TCHAR module_path[8192];
+    GetModuleFileName(NULL, module_path, sizeof(module_path)/sizeof(module_path[0]));
+    TCHAR *sep2 = _tcsrchr(module_path, '\\');
+    if (sep2) {
+        sep2[1] = '\0';
+        dir = _tcsdup(module_path);
+    }
+#endif
+    basename = _tcsdup(basename);
+    TCHAR *period = _tcschr(basename, '.');
+    if (period)
+        *period = '\0';
+    TCHAR *dash = _tcsrchr(basename, '-');
+    const TCHAR *target = basename;
+    if (dash) {
+        *dash = '\0';
+    } else {
+        target = _T(DEFAULT_TARGET);
+    }
+
+
+    const TCHAR *input = _T("-");
+    const TCHAR *output = _T("/dev/stdout");
+    const TCHAR *input_format = _T("rc");
+    const TCHAR *output_format = _T("coff");
+    const TCHAR **includes = malloc(argc * sizeof(*includes));
+    int nb_includes = 0;
+    const TCHAR *codepage = _T("1252");
+    const TCHAR **cpp_options = malloc(argc * sizeof(*cpp_options));
+    int nb_cpp_options = 0;
+    int verbose = 0;
+
+#define _tcsstart(a, b) !_tcsncmp(a, b, sizeof(b)/sizeof(TCHAR) - 1)
+
+#define IF_MATCH_EITHER(short, long) \
+    if (!_tcscmp(argv[i], _T(short)) || !_tcscmp(argv[i], _T(long)))
+#define OPTION(short, long, var) \
+    if (_tcsstart(argv[i], _T(short "=")) || _tcsstart(argv[i], _T(long "="))) { \
+        var = _tcschr(argv[i], '=') + 1; \
+    } else IF_MATCH_EITHER(short, long) { \
+        if (i + 1 < argc) \
+            var = argv[++i]; \
+        else \
+            error(basename, _T(TS" missing argument"), argv[i]); \
+    }
+#define SEPARATE_ARG(var) do { \
+        if (i + 1 < argc) \
+            var = argv[++i]; \
+        else \
+            error(basename, _T(TS" missing argument"), argv[i]); \
+    } while (0)
+#define SEPARATE_ARG_PREFIX(var, prefix) do { \
+        if (i + 1 < argc) \
+            var = concat(_T(prefix), argv[++i]); \
+        else \
+            error(basename, _T(TS" missing argument"), argv[i]); \
+    } while (0)
+
+    for (int i = 1; i < argc; i++) {
+        OPTION("-i", "--input", input)
+        else OPTION("-o", "--output", output)
+        else OPTION("-J", "--input-format", input_format)
+        else OPTION("-O", "--output-format", output_format)
+        else OPTION("-F", "--target", target)
+        else IF_MATCH_EITHER("-I", "--include-dir") {
+            SEPARATE_ARG(includes[nb_includes++]);
+        } else if (_tcsstart(argv[i], _T("--include-dir="))) {
+            includes[nb_includes++] = _tcschr(argv[i], '=') + 1;
+        } else if (_tcsstart(argv[i], _T("-I"))) {
+            includes[nb_includes++] = argv[i] + 2;
+        } else OPTION("-c", "--codepage", codepage)
+        else if (!_tcscmp(argv[i], _T("--preprocessor"))) {
+            error(basename, _T("ENOSYS"));
+        } else if (_tcsstart(argv[i], _T("--preprocessor-arg="))) {
+            cpp_options[nb_cpp_options++] = _tcschr(argv[i], '=') + 1;
+        } else if (!_tcscmp(argv[i], _T("--preprocessor-arg"))) {
+            SEPARATE_ARG(cpp_options[nb_cpp_options++]);
+        } else if (_tcsstart(argv[i], _T("-D"))) {
+            cpp_options[nb_cpp_options++] = argv[i];
+        } else IF_MATCH_EITHER("-D", "--define") {
+            SEPARATE_ARG_PREFIX(cpp_options[nb_cpp_options++], "-D");
+        } else if (_tcsstart(argv[i], _T("-U"))) {
+            cpp_options[nb_cpp_options++] = argv[i];
+        } else IF_MATCH_EITHER("-U", "--undefine") {
+            SEPARATE_ARG_PREFIX(cpp_options[nb_cpp_options++], "-U");
+        } else IF_MATCH_EITHER("-v", "--verbose") {
+            verbose = 1;
+        } else IF_MATCH_EITHER("-V", "--version") {
+            print_version();
+        } else IF_MATCH_EITHER("-h", "--help") {
+            print_help();
+        } else if (_tcsstart(argv[i], _T("-"))) {
+            error(basename, _T("unrecognized option: `"TS"'"), argv[i]);
+        } else {
+            if (!_tcscmp(input, _T("-")))
+                input = argv[i];
+            else if (!_tcscmp(output, _T("/dev/stdout")))
+                output = argv[i];
+            else
+                error(basename, _T("rip: `"TS"'"), argv[i]);
+        }
+    }
+
+    TCHAR *arch = _tcsdup(target);
+    dash = _tcschr(arch, '-');
+    if (dash)
+        *dash = '\0';
+
+    const TCHAR *machine = _T("unknown");
+    if (!_tcscmp(arch, _T("i686")))
+        machine = _T("X86");
+    else if (!_tcscmp(arch, _T("x86_64")))
+        machine = _T("X64");
+    else if (!_tcscmp(arch, _T("armv7")))
+        machine = _T("ARM");
+    else if (!_tcscmp(arch, _T("aarch64")))
+        machine = _T("ARM64");
+
+    const TCHAR *CC = concat(target, _T("-clang"));
+
+    const TCHAR **rc_options = malloc(2 * argc * sizeof(*cpp_options));
+    int nb_rc_options = 0;
+    for (int i = 0; i < nb_includes; i++) {
+        cpp_options[nb_cpp_options++] = concat(_T("-I"), includes[i]);
+        rc_options[nb_rc_options++] = _T("-I");
+        rc_options[nb_rc_options++] = includes[i];
+    }
+
+    for (int i = 0; i < nb_cpp_options; i++)
+        cpp_options[i] = unescape_cpp(cpp_options[i]);
+
+    const TCHAR *preproc_rc = concat(output, _T(".preproc.rc"));
+    const TCHAR *res = concat(output, _T(".out.res"));
+
+    TCHAR *inputdir = _tcsdup(input);
+    {
+        TCHAR *sep = _tcsrchrs(inputdir, '/', '\\');
+        if (sep)
+            *sep = '\0';
+        else
+            inputdir = _tcsdup(_T("."));
+    }
+
+
+    int max_arg = 2 * argc + 20;
+    const TCHAR **exec_argv = malloc(max_arg * sizeof(*exec_argv));
+    int arg = 0;
+
+    if (!_tcscmp(input_format, _T("rc"))) {
+        exec_argv[arg++] = concat(dir, CC);
+        exec_argv[arg++] = _T("-E");
+        for (int i = 0; i < nb_cpp_options; i++)
+            exec_argv[arg++] = escape(cpp_options[i]);
+        exec_argv[arg++] = _T("-xc");
+        exec_argv[arg++] = _T("-DRC_INVOKED=1");
+        exec_argv[arg++] = escape(input);
+        exec_argv[arg++] = _T("-o");
+        exec_argv[arg++] = escape(preproc_rc);
+        exec_argv[arg] = NULL;
+
+        if (verbose)
+            print_argv(exec_argv);
+        int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+        if (ret == -1) {
+            _tperror(exec_argv[0]);
+            return 1;
+        }
+        if (ret != 0) {
+            error(basename, _T("preprocessor failed"));
+            return ret;
+        }
+
+        arg = 0;
+        exec_argv[arg++] = concat(dir, _T("llvm-rc"));
+        for (int i = 0; i < nb_rc_options; i++)
+            exec_argv[arg++] = escape(rc_options[i]);
+        exec_argv[arg++] = _T("-I");
+        exec_argv[arg++] = escape(inputdir);
+        exec_argv[arg++] = escape(preproc_rc);
+        exec_argv[arg++] = _T("-c");
+        exec_argv[arg++] = codepage;
+        exec_argv[arg++] = _T("-fo");
+        if (!_tcscmp(output_format, _T("res")))
+            exec_argv[arg++] = escape(output);
+        else
+            exec_argv[arg++] = escape(res);
+        exec_argv[arg] = NULL;
+
+        if (verbose)
+            print_argv(exec_argv);
+        ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+        if (ret == -1) {
+            _tperror(exec_argv[0]);
+            return 1;
+        }
+        if (ret != 0) {
+            error(basename, _T("llvm-rc failed"));
+            if (!verbose)
+                _tunlink(preproc_rc);
+            return ret;
+        }
+
+        if (!_tcscmp(output_format, _T("res"))) {
+            // All done
+        } else if (!_tcscmp(output_format, _T("coff"))) {
+            arg = 0;
+            exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
+            exec_argv[arg++] = escape(res);
+            exec_argv[arg++] = concat(_T("-machine:"), machine);
+            exec_argv[arg++] = escape(concat(_T("-out:"), output));
+            exec_argv[arg] = NULL;
+
+            if (verbose)
+                print_argv(exec_argv);
+            int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+            if (ret == -1) {
+                _tperror(exec_argv[0]);
+                return 1;
+            }
+            if (!verbose) {
+                _tunlink(preproc_rc);
+                _tunlink(res);
+            }
+            return ret;
+        } else {
+            error(basename, _T("invalid output format: `"TS"'"), output_format);
+        }
+    } else if (!_tcscmp(input_format, _T("res"))) {
+        exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
+        exec_argv[arg++] = escape(input);
+        exec_argv[arg++] = concat(_T("-machine:"), machine);
+        exec_argv[arg++] = escape(concat(_T("-out:"), output));
+        exec_argv[arg] = NULL;
+
+        if (verbose)
+            print_argv(exec_argv);
+        int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+        if (ret == -1) {
+            _tperror(exec_argv[0]);
+            return 1;
+        }
+        return ret;
+    } else {
+        error(basename, _T("invalid input format: `"TS"'"), input_format);
+    }
+
+    return 0;
+}
