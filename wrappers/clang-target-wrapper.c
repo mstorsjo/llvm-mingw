@@ -46,7 +46,7 @@ typedef char TCHAR;
 #define EXECVP_CAST (char **)
 #endif
 
-TCHAR *escape(const TCHAR *str) {
+static TCHAR *escape(const TCHAR *str) {
 #ifdef _WIN32
     TCHAR *out = malloc((_tcslen(str) * 2 + 3) * sizeof(*out));
     TCHAR *ptr = out;
