@@ -9,6 +9,18 @@ if [ "$TARGET" = "$BASENAME" ]; then
 fi
 ARCH="${TARGET%%-*}"
 
+# Check if trying to compile Ada; if we try to do this, invoking clang
+# would end up invoking <triplet>-gcc with the same arguments, which ends
+# up in an infinite recursion.
+case "$*" in
+*-x\ ada*)
+    echo "Ada is not supported" >&2
+    exit 1
+    ;;
+*)
+    ;;
+esac
+
 # Allow setting e.g. CCACHE=1 to wrap all building in ccache.
 if [ -n "$CCACHE" ]; then
     CCACHE=ccache

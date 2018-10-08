@@ -142,6 +142,16 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (dash)
         *dash = '\0';
 
+    // Check if trying to compile Ada; if we try to do this, invoking clang
+    // would end up invoking <triplet>-gcc with the same arguments, which ends
+    // up in an infinite recursion.
+    for (int i = 1; i < argc - 1; i++) {
+        if (!_tcscmp(argv[i], _T("-x")) && !_tcscmp(argv[i + 1], _T("ada"))) {
+            fprintf(stderr, "Ada is not supported\n");
+            return 1;
+        }
+    }
+
     int max_arg = argc + 20;
     const TCHAR **exec_argv = malloc(max_arg * sizeof(*exec_argv));
     int arg = 0;
