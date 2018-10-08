@@ -84,18 +84,35 @@ static TCHAR *escape(const TCHAR *str) {
 #endif
 }
 
+static TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix) {
+    int prefixlen = _tcslen(prefix);
+    int suffixlen = _tcslen(suffix);
+    TCHAR *buf = malloc((prefixlen + suffixlen + 1) * sizeof(*buf));
+    _tcscpy(buf, prefix);
+    _tcscpy(buf + prefixlen, suffix);
+    return buf;
+}
+
+static TCHAR *_tcsrchrs(const TCHAR *str, TCHAR char1, TCHAR char2) {
+    TCHAR *ptr1 = _tcsrchr(str, char1);
+    TCHAR *ptr2 = _tcsrchr(str, char2);
+    if (!ptr1)
+        return ptr2;
+    if (!ptr2)
+        return ptr1;
+    if (ptr1 < ptr2)
+        return ptr2;
+    return ptr1;
+}
+
 int _tmain(int argc, TCHAR* argv[]) {
     const TCHAR *argv0 = argv[0];
-    const TCHAR *sep = _tcsrchr(argv0, '/');
-    if (!sep)
-        sep = _tcsrchr(argv0, '\\');
-    TCHAR *clang = _T(CLANG);
+    const TCHAR *sep = _tcsrchrs(argv0, '/', '\\');
+    TCHAR *dir = _tcsdup(_T(""));
     const TCHAR *basename = argv0;
     if (sep) {
-        int baselen = sep + 1 - argv0;
-        clang = malloc((_tcslen(argv0) + 50) * sizeof(*clang));
-        memcpy(clang, argv0, baselen * sizeof(*clang));
-        _tcscpy(clang + baselen, _T(CLANG));
+        dir = _tcsdup(argv0);
+        dir[sep + 1 - argv0] = '\0';
         basename = sep + 1;
     }
 #ifdef _WIN32
@@ -103,8 +120,8 @@ int _tmain(int argc, TCHAR* argv[]) {
     GetModuleFileName(NULL, module_path, sizeof(module_path)/sizeof(module_path[0]));
     TCHAR *sep2 = _tcsrchr(module_path, '\\');
     if (sep2) {
-        _tcscpy(sep2 + 1, _T(CLANG));
-        clang = module_path;
+        sep2[1] = '\0';
+        dir = _tcsdup(module_path);
     }
 #endif
     basename = _tcsdup(basename);
@@ -130,7 +147,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     int arg = 0;
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");
-    exec_argv[arg++] = clang;
+    exec_argv[arg++] = concat(dir, _T(CLANG));
 
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.
     if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++")))
