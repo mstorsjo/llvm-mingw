@@ -31,14 +31,14 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 export PATH=$DIR:$PATH
 
 print_version () {
-    cat <<EOF >&2
+    cat <<EOF
 version: LLVM windres (GNU windres compatible) 0.1
 EOF
     exit 1
 }
 
 print_help () {
-    cat <<EOF >&2
+    cat <<EOF
 usage: llvm-windres <OPTION> [INPUT-FILE] [OUTPUT-FILE]
 
 LLVM Tool to manipulate Windows resources with a GNU windres interface.
