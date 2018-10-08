@@ -48,7 +48,7 @@ else
 fi
 cd $PREFIX/bin
 for arch in $ARCHS; do
-    for exec in clang clang++ gcc g++; do
+    for exec in clang clang++ gcc g++ cc c99 c11 c++; do
         ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-mingw32-$exec$CTW_LINK_SUFFIX
     done
     for exec in ar ranlib nm strings; do
@@ -69,7 +69,7 @@ if [ -n "$EXEEXT" ]; then
         mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
     if [ -n "$HOST" ]; then
-        for exec in clang clang++ gcc g++ ar ranlib nm strings widl windres; do
+        for exec in clang clang++ gcc g++ cc c99 c11 c++ ar ranlib nm strings widl windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
         for exec in ld objdump dlltool objcopy strip; do
