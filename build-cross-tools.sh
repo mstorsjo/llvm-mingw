@@ -16,6 +16,6 @@ export HOST=$CROSS_ARCH-w64-mingw32
 
 ./build-llvm.sh $PREFIX
 ./strip-llvm.sh $PREFIX
-./build-mingw-w64-widl.sh $PREFIX
+./build-mingw-w64-widl.sh $PREFIX --skip-triplet-prefix
 ./install-wrappers.sh $PREFIX
 ./prepare-cross-toolchain.sh $NATIVE $PREFIX $CROSS_ARCH
