@@ -20,6 +20,7 @@ TESTS_CPP="hello-cpp hello-exception tlstest-main exception-locale"
 TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
+TESTS_UBSAN="ubsan"
 for arch in $ARCHS; do
     mkdir -p $arch
     for test in $TESTS_C; do
@@ -53,6 +54,16 @@ for arch in $ARCHS; do
         *) continue ;;
         esac
         $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$arch/$test-asan.pdb
+    done
+    for test in $TESTS_UBSAN; do
+        case $arch in
+        # Ubsan might not require anything too x86 specific, but we don't
+        # build any of the sanitizer libs for anything else than x86.
+        i686|x86_64) ;;
+        *) continue ;;
+        esac
+        $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fsanitize=undefined
+        TESTS_EXTRA="$TESTS_EXTRA $test"
     done
     DLL="$TESTS_C_DLL $TESTS_CPP_DLL"
     case $arch in
