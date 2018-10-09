@@ -18,11 +18,6 @@ Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
 binutils with LLVM based tools.
 
-This is similar to https://github.com/martell/mingw-w64-clang, with
-the exact same goal but with a slightly different mechanism for
-building it, allowing a full from-scratch build of all components
-in one command.
-
 The toolchain can be reproducibly built into a Docker image, or be
 built and installed in the host environment (currently only tested
 on Linux and macOS).
