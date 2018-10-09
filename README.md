@@ -54,8 +54,8 @@ Status
 The toolchain currently does support both C and C++, including support
 for exception handling.
 
-It is in practice quite new and immature and haven't been proven with a
-large number of projects yet though. You will probably run into issues
+It is in practice new and hasn't been tested with quite as many projects
+as the regular GCC/binutils based toolchains yet. You might run into issues
 building non-trivial projects.
 
 
