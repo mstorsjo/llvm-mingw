@@ -48,12 +48,9 @@ for arch in $ARCHS; do
     # These aren't run, since asan doesn't work within wine.
     for test in $TESTS_ASAN; do
         case $arch in
-        i686|x86_64)
-            # Sanitizers on windows only support x86.
-            ;;
-        *)
-            continue
-            ;;
+        # Sanitizers on windows only support x86.
+        i686|x86_64) ;;
+        *) continue ;;
         esac
         $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$arch/$test-asan.pdb
     done
