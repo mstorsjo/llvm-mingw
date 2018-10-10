@@ -53,10 +53,22 @@ static TCHAR *escape(const TCHAR *str) {
     int i;
     *ptr++ = '"';
     for (i = 0; str[i]; i++) {
-        if (str[i] == '"')
+        if (str[i] == '"') {
+            int j = i - 1;
+            // Before all double quotes, backslashes need to be escaped, but
+            // not elsewhere.
+            while (j >= 0 && str[j--] == '\\')
+                *ptr++ = '\\';
+            // Escape the next double quote.
             *ptr++ = '\\';
+        }
         *ptr++ = str[i];
     }
+    // Any final backslashes, before the quote around the whole argument,
+    // need to be doubled.
+    int j = i - 1;
+    while (j >= 0 && str[j--] == '\\')
+        *ptr++ = '\\';
     *ptr++ = '"';
     *ptr++ = '\0';
     return out;
