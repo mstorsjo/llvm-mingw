@@ -67,20 +67,35 @@ if [ -n "$(which ninja)" ]; then
 fi
 
 if [ -n "$HOST" ]; then
+    find_native_tools() {
+        if [ -d llvm/build/bin ]; then
+            echo $(pwd)/llvm/build/bin
+        elif [ -d llvm/build-asserts/bin ]; then
+            echo $(pwd)/llvm/build-asserts/bin
+        elif [ -d llvm/build-noasserts/bin ]; then
+            echo $(pwd)/llvm/build-noasserts/bin
+        elif [ -n "$(which llvm-tblgen)" ]; then
+            echo $(dirname $(which llvm-tblgen))
+        fi
+    }
+    native=$(find_native_tools)
+    if [ -z "$native" ]; then
+        # As we don't do any install here, the target prefix shouldn't actually
+        # be created.
+        HOST="" BUILDTARGETS="llvm-tblgen clang-tblgen llvm-config" $0 $PREFIX/llvmtools
+        native=$(find_native_tools)
+        if [ -z "$native" ]; then
+            echo Unable to find the newly built llvm-tblgen
+            exit 1
+        fi
+    fi
+
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_NAME=Windows"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CROSSCOMPILE=1"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_RC_COMPILER=$HOST-windres"
-    if [ -d llvm/build/bin ]; then
-        native=$(pwd)/llvm/build/bin
-    elif [ -d llvm/build-asserts/bin ]; then
-        native=$(pwd)/llvm/build-asserts/bin
-    elif [ -d llvm/build-noasserts/bin ]; then
-        native=$(pwd)/llvm/build-noasserts/bin
-    else
-        native=$(dirname $(which llvm-tblgen))
-    fi
+
     CMAKEFLAGS="$CMAKEFLAGS -DLLVM_TABLEGEN=$native/llvm-tblgen"
     CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TABLEGEN=$native/clang-tblgen"
     CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config"
@@ -112,8 +127,10 @@ cmake \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil" \
     $CMAKEFLAGS \
     ..
+
+: ${BUILDTARGETS:=install/strip}
 if [ -n "$NINJA" ]; then
-    ninja install/strip
+    ninja $BUILDTARGETS
 else
-    make -j$CORES install/strip
+    make -j$CORES $BUILDTARGETS
 fi
