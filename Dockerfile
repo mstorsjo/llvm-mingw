@@ -32,7 +32,7 @@ RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build
 
 # Build MinGW-w64, compiler-rt and mingw-w64's extra libraries
-COPY build-mingw-w64.sh build-mingw-w64-widl.sh build-compiler-rt.sh build-mingw-w64-libraries.sh ./
+COPY build-mingw-w64.sh build-compiler-rt.sh build-mingw-w64-libraries.sh ./
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX && \
     ./build-compiler-rt.sh $TOOLCHAIN_PREFIX && \
     ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX && \
