@@ -18,7 +18,7 @@ ARG CORES=4
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
 # Build LLVM
-COPY build-llvm.sh .
+COPY build-llvm.sh ./
 RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 
 # Strip the LLVM install output immediately. (This doesn't reduce the
@@ -26,14 +26,14 @@ RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 # but reduces build times if tweaking the contents of strip-llvm.sh.)
 # Most of the size of the docker image comes from the build directory that
 # we keep in any case.
-COPY strip-llvm.sh .
+COPY strip-llvm.sh ./
 RUN ./strip-llvm.sh $TOOLCHAIN_PREFIX
 
 ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 # Install the usual $TUPLE-clang binaries
 COPY wrappers/*.sh wrappers/*.c ./wrappers/
-COPY install-wrappers.sh .
+COPY install-wrappers.sh ./
 RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 
 # Build MinGW-w64
@@ -41,11 +41,11 @@ COPY build-mingw-w64.sh build-mingw-w64-widl.sh ./
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
 
 # Build compiler-rt
-COPY build-compiler-rt.sh .
+COPY build-compiler-rt.sh ./
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 
 # Build mingw-w64's extra libraries
-COPY build-mingw-w64-libraries.sh .
+COPY build-mingw-w64-libraries.sh ./
 RUN ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX
 
 # Build C test applications
