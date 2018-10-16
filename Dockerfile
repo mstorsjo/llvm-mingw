@@ -44,7 +44,7 @@ RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build
 
 # Build sanitizers
-COPY build-compiler-rt.sh .
+COPY build-compiler-rt.sh ./
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
     rm -rf /build
 
