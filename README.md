@@ -12,7 +12,7 @@ Benefits of a LLVM based MinGW toolchain are:
   armv7 and arm64) instead of separate compiler binaries for each
   architecture
 - Support for generating debug info in PDB format
-- Support for Address Sanitizer
+- Support for Address Sanitizer and Undefined Behaviour Sanitizer
 
 Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
