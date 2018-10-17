@@ -51,13 +51,13 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     cd llvm
     [ -z "$SYNC" ] || git fetch
-    git checkout 17dce3bea3d23a5d20a00922725e6841e8423be5
+    git checkout c76c02e1ed1a158628019f61aea45fcf87712d2c
     cd tools/clang
     [ -z "$SYNC" ] || git fetch
-    git checkout 339ff47af8084b99b9968f078e66f62d6adfafab
+    git checkout e3de7bb263271008c55cc8bf3186a3a08999fbaa
     cd ../lld
     [ -z "$SYNC" ] || git fetch
-    git checkout ba88da80b300e0723b141f5080b2ef0bbad29e4a
+    git checkout 935d766de8b251de001fed5f44b9567ccf6cadb1
     cd ../../..
 fi
 
