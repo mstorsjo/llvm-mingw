@@ -44,7 +44,11 @@ scripts have changed, you might need to wipe the build directory under
 each project for the new configure options to be taken into use.
 
 Prebuilt docker linux images containing llvm-mingw are available from
-[Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/).
+[Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/), and
+prebuilt toolchains (both for use as cross compiler from linux, and
+for use on windows) are available for download on GitHub. The toolchains
+for windows come in 4 versions, one for each of the 4 supported
+architectures, but each one of them can target all 4 architectures.
 
 
 
