@@ -311,14 +311,14 @@ int _tmain(int argc, TCHAR* argv[]) {
             cpp_options[nb_cpp_options++] = _tcschr(argv[i], '=') + 1;
         } else if (!_tcscmp(argv[i], _T("--preprocessor-arg"))) {
             SEPARATE_ARG(cpp_options[nb_cpp_options++]);
-        } else if (_tcsstart(argv[i], _T("-D"))) {
-            cpp_options[nb_cpp_options++] = argv[i];
         } else IF_MATCH_EITHER("-D", "--define") {
             SEPARATE_ARG_PREFIX(cpp_options[nb_cpp_options++], "-D");
-        } else if (_tcsstart(argv[i], _T("-U"))) {
+        } else if (_tcsstart(argv[i], _T("-D"))) {
             cpp_options[nb_cpp_options++] = argv[i];
         } else IF_MATCH_EITHER("-U", "--undefine") {
             SEPARATE_ARG_PREFIX(cpp_options[nb_cpp_options++], "-U");
+        } else if (_tcsstart(argv[i], _T("-U"))) {
+            cpp_options[nb_cpp_options++] = argv[i];
         } else IF_MATCH_EITHER("-v", "--verbose") {
             verbose = 1;
         } else IF_MATCH_EITHER("-V", "--version") {
