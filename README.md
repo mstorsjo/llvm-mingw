@@ -91,6 +91,9 @@ normal GCC/binutils based MinGW.
   objcopy/strip for this purpose instead, with a wrapper to relabel ARM/ARM64
   binaries into something that binutils objcopy/strip accepts to work on,
   and back.
+- The import libraries that this toolchain produces are in the same COFF
+  short import format as MSVC produces; GNU binutils doesn't support
+  this format.
 
 Additionally, one may run into other minor differences between GCC and clang.
 
