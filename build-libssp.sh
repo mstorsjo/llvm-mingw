@@ -9,6 +9,8 @@ fi
 PREFIX="$1"
 export PATH=$PREFIX/bin:$PATH
 
+: ${CORES:=$(nproc 2>/dev/null)}
+: ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 

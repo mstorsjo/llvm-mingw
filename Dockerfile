@@ -13,8 +13,6 @@ RUN git config --global user.name "LLVM MinGW" && \
 
 WORKDIR /build
 
-ARG CORES=4
-
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
 # Build and strip the LLVM installation
