@@ -175,6 +175,7 @@ static void print_help(void) {
 "  -D, --define <arg[=val]>   Define to pass to preprocessor.\n"
 "  -U, --undefine <arg[=val]> Undefine to pass to preprocessor.\n"
 "  -c, --codepage <arg>       Default codepage to use when reading an rc file (0x0-0xffff).\n"
+"      --use-temp-file        Use a temporary file for the preprocessing output.\n"
 "  -v, --verbose              Enable verbose output.\n"
 "  -V, --version              Display version.\n"
 "  -h, --help                 Display this message and exit.\n"
@@ -325,6 +326,8 @@ int _tmain(int argc, TCHAR* argv[]) {
             print_version();
         } else IF_MATCH_EITHER("-h", "--help") {
             print_help();
+        } else if (!_tcscmp(argv[i], _T("--use-temp-file"))) {
+            // No-op, we use a temp file by default.
         } else if (_tcsstart(argv[i], _T("-"))) {
             error(basename, _T("unrecognized option: `"TS"'"), argv[i]);
         } else {
