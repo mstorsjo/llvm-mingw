@@ -293,7 +293,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     } else if (!_tcscmp(arch, _T("armv7"))) {
         // Dwarf is the default here.
     } else if (!_tcscmp(arch, _T("aarch64"))) {
-        // Dwarf is the default here.
+        exec_argv[arg++] = _T("-fseh-exceptions");
     }
 
     if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
