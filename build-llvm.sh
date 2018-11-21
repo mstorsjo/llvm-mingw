@@ -67,7 +67,7 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
 fi
 
 if [ -n "$(which ninja)" ]; then
-    CMAKE_GENERATOR="-G Ninja"
+    CMAKE_GENERATOR="Ninja"
     NINJA=1
 fi
 
@@ -123,7 +123,7 @@ cd llvm
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 cmake \
-    $CMAKE_GENERATOR \
+    ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
