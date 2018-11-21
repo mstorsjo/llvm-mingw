@@ -73,7 +73,7 @@ if [ -n "$(which ninja)" ]; then
 else
     case $(uname) in
     MINGW*)
-        echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+        CMAKE_GENERATOR="MSYS Makefiles"
         ;;
     *)
         ;;

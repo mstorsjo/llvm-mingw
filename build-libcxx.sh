@@ -66,7 +66,7 @@ MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
 case $(uname) in
 MINGW*)
-    echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+    CMAKE_GENERATOR="MSYS Makefiles"
     ;;
 *)
     ;;
@@ -86,7 +86,6 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        if [ -f ../../PreLoad.cmake ]; then cp ../../PreLoad.cmake .; fi
 
         export CC="$PREFIX/bin/clang -target $arch-w64-mingw32 -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -Qunused-arguments"
         export CXX="$CC -driver-mode=g++"
@@ -96,6 +95,7 @@ build_all() {
         # to the compiler flags; manually add it here to avoid noisy warnings
         # that normally are suppressed.
         cmake \
+            ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
             -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-mingw32 \
@@ -136,7 +136,6 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        if [ -f ../../PreLoad.cmake ]; then cp ../../PreLoad.cmake .; fi
 
         export CC="$PREFIX/bin/clang -target $arch-w64-mingw32 -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -Qunused-arguments"
         export CXX="$CC -driver-mode=g++"
@@ -151,6 +150,7 @@ build_all() {
             LIBCXXABI_VISIBILITY_FLAGS="-D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS"
         fi
         cmake \
+            ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
             -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-mingw32 \
@@ -181,7 +181,6 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        if [ -f ../../PreLoad.cmake ]; then cp ../../PreLoad.cmake .; fi
 
         export CC="$PREFIX/bin/clang -target $arch-w64-mingw32 -rtlib=compiler-rt -stdlib=libc++ -fuse-ld=lld -Qunused-arguments"
         export CXX="$CC -driver-mode=g++"
@@ -192,6 +191,7 @@ build_all() {
             LIBCXX_VISIBILITY_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
         fi
         cmake \
+            ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
             -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-mingw32 \
@@ -244,4 +244,3 @@ build_all() {
 # work when linking against the DLL, but not vice versa.
 [ -z "$BUILD_SHARED" ] || build_all shared
 [ -z "$BUILD_STATIC" ] || build_all static
-rm -f PreLoad.cmake

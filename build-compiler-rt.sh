@@ -70,7 +70,7 @@ for arch in $ARCHS; do
 
     case $(uname) in
     MINGW*)
-        echo "set(CMAKE_GENERATOR \"MSYS Makefiles\" CACHE INTERNAL \"\" FORCE)" > PreLoad.cmake
+        CMAKE_GENERATOR="MSYS Makefiles"
         ;;
     *)
         ;;
@@ -83,6 +83,7 @@ for arch in $ARCHS; do
     export ASM="$CC"
 
     cmake \
+        ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_AR=$PREFIX/bin/llvm-ar \
