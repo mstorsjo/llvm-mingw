@@ -66,7 +66,13 @@ for arch in $ARCHS; do
 done
 if [ -n "$EXEEXT" ]; then
     if [ ! -L clang$EXEEXT ]; then
-        mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
+        cmd=mv
+        if [ -z "$HOST" ]; then
+            # If we aren't making unprefixed wrappers below, keep a plain
+            # clang.exe around, as build-compiler-rt.sh needs it.
+            cmd=cp
+        fi
+        $cmd clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
     if [ -n "$HOST" ]; then
         for exec in clang clang++ gcc g++ cc c99 c11 c++ ar ranlib nm strings widl windres; do
