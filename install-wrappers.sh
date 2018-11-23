@@ -7,6 +7,8 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 PREFIX="$1"
+mkdir -p "$PREFIX"
+PREFIX="$(cd "$PREFIX" && pwd)"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 

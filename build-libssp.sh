@@ -7,6 +7,8 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 PREFIX="$1"
+mkdir -p "$PREFIX"
+PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH=$PREFIX/bin:$PATH
 
 : ${CORES:=$(nproc 2>/dev/null)}

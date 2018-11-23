@@ -23,6 +23,10 @@ if [ -z "$PREFIX" ]; then
     echo $0 [--disable-shared] [--disable-static] dest
     exit 1
 fi
+
+mkdir -p "$PREFIX"
+PREFIX="$(cd "$PREFIX" && pwd)"
+
 export PATH=$PREFIX/bin:$PATH
 
 : ${CORES:=$(nproc 2>/dev/null)}
