@@ -70,12 +70,13 @@ if [ -n "$EXEEXT" ]; then
     if [ ! -L clang$EXEEXT ]; then
         mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
-    if [ -n "$HOST" ]; then
-        for exec in clang clang++ gcc g++ cc c99 c11 c++ ar ranlib nm strings widl windres; do
-            ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
-        done
-        for exec in ld objdump dlltool objcopy strip; do
-            ln -sf $HOST-$exec $exec
-        done
+    if [ -z "$HOST" ]; then
+        HOST=$(./clang-$CLANG_MAJOR -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
+    for exec in clang clang++ gcc g++ cc c99 c11 c++ ar ranlib nm strings widl windres; do
+        ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
+    done
+    for exec in ld objdump dlltool objcopy strip; do
+        ln -sf $HOST-$exec $exec
+    done
 fi
