@@ -37,7 +37,6 @@ if [ -n "$HOST" ]; then
         cat $i | sed 's/^DEFAULT_TARGET=.*/DEFAULT_TARGET='$HOST/ > $PREFIX/bin/$(basename $i)
     done
 fi
-$CC wrappers/change-pe-arch.c -o $PREFIX/bin/change-pe-arch$EXEEXT
 $CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
 $CC wrappers/windres-wrapper.c -o $PREFIX/bin/windres-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
 if [ -n "$EXEEXT" ]; then
@@ -53,7 +52,7 @@ for arch in $ARCHS; do
     for exec in clang clang++ gcc g++ cc c99 c11 c++; do
         ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-mingw32-$exec$CTW_LINK_SUFFIX
     done
-    for exec in ar ranlib nm strings; do
+    for exec in ar ranlib nm objcopy strings strip; do
         ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec$EXEEXT || true
     done
     for exec in windres; do
@@ -61,9 +60,6 @@ for arch in $ARCHS; do
     done
     for exec in ld objdump dlltool; do
         ln -sf $exec-wrapper.sh $arch-w64-mingw32-$exec
-    done
-    for exec in objcopy strip; do
-        ln -sf objcopy-wrapper.sh $arch-w64-mingw32-$exec
     done
 done
 if [ -n "$EXEEXT" ]; then

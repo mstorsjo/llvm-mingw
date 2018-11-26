@@ -39,16 +39,6 @@ RUN ./install-wrappers.sh $CROSS_TOOLCHAIN_PREFIX
 COPY prepare-cross-toolchain.sh .
 RUN ./prepare-cross-toolchain.sh $TOOLCHAIN_PREFIX $CROSS_TOOLCHAIN_PREFIX $CROSS_ARCH
 
-# Cheating: Build binutils for an x86 target and take strip and objcopy
-# from there. The wrapper script can use them for any arch.
-RUN wget -q https://ftp.gnu.org/gnu/binutils/binutils-2.31.1.tar.xz && \
-    tar -Jxf binutils-2.31.1.tar.xz && \
-    cd binutils-2.31.1 && \
-    ./configure --host=$HOST --target=x86_64-w64-mingw32 --prefix=/opt/binutils LDFLAGS="-Wl,-s" && \
-    make -j$(nproc) && \
-    make install && \
-    cp /opt/binutils/x86_64-w64-mingw32/bin/objcopy.exe $CROSS_TOOLCHAIN_PREFIX/bin/binutils-objcopy.exe && \
-    cp /opt/binutils/x86_64-w64-mingw32/bin/strip.exe $CROSS_TOOLCHAIN_PREFIX/bin/binutils-strip.exe
 ARG TAG
 RUN ln -s $CROSS_TOOLCHAIN_PREFIX llvm-mingw && \
     zip -9r /llvm-mingw-$TAG$CROSS_ARCH.zip llvm-mingw

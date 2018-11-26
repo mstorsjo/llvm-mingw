@@ -84,10 +84,6 @@ normal GCC/binutils based MinGW.
   Sanitizer requires using a PDB file for symbolizing the error location and
   backtraces.
 - The sanitizers are only supported on x86.
-- llvm-objcopy doesn't support COFF yet, so the docker images bundle binutils
-  objcopy/strip for this purpose instead, with a wrapper to relabel ARM/ARM64
-  binaries into something that binutils objcopy/strip accepts to work on,
-  and back.
 - The import libraries that this toolchain produces are in the same COFF
   short import format as MSVC produces; GNU binutils doesn't support
   this format.

@@ -51,13 +51,4 @@ COPY build-libssp.sh libssp-Makefile ./
 RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
 
-# Cheating: Pull strip and objcopy from the normal binutils package.
-RUN apt-get update -qq && \
-    apt-get install -qqy binutils-mingw-w64-x86-64 && \
-    cp /usr/bin/x86_64-w64-mingw32-strip $TOOLCHAIN_PREFIX/bin/binutils-strip && \
-    cp /usr/bin/x86_64-w64-mingw32-objcopy $TOOLCHAIN_PREFIX/bin/binutils-objcopy && \
-    apt-get remove -qqy binutils-mingw-w64-x86-64 && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
-
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
