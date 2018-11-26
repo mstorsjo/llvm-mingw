@@ -9,6 +9,14 @@ fi
 PREFIX="$1"
 cd "$PREFIX"
 
+case $(uname) in
+MINGW*)
+    EXEEXT=.exe
+    ;;
+*)
+    ;;
+esac
+
 cd bin
 for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmaptool ld64.lld llc lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder wasm-ld yaml2obj libclang.dll LTO.dll *.bat; do
     basename=$i

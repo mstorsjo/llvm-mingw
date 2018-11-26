@@ -99,6 +99,14 @@ if [ -n "$HOST" ]; then
     CONFIGFLAGS="$CONFIGFLAGS --host=$HOST"
     CROSS_NAME=$HOST-
     EXEEXT=.exe
+else
+    case $(uname) in
+    MINGW*)
+        EXEEXT=.exe
+        ;;
+    *)
+        ;;
+    esac
 fi
 if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
     CONFIGFLAGS="$CONFIGFLAGS --with-widl-includedir=$PREFIX/include"
