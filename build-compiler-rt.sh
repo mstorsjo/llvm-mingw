@@ -45,7 +45,7 @@ cd compiler-rt
 
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
-    git checkout 0492c25c247e31fe23570fe0cf6e9801301ab069
+    git checkout 8b2ba6185b1df7b9ebaae91cc831c9be16eeefa0
 fi
 
 for arch in $ARCHS; do
