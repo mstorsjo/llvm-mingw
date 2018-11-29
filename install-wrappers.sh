@@ -67,7 +67,7 @@ for arch in $ARCHS; do
     done
 done
 if [ -n "$EXEEXT" ]; then
-    if [ ! -L clang$EXEEXT ] && [ -f clang$EXEEXT ]; then
+    if [ ! -L clang$EXEEXT ] && [ -f clang$EXEEXT ] && [ ! -f clang-$CLANG_MAJOR$EXEEXT ]; then
         mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
     if [ -z "$HOST" ]; then
