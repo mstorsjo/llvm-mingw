@@ -111,6 +111,7 @@ build_all() {
         make -j$CORES
         make install
         if [ "$type" = "shared" ]; then
+            mkdir -p $PREFIX/$arch-w64-mingw32/bin
             cp lib/libunwind.dll $PREFIX/$arch-w64-mingw32/bin
         else
             # Merge libpsapi.a into the static library libunwind.a, to
