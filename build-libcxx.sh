@@ -66,7 +66,6 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
 fi
 
 LIBCXX=$(pwd)/libcxx
-MERGE_ARCHIVES=$(pwd)/merge-archives.sh
 
 case $(uname) in
 MINGW*)
@@ -125,7 +124,7 @@ build_all() {
         else
             # Merge libpsapi.a into the static library libunwind.a, to
             # avoid having to specify -lpsapi when linking to it.
-            $MERGE_ARCHIVES \
+            llvm-ar qcsL \
                 $PREFIX/$arch-w64-mingw32/lib/libunwind.a \
                 $PREFIX/$arch-w64-mingw32/lib/libpsapi.a
         fi
@@ -219,12 +218,12 @@ build_all() {
         make -j$CORES
         make install
         if [ "$type" = "shared" ]; then
-            $MERGE_ARCHIVES \
+            llvm-ar qcsL \
                 $PREFIX/$arch-w64-mingw32/lib/libc++.dll.a \
                 $PREFIX/$arch-w64-mingw32/lib/libunwind.dll.a
             cp lib/libc++.dll $PREFIX/$arch-w64-mingw32/bin
         else
-            $MERGE_ARCHIVES \
+            llvm-ar qcsL \
                 $PREFIX/$arch-w64-mingw32/lib/libc++.a \
                 $PREFIX/$arch-w64-mingw32/lib/libunwind.a
         fi

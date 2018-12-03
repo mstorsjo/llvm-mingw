@@ -65,7 +65,7 @@ RUN cd test && \
     done
 
 # Build libunwind/libcxxabi/libcxx
-COPY build-libcxx.sh merge-archives.sh ./
+COPY build-libcxx.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 
 # Build C++ test applications

@@ -37,7 +37,7 @@ RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
 
 # Build libunwind/libcxxabi/libcxx
-COPY build-libcxx.sh merge-archives.sh ./
+COPY build-libcxx.sh ./
 RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
 
