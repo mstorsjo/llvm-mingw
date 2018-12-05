@@ -167,7 +167,7 @@ build_all() {
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32 -D_LIBCPP_ABI_UNSTABLE -w" \
+            -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32 -w" \
             ..
         make -j$CORES
         cd ..
@@ -208,7 +208,6 @@ build_all() {
             -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
             -DLIBCXX_ENABLE_FILESYSTEM=OFF \
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
-            -DLIBCXX_ABI_UNSTABLE=TRUE \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \

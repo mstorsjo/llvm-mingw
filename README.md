@@ -71,9 +71,6 @@ normal GCC/binutils based MinGW.
 
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
   everything that GNU windres does.
-- The DLL version of libc++ doesn't have a fixed supported ABI, so in theory,
-  code built against an older version of the DLL is not guaranteed to work
-  with a newer version of the DLL.
 - The toolchain defaults to using the Universal CRT (which is only available
   out of the box since Windows 10, but can be installed on Vista or newer)
   and defaults to targeting Vista. These defaults can be changed in
