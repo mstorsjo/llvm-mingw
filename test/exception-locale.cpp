@@ -23,8 +23,9 @@ int main(int argc, char *argv[]) {
     try {
         std::locale loc("test");
     } catch (std::runtime_error& e) {
-        std::cerr << "Caught " << e.what() << std::endl;
+        std::cerr << "Caught \"" << e.what() << "\"" << std::endl;
         std::cerr << "Type " << typeid(e).name() << std::endl;
+        std::cerr << "Test succeeded." << std::endl;
     } catch (...) {
         std::cerr << "catch all" << std::endl;
     }
