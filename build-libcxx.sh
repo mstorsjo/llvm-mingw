@@ -49,7 +49,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBUNWIND" ]; then
     cd libunwind
     [ -z "$SYNC" ] || git fetch
-    git checkout 03a10740898eeb2b0c7a7c6bea3e293a221309a1
+    git checkout 9defb52f575beff21b646e60e63f72ad1ac7cf54
     cd ..
 fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXXABI" ]; then
