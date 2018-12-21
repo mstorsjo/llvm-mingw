@@ -211,6 +211,7 @@ build_all() {
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
             -DLIBCXX_LIBDIR_SUFFIX="" \
+            -DLIBCXX_INCLUDE_TESTS=FALSE \
             -DCMAKE_CXX_FLAGS="$LIBCXX_VISIBILITY_FLAGS" \
             -DCMAKE_SHARED_LINKER_FLAGS="-lunwind -Wl,--export-all-symbols" \
             -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=FALSE \
