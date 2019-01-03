@@ -8,3 +8,5 @@ libssp
 *.exe
 *.dll
 *.lib
+*.tar.xz
+*.zip
