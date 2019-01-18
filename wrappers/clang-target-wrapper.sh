@@ -37,11 +37,7 @@ clang++|g++|c++)
 esac
 case $ARCH in
 i686)
-    # Dwarf is the default for i686, but there are a few issues with
-    # dwarf unwinding in code generated for i686, see
-    # https://bugs.llvm.org/show_bug.cgi?id=40012 and
-    # https://bugs.llvm.org/show_bug.cgi?id=40322.
-    FLAGS="$FLAGS -fsjlj-exceptions"
+    # Dwarf is the default for i686.
     ;;
 x86_64)
     # SEH is the default here.

@@ -283,11 +283,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("--driver-mode=g++");
 
     if (!_tcscmp(arch, _T("i686"))) {
-        // Dwarf is the default for i686, but there are a few issues with
-        // dwarf unwinding in code generated for i686, see
-        // https://bugs.llvm.org/show_bug.cgi?id=40012 and
-        // https://bugs.llvm.org/show_bug.cgi?id=40322.
-        exec_argv[arg++] = _T("-fsjlj-exceptions");
+        // Dwarf is the default for i686.
     } else if (!_tcscmp(arch, _T("x86_64"))) {
         // SEH is the default here.
     } else if (!_tcscmp(arch, _T("armv7"))) {
