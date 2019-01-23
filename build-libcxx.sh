@@ -89,9 +89,6 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        # If llvm-config and the llvm cmake files are available, -w gets added
-        # to the compiler flags; manually add it here to avoid noisy warnings
-        # that normally are suppressed.
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
@@ -112,8 +109,7 @@ build_all() {
             -DLIBUNWIND_ENABLE_STATIC=$STATIC \
             -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
             -DLIBUNWIND_STANDALONE_BUILD=TRUE \
-            -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include -w" \
-            -DCMAKE_C_FLAGS="-w" \
+            -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include" \
             -DCMAKE_SHARED_LINKER_FLAGS="-lpsapi" \
             ..
         make -j$CORES
@@ -136,9 +132,6 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        # If llvm-config and the llvm cmake files are available, -w gets added
-        # to the compiler flags; manually add it here to avoid noisy warnings
-        # that normally are suppressed.
         if [ "$type" = "shared" ]; then
             LIBCXXABI_VISIBILITY_FLAGS="-D_LIBCPP_BUILDING_LIBRARY -U_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
         else
@@ -166,7 +159,7 @@ build_all() {
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32 -w" \
+            -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32" \
             ..
         make -j$CORES
         cd ..
