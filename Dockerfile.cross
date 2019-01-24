@@ -41,4 +41,5 @@ RUN ./prepare-cross-toolchain.sh $TOOLCHAIN_PREFIX $CROSS_TOOLCHAIN_PREFIX $CROS
 
 ARG TAG
 RUN ln -s $CROSS_TOOLCHAIN_PREFIX llvm-mingw && \
-    zip -9r /llvm-mingw-$TAG$CROSS_ARCH.zip llvm-mingw
+    zip -9r /llvm-mingw-$TAG$CROSS_ARCH.zip llvm-mingw && \
+    ls -lh /llvm-mingw-$TAG$CROSS_ARCH.zip
