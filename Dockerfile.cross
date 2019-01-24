@@ -51,4 +51,5 @@ RUN wget -q https://ftp.gnu.org/gnu/binutils/binutils-2.31.1.tar.xz && \
     cp /opt/binutils/x86_64-w64-mingw32/bin/strip.exe $CROSS_TOOLCHAIN_PREFIX/bin/binutils-strip.exe
 ARG TAG
 RUN ln -s $CROSS_TOOLCHAIN_PREFIX llvm-mingw && \
-    zip -9r /llvm-mingw-$TAG$CROSS_ARCH.zip llvm-mingw
+    zip -9r /llvm-mingw-$TAG$CROSS_ARCH.zip llvm-mingw && \
+    ls -lh /llvm-mingw-$TAG$CROSS_ARCH.zip
