@@ -109,7 +109,7 @@ build_all() {
             -DLIBUNWIND_ENABLE_STATIC=$STATIC \
             -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
             -DLIBUNWIND_STANDALONE_BUILD=TRUE \
-            -DCMAKE_CXX_FLAGS="-nostdinc++ -I$LIBCXX/include -Wno-dll-attribute-on-redeclaration" \
+            -DCMAKE_CXX_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             -DCMAKE_C_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             -DCMAKE_SHARED_LINKER_FLAGS="-lpsapi" \
             ..
