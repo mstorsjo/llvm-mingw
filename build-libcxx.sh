@@ -212,7 +212,7 @@ build_all() {
             -DLIBCXX_LIBDIR_SUFFIX="" \
             -DLIBCXX_INCLUDE_TESTS=FALSE \
             -DCMAKE_CXX_FLAGS="$LIBCXX_VISIBILITY_FLAGS" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-lunwind -Wl,--export-all-symbols" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-lunwind" \
             -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=FALSE \
             ..
         make -j$CORES
