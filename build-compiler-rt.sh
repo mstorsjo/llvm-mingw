@@ -84,6 +84,7 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
         -DCMAKE_SYSTEM_NAME=Windows \
@@ -106,5 +107,8 @@ for arch in $ARCHS; do
             cp $i $PREFIX/$arch-w64-mingw32/bin
         fi
     done
+    if [ -n "$SANITIZERS" ]; then
+        make install-compiler-rt-headers
+    fi
     cd ..
 done
