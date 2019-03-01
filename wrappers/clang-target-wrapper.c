@@ -280,15 +280,10 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("--driver-mode=g++");
 
     if (!_tcscmp(arch, _T("i686"))) {
-        // Dwarf is the default for i686, but libunwind sometimes fails to
-        // to unwind correctly on i686. The issue can be reproduced with
-        // test/exception-locale.cpp. The issue might be related to
-        // DW_CFA_GNU_args_size, since it goes away if building
-        // libunwind/libcxxabi/libcxx and the test example with
-        // -mstack-alignment=16 -mstackrealign. (libunwind SVN r337312 fixed
-        // some handling relating to this dwarf opcode, which made
-        // test/hello-exception.cpp work properly, but apparently there are
-        // still issues with it).
+        // Dwarf is the default for i686, but there are a few issues with
+        // dwarf unwinding in code generated for i686, see
+        // https://bugs.llvm.org/show_bug.cgi?id=40012 and
+        // https://bugs.llvm.org/show_bug.cgi?id=40322.
         exec_argv[arg++] = _T("-fsjlj-exceptions");
     } else if (!_tcscmp(arch, _T("x86_64"))) {
         // SEH is the default here.
