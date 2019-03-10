@@ -12,13 +12,15 @@ while [ $# -gt 0 ]; do
     elif [ "$1" = "--enable-asserts" ]; then
         ASSERTS=ON
         BUILDDIR=build-asserts
+    elif [ "$1" = "--full-llvm" ]; then
+        FULL_LLVM=1
     else
         PREFIX="$1"
     fi
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--enable-asserts] dest
+    echo $0 [--enable-asserts] [--full-llvm] dest
     exit 1
 fi
 
@@ -127,6 +129,11 @@ if [ -n "$HOST" ]; then
     BUILDDIR=$BUILDDIR-$HOST
 fi
 
+TOOLCHAIN_ONLY=ON
+if [ -n "$FULL_LLVM" ]; then
+    TOOLCHAIN_ONLY=OFF
+fi
+
 cd llvm
 mkdir -p $BUILDDIR
 cd $BUILDDIR
@@ -136,7 +143,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
-    -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+    -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip" \
     $CMAKEFLAGS \
     ..

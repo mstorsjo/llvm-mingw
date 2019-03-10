@@ -22,6 +22,8 @@ ENV CROSS_TOOLCHAIN_PREFIX=/opt/llvm-mingw-$CROSS_ARCH
 ENV EXEEXT=.exe
 ENV HOST=$CROSS_ARCH-w64-mingw32
 
+ARG FULL_LLVM
+
 COPY build-llvm.sh .
 RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX
 COPY strip-llvm.sh .

@@ -9,6 +9,10 @@ fi
 PREFIX="$1"
 cd "$PREFIX"
 
+if [ -n "$FULL_LLVM" ]; then
+    exit 0
+fi
+
 case $(uname) in
 MINGW*)
     EXEEXT=.exe
