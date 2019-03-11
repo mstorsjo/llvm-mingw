@@ -1,3 +1,5 @@
 *.exe
 *.dll
 *.lib
+*.dll.a
+*.pdb
