@@ -13,7 +13,7 @@ export PATH=$PREFIX/bin:$PATH
 
 cd test
 
-DEFAULT_OSES="mingw32 mingw32uwp"
+DEFAULT_OSES="mingw32 mingw32uwp mingw32winrt"
 cat<<EOF > is-ucrt.c
 #include <_mingw.h>
 #if __MSVCRT_VERSION__ < 0x1400
@@ -96,7 +96,7 @@ for arch in $ARCHS; do
         for test in $TESTS_CPP_LOAD_DLL; do
             case $target_os in
             # DLLs can't be loaded without a Windows package
-            mingw32uwp) continue ;;
+            mingw32uwp|mingw32winrt) continue ;;
             *) ;;
             esac
             $arch-w64-$target_os-clang++ $test.cpp -o $TEST_DIR/$test.exe
@@ -115,7 +115,7 @@ for arch in $ARCHS; do
             UWP_ERROR=$?
             set -e
             case $target_os in
-            mingw32uwp)
+            mingw32uwp|mingw32winrt)
                 if [ $UWP_ERROR -eq 0 ]; then
                     echo "UWP compilation should have failed for test $test!"
                     exit 1

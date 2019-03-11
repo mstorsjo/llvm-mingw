@@ -38,5 +38,8 @@ case $TARGET_OS in
 mingw32uwp)
     FLAGS="$FLAGS -lmincore -lvcruntime140_app"
     ;;
+mingw32winrt)
+    FLAGS="$FLAGS -lmincore -lmsvcp120_app"
+    ;;
 esac
 ld.lld $FLAGS "$@"
