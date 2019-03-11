@@ -11,6 +11,18 @@ export PATH=$PREFIX/bin:$PATH
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
+if [ -z "$RUN_X86" ]; then
+    case $(uname) in
+    MINGW*)
+        RUN_X86=
+        ;;
+    *)
+        RUN_X86=wine
+        ;;
+    esac
+fi
+
+
 cd test
 TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_DLL="autoimport-lib"
@@ -68,7 +80,7 @@ for arch in $ARCHS; do
     DLL="$TESTS_C_DLL $TESTS_CPP_DLL"
     case $arch in
     i686|x86_64)
-        RUN=wine
+        RUN="$RUN_X86"
         COPY=
         ;;
     armv7)
