@@ -320,6 +320,21 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-static-libstdc++");
         exec_argv[arg++] = concat(concat(_T("-L"), sysroot), _T("/lib/ucrt"));
         exec_argv[arg++] = _T("-Wl,-lvcruntime140_app,-lucrt");
+    } else if (target_os && !_tcscmp(target_os, _T("mingw32winrt"))) {
+        // the WinRT target is for Windows 8.1
+        exec_argv[arg++] = _T("-D_WIN32_WINNT=0x0603 -DWINVER=0x0603");
+        // the WinRT target can only use Windows Store APIs
+        exec_argv[arg++] = _T("-DWINAPI_FAMILY=WINAPI_FAMILY_APP");
+        // the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
+        exec_argv[arg++] = _T("-DUNICODE");
+        // add the minimum runtime to use for WinRT targets
+        exec_argv[arg++] = _T("-Wl,-lmincore");
+        // Force building code for msvcrt, and use a libc++ built specifically
+        // for msvcrt.
+        exec_argv[arg++] = _T("-D__MSVCRT_VERSION__=0x700");
+        exec_argv[arg++] = _T("-static-libstdc++");
+        exec_argv[arg++] = concat(concat(_T("-L"), sysroot), _T("/lib/msvcrt"));
+        exec_argv[arg++] = _T("-Wl,-lmsvcr120_app");
     }
 
     exec_argv[arg++] = _T("-target");

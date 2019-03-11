@@ -71,6 +71,19 @@ mingw32uwp)
     # for UCRT, in case a different CRT was set as default.
     FLAGS="$FLAGS -D__MSVCRT_VERSION__=0x1400 -static-libstdc++ -L$SYSROOT/lib/ucrt -Wl,-lvcruntime140_app,-lucrt"
     ;;
+mingw32winrt)
+    # the WinRT target is for Windows 8.1
+    FLAGS="$FLAGS -D_WIN32_WINNT=0x0603 -DWINVER=0x0603"
+    # the WinRT target can only use Windows Store APIs
+    FLAGS="$FLAGS -DWINAPI_FAMILY=WINAPI_FAMILY_APP"
+    # the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
+    FLAGS="$FLAGS -DUNICODE"
+    # add the minimum runtime to use for WinRT targets
+    FLAGS="$FLAGS -Wl,-lmincore"
+    # Force building code for msvcrt, and use a libc++ built specifically
+    # for msvcrt.
+    FLAGS="$FLAGS -D__MSVCRT_VERSION__=0x700 -static-libstdc++ -L$SYSROOT/lib/msvcrt -Wl,-lmsvcr120_app"
+    ;;
 esac
 
 FLAGS="$FLAGS -target $TARGET"
