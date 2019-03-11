@@ -257,6 +257,9 @@ int _tmain(int argc, TCHAR* argv[]) {
     dash = _tcschr(arch, '-');
     if (dash)
         *dash = '\0';
+    TCHAR *target_os = _tcsrchr(target, '-');
+    if (target_os)
+        target_os++;
 
     // Check if trying to compile Ada; if we try to do this, invoking clang
     // would end up invoking <triplet>-gcc with the same arguments, which ends
@@ -291,6 +294,15 @@ int _tmain(int argc, TCHAR* argv[]) {
         // Dwarf is the default here.
     } else if (!_tcscmp(arch, _T("aarch64"))) {
         // Dwarf is the default here.
+    }
+
+    if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
+        // the UWP target is for Windows 10
+        exec_argv[arg++] = _T("-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00");
+        // the UWP target can only use Windows Store APIs
+        exec_argv[arg++] = _T("-DWINAPI_FAMILY=WINAPI_FAMILY_APP");
+        // the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
+        exec_argv[arg++] = _T("-DUNICODE");
     }
 
     exec_argv[arg++] = _T("-target");

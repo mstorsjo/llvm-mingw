@@ -11,6 +11,7 @@ mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+: ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-mingw32 mingw32uwp}}
 
 if [ -n "$HOST" ] && [ -z "$CC" ]; then
     CC=$HOST-gcc
@@ -49,17 +50,19 @@ else
 fi
 cd $PREFIX/bin
 for arch in $ARCHS; do
-    for exec in clang clang++ gcc g++ cc c99 c11 c++; do
-        ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-mingw32-$exec$CTW_LINK_SUFFIX
-    done
-    for exec in ar ranlib nm objcopy strings strip; do
-        ln -sf llvm-$exec$EXEEXT $arch-w64-mingw32-$exec$EXEEXT || true
-    done
-    for exec in windres; do
-        ln -sf $exec-wrapper$EXEEXT $arch-w64-mingw32-$exec$EXEEXT
-    done
-    for exec in ld objdump dlltool; do
-        ln -sf $exec-wrapper.sh $arch-w64-mingw32-$exec
+    for target_os in $TARGET_OSES; do
+        for exec in clang clang++ gcc g++ cc c99 c11 c++; do
+            ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
+        done
+        for exec in ar ranlib nm objcopy strings strip; do
+            ln -sf llvm-$exec$EXEEXT $arch-w64-$target_os-$exec$EXEEXT || true
+        done
+        for exec in windres; do
+            ln -sf $exec-wrapper$EXEEXT $arch-w64-$target_os-$exec$EXEEXT
+        done
+        for exec in ld objdump dlltool; do
+            ln -sf $exec-wrapper.sh $arch-w64-$target_os-$exec
+        done
     done
 done
 if [ -n "$EXEEXT" ]; then

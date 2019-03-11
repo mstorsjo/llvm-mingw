@@ -8,6 +8,7 @@ if [ "$TARGET" = "$BASENAME" ]; then
     TARGET=$DEFAULT_TARGET
 fi
 ARCH="${TARGET%%-*}"
+TARGET_OS="${TARGET##*-}"
 
 # Check if trying to compile Ada; if we try to do this, invoking clang
 # would end up invoking <triplet>-gcc with the same arguments, which ends
@@ -50,6 +51,16 @@ armv7)
     ;;
 aarch64)
     # Dwarf is the default here.
+    ;;
+esac
+case $TARGET_OS in
+mingw32uwp)
+    # the UWP target is for Windows 10
+    FLAGS="$FLAGS -D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00"
+    # the UWP target can only use Windows Store APIs
+    FLAGS="$FLAGS -DWINAPI_FAMILY=WINAPI_FAMILY_APP"
+    # the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
+    FLAGS="$FLAGS -DUNICODE"
     ;;
 esac
 
