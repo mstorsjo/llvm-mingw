@@ -38,6 +38,7 @@ TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
 TESTS_UBSAN="ubsan"
+TESTS_UWP="uwp-error"
 for arch in $ARCHS; do
     case $arch in
     i686|x86_64)
@@ -91,6 +92,29 @@ for arch in $ARCHS; do
         done
         for test in $TESTS_SSP; do
             $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
+        done
+        for test in $TESTS_UWP; do
+            set +e
+            # compilation should fail for UWP and WinRT
+            $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test.exe -Wimplicit-function-declaration -Werror
+            UWP_ERROR=$?
+            set -e
+            case $target_os in
+            mingw32uwp)
+                if [ $UWP_ERROR -eq 0 ]; then
+                    echo "UWP compilation should have failed for test $test!"
+                    exit 1
+                fi
+                ;;
+            *)
+                if [ $UWP_ERROR -eq 0 ]; then
+                    TESTS_EXTRA="$TESTS_EXTRA $test"
+                else
+                    echo "$test failed to compile for non-UWP target!"
+                    exit 1
+                fi
+                ;;
+            esac
         done
         for test in $TESTS_ASAN; do
             case $arch in
