@@ -303,6 +303,8 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-DWINAPI_FAMILY=WINAPI_FAMILY_APP");
         // the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
         exec_argv[arg++] = _T("-DUNICODE");
+        // add the minimum runtime to use for UWP targets
+        exec_argv[arg++] = _T("-Wl,-lmincore");
     }
 
     exec_argv[arg++] = _T("-target");

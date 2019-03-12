@@ -61,6 +61,8 @@ mingw32uwp)
     FLAGS="$FLAGS -DWINAPI_FAMILY=WINAPI_FAMILY_APP"
     # the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
     FLAGS="$FLAGS -DUNICODE"
+    # add the minimum runtime to use for UWP targets
+    FLAGS="$FLAGS -Wl,-lmincore"
     ;;
 esac
 
