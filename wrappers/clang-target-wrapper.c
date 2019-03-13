@@ -305,6 +305,8 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-DUNICODE");
         // add the minimum runtime to use for UWP targets
         exec_argv[arg++] = _T("-Wl,-lmincore");
+        // This requires that the default crt is ucrt.
+        exec_argv[arg++] = _T("-Wl,-lvcruntime140_app");
     }
 
     exec_argv[arg++] = _T("-target");

@@ -63,6 +63,8 @@ mingw32uwp)
     FLAGS="$FLAGS -DUNICODE"
     # add the minimum runtime to use for UWP targets
     FLAGS="$FLAGS -Wl,-lmincore"
+    # This requires that the default crt is ucrt.
+    FLAGS="$FLAGS -Wl,-lvcruntime140_app"
     ;;
 esac
 

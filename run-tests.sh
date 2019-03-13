@@ -10,7 +10,23 @@ PREFIX="$1"
 export PATH=$PREFIX/bin:$PATH
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
-: ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-mingw32 mingw32uwp}}
+
+cd test
+
+DEFAULT_OSES="mingw32 mingw32uwp"
+cat<<EOF > is-ucrt.c
+#include <_mingw.h>
+#if __MSVCRT_VERSION__ < 0x1400
+#error not ucrt
+#endif
+EOF
+ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
+if ! $ANY_ARCH-w64-mingw32-gcc -E is-ucrt.c > /dev/null 2>&1; then
+    # If the default CRT isn't UCRT, we can't build for mingw32uwp.
+    DEFAULT_OSES="mingw32"
+fi
+
+: ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
 
 if [ -z "$RUN_X86" ]; then
     case $(uname) in
@@ -27,7 +43,6 @@ if [ -z "$RUN_X86" ]; then
 fi
 
 
-cd test
 TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_DLL="autoimport-lib"
 TESTS_C_LINK_DLL="autoimport-main"
@@ -142,6 +157,11 @@ for arch in $ARCHS; do
         compiler_rt_arch=$arch
         if [ "$arch" = "i686" ]; then
             compiler_rt_arch=i386
+        fi
+        if [ "$target_os" != "mingw32" ]; then
+            # The Windows Store specific CRT DLL is usually not available
+            # outside of such contexts, so skip trying to run those tests.
+            continue
         fi
         for i in libc++ libunwind libssp-0 libclang_rt.asan_dynamic-$compiler_rt_arch; do
             if [ -f $PREFIX/$arch-w64-mingw32/bin/$i.dll ]; then
