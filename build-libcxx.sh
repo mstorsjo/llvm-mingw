@@ -102,6 +102,7 @@ build_all() {
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR=$PREFIX/bin/llvm-ar \
             -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
@@ -154,6 +155,7 @@ build_all() {
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR=$PREFIX/bin/llvm-ar \
             -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
@@ -192,6 +194,7 @@ build_all() {
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR=$PREFIX/bin/llvm-ar \
             -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
             -DLIBCXX_USE_COMPILER_RT=ON \
