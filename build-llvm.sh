@@ -33,13 +33,15 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 
 if [ ! -d llvm ]; then
     # When cloning master and checking out a pinned old hash, we can't use --depth=1.
-    # Do the git-svn rebase to populate git-svn information, to make
-    # "clang --version" produce SVN based version numbers.
     git clone -b master https://github.com/llvm-mirror/llvm.git
     cd llvm/tools
     git clone -b master https://github.com/llvm-mirror/clang.git
     git clone -b master https://github.com/llvm-mirror/lld.git
     cd ..
+    set +e
+    # Do the git-svn rebase to populate git-svn information, to make
+    # "clang --version" produce SVN based version numbers.
+    # This is optional - don't error out here if git-svn is unavailable.
     git svn init https://llvm.org/svn/llvm-project/llvm/trunk
     git config svn-remote.svn.fetch :refs/remotes/origin/master
     git svn rebase -l
@@ -52,6 +54,7 @@ if [ ! -d llvm ]; then
     git config svn-remote.svn.fetch :refs/remotes/origin/master
     git svn rebase -l
     cd ../../..
+    set -e
     CHECKOUT=1
 fi
 
