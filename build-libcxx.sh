@@ -61,7 +61,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
     cd libcxx
     [ -z "$SYNC" ] || git fetch
-    git checkout 8220dac54c22c42a5ec2a32a0ed50343a2ea4775
+    git checkout 632573ce43e1a8362c4c15a6ad645fe0155ab29f
     cd ..
 fi
 
