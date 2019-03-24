@@ -84,9 +84,6 @@ normal GCC/binutils based MinGW.
   Sanitizer requires using a PDB file for symbolizing the error location and
   backtraces.
 - The sanitizers are only supported on x86.
-- The import libraries that this toolchain produces are in the same COFF
-  short import format as MSVC produces; GNU binutils doesn't support
-  this format.
 
 Additionally, one may run into other minor differences between GCC and clang.
 
