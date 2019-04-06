@@ -2,16 +2,28 @@
 
 set -e
 
+DEFAULT_WIN32_WINNT=0x600
+DEFAULT_MSVCRT=ucrt
+
 while [ $# -gt 0 ]; do
-    if [ "$1" = "--skip-include-triplet-prefix" ]; then
+    case "$1" in
+    --skip-include-triplet-prefix)
         SKIP_INCLUDE_TRIPLET_PREFIX=1
-    else
+        ;;
+    --with-default-win32-winnt=*)
+        DEFAULT_WIN32_WINNT="${1#*=}"
+        ;;
+    --with-default-msvcrt=*)
+        DEFAULT_MSVCRT="${1#*=}"
+        ;;
+    *)
         PREFIX="$1"
-    fi
+        ;;
+    esac
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--skip-include-triplet-prefix] dest
+    echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x600] [--with-default-msvcrt=ucrt] dest
     exit 1
 fi
 
@@ -57,7 +69,7 @@ if [ -z "$HOST" ]; then
     mkdir -p build
     cd build
     ../configure --prefix=$HEADER_ROOT \
-        --enable-secure-api --enable-idl --with-default-win32-winnt=0x600 --with-default-msvcrt=ucrt INSTALL="install -C"
+        --enable-secure-api --enable-idl --with-default-win32-winnt=$DEFAULT_WIN32_WINNT --with-default-msvcrt=$DEFAULT_MSVCRT INSTALL="install -C"
     make install
     cd ../..
     if [ -z "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
@@ -85,7 +97,7 @@ if [ -z "$HOST" ]; then
             FLAGS="--disable-lib32 --enable-lib64"
             ;;
         esac
-        FLAGS="$FLAGS --with-default-msvcrt=ucrt"
+        FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
         ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 $FLAGS \
             CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib DLLTOOL=llvm-dlltool
         make -j$CORES
