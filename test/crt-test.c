@@ -347,7 +347,6 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(fmodf(F(3.9), F(INFINITY)), 3.9, 0.001);
     TEST_FLT_ACCURACY(fmodf(F(3.9), F(-INFINITY)), 3.9, 0.001);
 
-#if !defined(__MINGW32__) || (!defined(__arm__) && !defined(__aarch64__))
     TEST_FLT(fmodl(F(3.9), F(4.0)), 3.9);
     TEST_FLT_ACCURACY(fmodl(F(7.9), F(4.0)), 3.9, 0.001);
     TEST_FLT(fmodl(F(-3.9), F(4.0)), -3.9);
@@ -360,7 +359,6 @@ int main(int argc, char* argv[]) {
     TEST_FLT_NAN(fmodl(F(3.9), F(0)));
     TEST_FLT_ACCURACY(fmodl(F(3.9), F(INFINITY)), 3.9, 0.001);
     TEST_FLT_ACCURACY(fmodl(F(3.9), F(-INFINITY)), 3.9, 0.001);
-#endif
 
     TEST_FLT(remainder(F(1.9), F(4.0)), 1.9);
     TEST_FLT(remainder(F(2.0), F(4.0)), 2.0);
