@@ -599,6 +599,19 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(log2f(F(7.1746e-43)), -140, 0.001);
     TEST_FLT_ACCURACY(log2f(F(1.225000)), 0.292782, 0.001); // This crashes the mingw-w64 softfloat implementation
 
+    TEST_FLT_ACCURACY(log2l(F(1.0)), 0.0, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(8.0)), 3.0, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(1024.0)), 10.0, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(1048576.0)), 20.0, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(4294967296.0)), 32.0, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(9.7656e-04)), -10, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(9.5367e-07)), -20, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(3.5527e-15)), -48, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(7.8886e-31)), -100, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(7.3468e-40)), -130, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(7.1746e-43)), -140, 0.001);
+    TEST_FLT_ACCURACY(log2l(F(1.225000)), 0.292782, 0.001);
+
     TEST_INT(llround(F(3.3)), 3);
     TEST_INT(llround(F(3.6)), 4);
     TEST_INT(llround(F(3.5)), 4);
