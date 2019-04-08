@@ -16,6 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __linux__
+#define _GNU_SOURCE
+#endif
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -768,6 +771,21 @@ int main(int argc, char* argv[]) {
 
     TEST_FLT_ACCURACY(cos(F(0.0)), 1.0, 0.01);
     TEST_FLT_ACCURACY(sin(F(0.0)), 0.0, 0.01);
+
+#if defined(__linux__) || defined(__MINGW32__)
+    double outSin = 42.0, outCos = 42.0;
+    sincos(F(0.0), &outSin, &outCos);
+    TEST_FLT_ACCURACY(outSin, 0.0, 0.01);
+    TEST_FLT_ACCURACY(outCos, 1.0, 0.01);
+    float outSinf = 42.0, outCosf = 42.0;
+    sincosf(F(0.0), &outSinf, &outCosf);
+    TEST_FLT_ACCURACY(outSinf, 0.0, 0.01);
+    TEST_FLT_ACCURACY(outCosf, 1.0, 0.01);
+    long double outSinl = 42.0, outCosl = 42.0;
+    sincosl(F(0.0), &outSinl, &outCosl);
+    TEST_FLT_ACCURACY(outSinl, 0.0, 0.01);
+    TEST_FLT_ACCURACY(outCosl, 1.0, 0.01);
+#endif
 
 #ifdef _WIN32
     TEST_FLT_ACCURACY(_copysign(F(3.125), F(1)), 3.125, 0.0001);
