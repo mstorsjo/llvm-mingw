@@ -633,6 +633,42 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(exp2l(F(32.0)), 4294967296.0, 0.001);
     TEST_FLT_ACCURACY(exp2l(F(-2.0)), 0.25, 0.001);
 
+    TEST_FLT_ACCURACY(ldexp(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(ldexp(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(ldexp(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(ldexpf(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(ldexpf(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(ldexpf(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(ldexpl(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(ldexpl(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(ldexpl(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(scalbn(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(scalbn(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(scalbn(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(scalbnf(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(scalbnf(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(scalbnf(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(scalbnl(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(scalbnl(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(scalbnl(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(scalbln(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(scalbln(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(scalbln(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(scalblnf(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(scalblnf(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(scalblnf(F(2.0), -2), 0.5, 0.001);
+
+    TEST_FLT_ACCURACY(scalblnl(F(0.0), 1), 0.0, 0.001);
+    TEST_FLT_ACCURACY(scalblnl(F(2.0), 2), 8.0, 0.001);
+    TEST_FLT_ACCURACY(scalblnl(F(2.0), -2), 0.5, 0.001);
+
     TEST_INT(llround(F(3.3)), 3);
     TEST_INT(llround(F(3.6)), 4);
     TEST_INT(llround(F(3.5)), 4);
