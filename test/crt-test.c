@@ -171,10 +171,7 @@ int main(int argc, char* argv[]) {
     tests++;
 
     TEST_FLT(floor(F(3.9)), 3.0);
-#if !defined(__MINGW32__) || !defined(__arm__)
-    // TODO: floor/ceil on mingw-w64 on arm truncates results to the 32 bit integer range
     TEST_FLT(floor(F(17179869184.0)), 17179869184.0);
-#endif
     TEST_FLT(floor(F(-3.3)), -4.0);
     TEST_FLT(floor(F(-3.9)), -4.0);
     TEST_FLT(floor(F(INFINITY)), INFINITY);
