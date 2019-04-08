@@ -26,8 +26,14 @@
 #include <fenv.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <errno.h>
 #ifdef _WIN32
 #include <windows.h>
+#endif
+
+#ifdef _WIN32
+static void invalid_parameter(const wchar_t *expression, const wchar_t *function, const wchar_t *file, unsigned int line, uintptr_t pReserved) {
+}
 #endif
 
 int tests = 0, fails = 0;
@@ -169,6 +175,13 @@ int main(int argc, char* argv[]) {
         }
     }
     tests++;
+
+#ifdef _WIN32
+    _set_invalid_parameter_handler(invalid_parameter);
+#endif
+    errno = 0;
+    TEST_INT(strtol("foo", NULL, 100), 0);
+    TEST_INT(errno, EINVAL);
 
     TEST_FLT(floor(F(3.9)), 3.0);
     TEST_FLT(floor(F(17179869184.0)), 17179869184.0);
