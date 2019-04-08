@@ -31,6 +31,10 @@
 #include <windows.h>
 #endif
 
+#ifndef _WIN32
+extern char **environ;
+#endif
+
 #ifdef _WIN32
 static void invalid_parameter(const wchar_t *expression, const wchar_t *function, const wchar_t *file, unsigned int line, uintptr_t pReserved) {
 }
@@ -182,6 +186,27 @@ int main(int argc, char* argv[]) {
     errno = 0;
     TEST_INT(strtol("foo", NULL, 100), 0);
     TEST_INT(errno, EINVAL);
+
+    int env_ok = 0;
+    putenv("CRT_TEST_VAR=1");
+    for (char **ptr = environ; *ptr; ptr++)
+        if (!strcmp(*ptr, "CRT_TEST_VAR=1"))
+            env_ok = 1;
+    if (!env_ok) {
+        fails++;
+        printf("Variable set by putenv not found found in environ\n");
+    }
+    tests++;
+    env_ok = 0;
+    putenv("CRT_TEST_VAR=2");
+    for (char **ptr = environ; *ptr; ptr++)
+        if (!strcmp(*ptr, "CRT_TEST_VAR=2"))
+            env_ok = 1;
+    if (!env_ok) {
+        fails++;
+        printf("Variable updated by putenv not found found in environ\n");
+    }
+    tests++;
 
     TEST_FLT(floor(F(3.9)), 3.0);
     TEST_FLT(floor(F(17179869184.0)), 17179869184.0);
