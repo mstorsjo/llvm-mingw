@@ -275,6 +275,42 @@ int main(int argc, char* argv[]) {
     TEST_FLT_NAN(fmal(F(2), F(NAN), F(4)));
     TEST_FLT_NAN(fmal(F(2), F(3), F(NAN)));
 
+    double retd;
+    TEST_FLT_ACCURACY(modf(F(2.1), &retd), 0.1, 0.001);
+    TEST_FLT(retd, 2);
+    TEST_FLT_ACCURACY(modf(F(-2.1), &retd), -0.1, 0.001);
+    TEST_FLT(retd, -2);
+    TEST_FLT(modf(F(INFINITY), &retd), 0);
+    TEST_FLT(retd, INFINITY);
+    TEST_FLT(modf(F(-INFINITY), &retd), 0);
+    TEST_FLT(retd, -INFINITY);
+    TEST_FLT_NAN(modf(F(NAN), &retd));
+    TEST_FLT_NAN(retd);
+
+    float retf;
+    TEST_FLT_ACCURACY(modff(F(2.1), &retf), 0.1, 0.001);
+    TEST_FLT(retf, 2);
+    TEST_FLT_ACCURACY(modff(F(-2.1), &retf), -0.1, 0.001);
+    TEST_FLT(retf, -2);
+    TEST_FLT(modff(F(INFINITY), &retf), 0);
+    TEST_FLT(retf, INFINITY);
+    TEST_FLT(modff(F(-INFINITY), &retf), 0);
+    TEST_FLT(retf, -INFINITY);
+    TEST_FLT_NAN(modff(F(NAN), &retf));
+    TEST_FLT_NAN(retf);
+
+    long double retl;
+    TEST_FLT_ACCURACY(modfl(F(2.1), &retl), 0.1, 0.001);
+    TEST_FLT(retl, 2);
+    TEST_FLT_ACCURACY(modfl(F(-2.1), &retl), -0.1, 0.001);
+    TEST_FLT(retl, -2);
+    TEST_FLT(modfl(F(INFINITY), &retl), 0);
+    TEST_FLT(retl, INFINITY);
+    TEST_FLT(modfl(F(-INFINITY), &retl), 0);
+    TEST_FLT(retl, -INFINITY);
+    TEST_FLT_NAN(modfl(F(NAN), &retl));
+    TEST_FLT_NAN(retl);
+
     TEST_FLT(fmod(F(3.9), F(4.0)), 3.9);
     TEST_FLT_ACCURACY(fmod(F(7.9), F(4.0)), 3.9, 0.001);
     TEST_FLT(fmod(F(-3.9), F(4.0)), -3.9);
