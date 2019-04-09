@@ -104,6 +104,7 @@ build_all() {
             -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
+            -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DLIBUNWIND_USE_COMPILER_RT=TRUE \
             -DLIBUNWIND_ENABLE_THREADS=TRUE \
             -DLIBUNWIND_ENABLE_SHARED=$SHARED \
@@ -162,6 +163,7 @@ build_all() {
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
             -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
+            -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32" \
             ..
         make -j$CORES
