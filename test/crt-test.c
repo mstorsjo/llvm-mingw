@@ -1042,6 +1042,75 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(outCosl, 1.0, 0.01);
 #endif
 
+    TEST_FLT_ACCURACY(acosh(F(1.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(acosh(F(2.0)), 1.316958, 0.01);
+    TEST_FLT_NAN(acosh(F(0.0)));
+#if !defined(__MINGW32__) || !(defined(__i386__) || defined(__x86_64__))
+    TEST_FLT(acosh(F(INFINITY)), INFINITY);
+#endif
+
+    TEST_FLT_ACCURACY(acoshf(F(1.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(acoshf(F(2.0)), 1.316958, 0.01);
+    TEST_FLT_NAN(acoshf(F(0.0)));
+#if !defined(__MINGW32__) || !(defined(__i386__) || defined(__x86_64__))
+    TEST_FLT(acoshf(F(INFINITY)), INFINITY);
+#endif
+
+    TEST_FLT_ACCURACY(acoshl(F(1.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(acoshl(F(2.0)), 1.316958, 0.01);
+    TEST_FLT_NAN(acoshl(F(0.0)));
+#if !defined(__MINGW32__) || !(defined(__i386__) || defined(__x86_64__))
+    TEST_FLT(acoshl(F(INFINITY)), INFINITY);
+#endif
+
+    TEST_FLT_ACCURACY(asinh(F(0.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(asinh(F(1.0)), 0.881374, 0.01);
+    TEST_FLT_ACCURACY(asinh(F(2.0)), 1.443636, 0.01);
+    TEST_FLT_ACCURACY(asinh(F(-1.0)), -0.881374, 0.01);
+    TEST_FLT_ACCURACY(asinh(F(-2.0)), -1.443636, 0.01);
+    TEST_FLT(asinh(F(INFINITY)), INFINITY);
+    TEST_FLT(asinh(F(-INFINITY)), -INFINITY);
+
+    TEST_FLT_ACCURACY(asinhf(F(0.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(asinhf(F(1.0)), 0.881374, 0.01);
+    TEST_FLT_ACCURACY(asinhf(F(2.0)), 1.443636, 0.01);
+    TEST_FLT_ACCURACY(asinhf(F(-1.0)), -0.881374, 0.01);
+    TEST_FLT_ACCURACY(asinhf(F(-2.0)), -1.443636, 0.01);
+    TEST_FLT(asinhf(F(INFINITY)), INFINITY);
+    TEST_FLT(asinhf(F(-INFINITY)), -INFINITY);
+
+    TEST_FLT_ACCURACY(asinhl(F(0.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(asinhl(F(1.0)), 0.881374, 0.01);
+    TEST_FLT_ACCURACY(asinhl(F(2.0)), 1.443636, 0.01);
+    TEST_FLT_ACCURACY(asinhl(F(-1.0)), -0.881374, 0.01);
+    TEST_FLT_ACCURACY(asinhl(F(-2.0)), -1.443636, 0.01);
+    TEST_FLT(asinhl(F(INFINITY)), INFINITY);
+    TEST_FLT(asinhl(F(-INFINITY)), -INFINITY);
+
+    TEST_FLT_ACCURACY(atanh(F(0.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(atanh(F(0.5)), 0.549307, 0.01);
+    TEST_FLT_ACCURACY(atanh(F(-0.5)), -0.549307, 0.01);
+    TEST_FLT(atanh(F(1.0)), INFINITY);
+    TEST_FLT(atanh(F(-1.0)), -INFINITY);
+    TEST_FLT_NAN(atanh(F(2.0)));
+    TEST_FLT_NAN(atanh(F(-2.0)));
+
+    TEST_FLT_ACCURACY(atanhf(F(0.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(atanhf(F(0.5)), 0.549307, 0.01);
+    TEST_FLT_ACCURACY(atanhf(F(-0.5)), -0.549307, 0.01);
+    TEST_FLT(atanhf(F(1.0)), INFINITY);
+    TEST_FLT(atanhf(F(-1.0)), -INFINITY);
+    TEST_FLT_NAN(atanhf(F(2.0)));
+    TEST_FLT_NAN(atanhf(F(-2.0)));
+
+    TEST_FLT_ACCURACY(atanhl(F(0.0)), 0.0, 0.01);
+    TEST_FLT_ACCURACY(atanhl(F(0.5)), 0.549307, 0.01);
+    TEST_FLT_ACCURACY(atanhl(F(-0.5)), -0.549307, 0.01);
+    TEST_FLT(atanhl(F(1.0)), INFINITY);
+    TEST_FLT(atanhl(F(-1.0)), -INFINITY);
+    TEST_FLT_NAN(atanhl(F(2.0)));
+    TEST_FLT_NAN(atanhl(F(-2.0)));
+
 #ifdef _WIN32
     TEST_FLT_ACCURACY(_copysign(F(3.125), F(1)), 3.125, 0.0001);
     TEST_FLT_ACCURACY(_copysign(F(3.125), F(-1)), -3.125, 0.0001);
