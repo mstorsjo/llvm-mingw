@@ -87,7 +87,9 @@ const char *context = "";
         long double val = x; \
         long double diff = fabsl(val - expect); \
         tests++; \
-        if (diff > accuracy) { \
+        if (diff <= accuracy) { \
+            /* All ok, not NAN */ \
+        } else { \
             fails++; \
             printf("%s:%d: %s%s failed, expected %f, got %f (diff %f > %f)\n", __FILE__, __LINE__, context, #x, (double)expect, (double)val, (double)diff, (double)accuracy); \
         } \
