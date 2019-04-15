@@ -1047,23 +1047,17 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(acosh(F(1.0)), 0.0, 0.01);
     TEST_FLT_ACCURACY(acosh(F(2.0)), 1.316958, 0.01);
     TEST_FLT_NAN(acosh(F(0.0)));
-#if !defined(__MINGW32__) || !(defined(__i386__) || defined(__x86_64__))
     TEST_FLT(acosh(F(INFINITY)), INFINITY);
-#endif
 
     TEST_FLT_ACCURACY(acoshf(F(1.0)), 0.0, 0.01);
     TEST_FLT_ACCURACY(acoshf(F(2.0)), 1.316958, 0.01);
     TEST_FLT_NAN(acoshf(F(0.0)));
-#if !defined(__MINGW32__) || !(defined(__i386__) || defined(__x86_64__))
     TEST_FLT(acoshf(F(INFINITY)), INFINITY);
-#endif
 
     TEST_FLT_ACCURACY(acoshl(F(1.0)), 0.0, 0.01);
     TEST_FLT_ACCURACY(acoshl(F(2.0)), 1.316958, 0.01);
     TEST_FLT_NAN(acoshl(F(0.0)));
-#if !defined(__MINGW32__) || !(defined(__i386__) || defined(__x86_64__))
     TEST_FLT(acoshl(F(INFINITY)), INFINITY);
-#endif
 
     TEST_FLT_ACCURACY(asinh(F(0.0)), 0.0, 0.01);
     TEST_FLT_ACCURACY(asinh(F(1.0)), 0.881374, 0.01);
