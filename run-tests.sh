@@ -15,6 +15,7 @@ if [ -z "$RUN_X86" ]; then
     case $(uname) in
     MINGW*)
         # A non-empty string to trigger running, even if no wrapper is needed.
+        NATIVE_X86=1
         RUN_X86=" "
         export PATH=.:$PATH
         ;;
@@ -38,6 +39,25 @@ TESTS_UBSAN="ubsan"
 for arch in $ARCHS; do
     TEST_DIR="$arch"
     mkdir -p $TEST_DIR
+
+    case $arch in
+    i686|x86_64)
+        RUN="$RUN_X86"
+        COPY=
+        NATIVE="$NATIVE_X86"
+        ;;
+    armv7)
+        RUN="$RUN_ARMV7"
+        COPY="$COPY_ARMV7"
+        NATIVE="$NATIVE_ARMV7"
+        ;;
+    aarch64)
+        RUN="$RUN_AARCH64"
+        COPY="$COPY_AARCH64"
+        NATIVE="$NATIVE_AARCH64"
+        ;;
+    esac
+
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe
     done
@@ -61,7 +81,6 @@ for arch in $ARCHS; do
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
     done
-    # These aren't run, since asan doesn't work within wine.
     for test in $TESTS_ASAN; do
         case $arch in
         # Sanitizers on windows only support x86.
@@ -69,6 +88,10 @@ for arch in $ARCHS; do
         *) continue ;;
         esac
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$arch/$test-asan.pdb
+        # Only run these tests on native windows; asan doesn't run in wine.
+        if [ -n "$NATIVE" ]; then
+            TESTS_EXTRA="$TESTS_EXTRA $test"
+        fi
     done
     for test in $TESTS_UBSAN; do
         case $arch in
@@ -81,20 +104,6 @@ for arch in $ARCHS; do
         TESTS_EXTRA="$TESTS_EXTRA $test"
     done
     DLL="$TESTS_C_DLL $TESTS_CPP_DLL"
-    case $arch in
-    i686|x86_64)
-        RUN="$RUN_X86"
-        COPY=
-        ;;
-    armv7)
-        RUN="$RUN_ARMV7"
-        COPY="$COPY_ARMV7"
-        ;;
-    aarch64)
-        RUN="$RUN_AARCH64"
-        COPY="$COPY_AARCH64"
-        ;;
-    esac
     compiler_rt_arch=$arch
     if [ "$arch" = "i686" ]; then
         compiler_rt_arch=i386
