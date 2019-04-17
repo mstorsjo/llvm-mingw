@@ -47,8 +47,9 @@ TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_DLL="autoimport-lib"
 TESTS_C_LINK_DLL="autoimport-main"
 TESTS_C_NO_BUILTIN="crt-test"
-TESTS_CPP="hello-cpp hello-exception exception-locale"
+TESTS_CPP="hello-cpp"
 TESTS_CPP_LOAD_DLL="tlstest-main"
+TESTS_CPP_EXCEPTIONS="hello-exception exception-locale"
 TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
@@ -90,9 +91,12 @@ for arch in $ARCHS; do
             $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test-no-builtin.exe -fno-builtin
             TESTS_EXTRA="$TESTS_EXTRA $test-no-builtin"
         done
-        for test in $TESTS_CPP; do
+        for test in $TESTS_CPP $TESTS_CPP_EXCEPTIONS; do
             $arch-w64-$target_os-clang++ $test.cpp -o $TEST_DIR/$test.exe
         done
+        if [ "$arch" != "aarch64" ] || [ -n "$NATIVE_AARCH64" ]; then
+            TESTS_EXTRA="$TESTS_EXTRA $TESTS_CPP_EXCEPTIONS"
+        fi
         for test in $TESTS_CPP_LOAD_DLL; do
             case $target_os in
             # DLLs can't be loaded without a Windows package
