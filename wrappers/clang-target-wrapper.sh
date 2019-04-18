@@ -10,6 +10,10 @@ fi
 ARCH="${TARGET%%-*}"
 TARGET_OS="${TARGET##*-}"
 
+# The sysroot is automatically picked by the clang driver in itself, but
+# we need it for target specific extra libs.
+SYSROOT="$DIR/../$ARCH-w64-mingw32"
+
 # Check if trying to compile Ada; if we try to do this, invoking clang
 # would end up invoking <triplet>-gcc with the same arguments, which ends
 # up in an infinite recursion.
@@ -63,8 +67,9 @@ mingw32uwp)
     FLAGS="$FLAGS -DUNICODE"
     # add the minimum runtime to use for UWP targets
     FLAGS="$FLAGS -Wl,-lmincore"
-    # This requires that the default crt is ucrt.
-    FLAGS="$FLAGS -Wl,-lvcruntime140_app"
+    # Force building code for UCRT, and use a libc++ built specifically
+    # for UCRT, in case a different CRT was set as default.
+    FLAGS="$FLAGS -D__MSVCRT_VERSION__=0x1400 -static-libstdc++ -L$SYSROOT/lib/ucrt -Wl,-lvcruntime140_app,-lucrt"
     ;;
 esac
 

@@ -261,6 +261,10 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (target_os)
         target_os++;
 
+    // The sysroot is automatically picked by the clang driver in itself, but
+    // we need it for target specific extra libs.
+    TCHAR *sysroot = concat(concat(dir, _T("../")), concat(arch, _T("-w64-mingw32")));
+
     // Check if trying to compile Ada; if we try to do this, invoking clang
     // would end up invoking <triplet>-gcc with the same arguments, which ends
     // up in an infinite recursion.
@@ -271,7 +275,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
     }
 
-    int max_arg = argc + 20;
+    int max_arg = argc + 40;
     const TCHAR **exec_argv = malloc(max_arg * sizeof(*exec_argv));
     int arg = 0;
     if (getenv("CCACHE"))
@@ -306,8 +310,16 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-DUNICODE");
         // add the minimum runtime to use for UWP targets
         exec_argv[arg++] = _T("-Wl,-lmincore");
-        // This requires that the default crt is ucrt.
-        exec_argv[arg++] = _T("-Wl,-lvcruntime140_app");
+        if (!dir[0]) {
+            fprintf(stderr, "Base directory not identified\n");
+            return 1;
+        }
+        // Force building code for UCRT, and use a libc++ built specifically
+        // for UCRT, in case a different CRT was set as default.
+        exec_argv[arg++] = _T("-D__MSVCRT_VERSION__=0x1400");
+        exec_argv[arg++] = _T("-static-libstdc++");
+        exec_argv[arg++] = concat(concat(_T("-L"), sysroot), _T("/lib/ucrt"));
+        exec_argv[arg++] = _T("-Wl,-lvcruntime140_app,-lucrt");
     }
 
     exec_argv[arg++] = _T("-target");
