@@ -1118,8 +1118,6 @@ int main(int argc, char* argv[]) {
     TEST_FLT(_copysign(F(INFINITY), F(-1)), -INFINITY);
     TEST_FLT(_copysign(F(-INFINITY), F(-1)), -INFINITY);
     TEST_FLT(_copysign(F(-INFINITY), F(1)), INFINITY);
-#if !defined(__MINGW32__) || (!defined(__i386__) || __MSVCRT_VERSION__ >= 0x1400)
-    // The _copysignf function is missing in msvcrt.dll on i386
     TEST_FLT_ACCURACY(_copysignf(F(3.125), F(1)), 3.125, 0.0001);
     TEST_FLT_ACCURACY(_copysignf(F(3.125), F(-1)), -3.125, 0.0001);
     TEST_FLT_ACCURACY(_copysignf(F(-3.125), F(-1)), -3.125, 0.0001);
@@ -1129,7 +1127,6 @@ int main(int argc, char* argv[]) {
     TEST_FLT(_copysignf(F(-INFINITY), F(-1)), -INFINITY);
     TEST_FLT(_copysignf(F(-INFINITY), F(1)), INFINITY);
     TEST_FLT_NAN(_copysignf(F(NAN), F(-1)));
-#endif
     TEST_FLT_ACCURACY(_copysignl(F(3.125), F(1)), 3.125, 0.0001);
     TEST_FLT_ACCURACY(_copysignl(F(-3.125), F(-1)), -3.125, 0.0001);
     TEST_FLT_ACCURACY(_copysignl(F(3.125), F(-1)), -3.125, 0.0001);
