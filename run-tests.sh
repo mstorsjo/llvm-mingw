@@ -13,7 +13,7 @@ export PATH=$PREFIX/bin:$PATH
 
 if [ -z "$RUN_X86" ]; then
     case $(uname) in
-    MINGW*)
+    MINGW*|MSYS*)
         # A non-empty string to trigger running, even if no wrapper is needed.
         NATIVE_X86=1
         RUN_X86=" "
