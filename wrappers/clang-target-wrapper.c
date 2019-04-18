@@ -298,7 +298,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
         // the UWP target is for Windows 10
-        exec_argv[arg++] = _T("-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00");
+        exec_argv[arg++] = _T("-D_WIN32_WINNT=0x0A00");
+        exec_argv[arg++] = _T("-DWINVER=0x0A00");
         // the UWP target can only use Windows Store APIs
         exec_argv[arg++] = _T("-DWINAPI_FAMILY=WINAPI_FAMILY_APP");
         // the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
