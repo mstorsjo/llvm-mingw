@@ -1022,10 +1022,7 @@ int main(int argc, char* argv[]) {
     TEST_FLT(pow(F(10.0), F(0.0)), 1.0);
     TEST_FLT(pow(F(10.0), F(1.0)), 10.0);
     TEST_FLT_ACCURACY(pow(F(10.0), F(0.5)), 3.162278, 0.01);
-#if !defined(__MINGW32__) || (!defined(__arm__) && !defined(__aarch64__))
-    // TODO: Missing on mingw on arm and aarch64
     TEST_FLT(powl(F(2.0), F(0.0)), 1.0);
-#endif
 
     TEST_FLT_ACCURACY(cos(F(0.0)), 1.0, 0.01);
     TEST_FLT_ACCURACY(sin(F(0.0)), 0.0, 0.01);
