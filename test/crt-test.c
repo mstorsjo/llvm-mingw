@@ -520,101 +520,121 @@ int main(int argc, char* argv[]) {
         TEST_INT(llrint(F(3.3)), 3);
         TEST_INT(llrint(F(3.6)), 4);
         TEST_INT(llrint(F(3.5)), 4);
-#if !defined(__MINGW32__) || (!defined(__arm__) && !defined(__aarch64__))
-        // TODO: FE_TONEAREST rounds towards nearest even number, so 4.5 rounds to 4 - mingw doesn't implement this properly yet on arm and aarch64
         TEST_INT(llrint(F(4.5)), 4);
-#endif
         TEST_INT(llrint(F(-3.3)), -3);
         TEST_INT(llrint(F(-3.6)), -4);
         TEST_INT(llrint(F(-3.5)), -4);
+        TEST_INT(llrint(F(-4.5)), -4);
 
         TEST_INT(llrintf(F(3.3)), 3);
         TEST_INT(llrintf(F(3.6)), 4);
         TEST_INT(llrintf(F(3.5)), 4);
+        TEST_INT(llrintf(F(4.5)), 4);
         TEST_INT(llrintf(F(-3.3)), -3);
         TEST_INT(llrintf(F(-3.6)), -4);
         TEST_INT(llrintf(F(-3.5)), -4);
+        TEST_INT(llrintf(F(-4.5)), -4);
 
         TEST_INT(llrintl(F(3.3)), 3);
         TEST_INT(llrintl(F(3.6)), 4);
         TEST_INT(llrintl(F(3.5)), 4);
+        TEST_INT(llrintl(F(4.5)), 4);
         TEST_INT(llrintl(F(-3.3)), -3);
         TEST_INT(llrintl(F(-3.6)), -4);
         TEST_INT(llrintl(F(-3.5)), -4);
+        TEST_INT(llrintl(F(-4.5)), -4);
 
         TEST_INT(lrint(F(3.3)), 3);
         TEST_INT(lrint(F(3.6)), 4);
         TEST_INT(lrint(F(3.5)), 4);
+        TEST_INT(lrint(F(4.5)), 4);
         TEST_INT(lrint(F(-3.3)), -3);
         TEST_INT(lrint(F(-3.6)), -4);
         TEST_INT(lrint(F(-3.5)), -4);
+        TEST_INT(lrint(F(-4.5)), -4);
 
         TEST_INT(lrintf(F(3.3)), 3);
         TEST_INT(lrintf(F(3.6)), 4);
         TEST_INT(lrintf(F(3.5)), 4);
+        TEST_INT(lrintf(F(4.5)), 4);
         TEST_INT(lrintf(F(-3.3)), -3);
         TEST_INT(lrintf(F(-3.6)), -4);
         TEST_INT(lrintf(F(-3.5)), -4);
+        TEST_INT(lrintf(F(-4.5)), -4);
 
         TEST_INT(lrintl(F(3.3)), 3);
         TEST_INT(lrintl(F(3.6)), 4);
         TEST_INT(lrintl(F(3.5)), 4);
+        TEST_INT(lrintl(F(4.5)), 4);
         TEST_INT(lrintl(F(-3.3)), -3);
         TEST_INT(lrintl(F(-3.6)), -4);
         TEST_INT(lrintl(F(-3.5)), -4);
+        TEST_INT(lrintl(F(-4.5)), -4);
 
         TEST_FLT(rint(F(3.3)), 3.0);
         TEST_FLT(rint(F(3.6)), 4.0);
         TEST_FLT(rint(F(3.5)), 4.0);
+        TEST_FLT(rint(F(4.5)), 4.0);
         TEST_FLT_NAN(rint(F(NAN)));
         TEST_FLT(rint(F(-3.3)), -3.0);
         TEST_FLT(rint(F(-3.6)), -4.0);
         TEST_FLT(rint(F(-3.5)), -4.0);
+        TEST_FLT(rint(F(-4.5)), -4.0);
         TEST_FLT_NAN(rint(F(-NAN)));
 
         TEST_FLT(rintf(F(3.3)), 3.0);
         TEST_FLT(rintf(F(3.6)), 4.0);
         TEST_FLT(rintf(F(3.5)), 4.0);
+        TEST_FLT(rintf(F(4.5)), 4.0);
         TEST_FLT_NAN(rintf(F(NAN)));
         TEST_FLT(rintf(F(-3.3)), -3.0);
         TEST_FLT(rintf(F(-3.6)), -4.0);
         TEST_FLT(rintf(F(-3.5)), -4.0);
+        TEST_FLT(rintf(F(-4.5)), -4.0);
         TEST_FLT_NAN(rintf(F(-NAN)));
 
         TEST_FLT(rintl(F(3.3)), 3.0);
         TEST_FLT(rintl(F(3.6)), 4.0);
         TEST_FLT(rintl(F(3.5)), 4.0);
+        TEST_FLT(rintl(F(4.5)), 4.0);
         TEST_FLT_NAN(rintl(F(NAN)));
         TEST_FLT(rintl(F(-3.3)), -3.0);
         TEST_FLT(rintl(F(-3.6)), -4.0);
         TEST_FLT(rintl(F(-3.5)), -4.0);
+        TEST_FLT(rintl(F(-4.5)), -4.0);
         TEST_FLT_NAN(rintl(F(-NAN)));
 
         TEST_FLT(nearbyint(F(3.3)), 3.0);
         TEST_FLT(nearbyint(F(3.6)), 4.0);
         TEST_FLT(nearbyint(F(3.5)), 4.0);
+        TEST_FLT(nearbyint(F(4.5)), 4.0);
         TEST_FLT_NAN(nearbyint(F(NAN)));
         TEST_FLT(nearbyint(F(-3.3)), -3.0);
         TEST_FLT(nearbyint(F(-3.6)), -4.0);
         TEST_FLT(nearbyint(F(-3.5)), -4.0);
+        TEST_FLT(nearbyint(F(-4.5)), -4.0);
         TEST_FLT_NAN(nearbyint(F(-NAN)));
 
         TEST_FLT(nearbyintf(F(3.3)), 3.0);
         TEST_FLT(nearbyintf(F(3.6)), 4.0);
         TEST_FLT(nearbyintf(F(3.5)), 4.0);
+        TEST_FLT(nearbyintf(F(4.5)), 4.0);
         TEST_FLT_NAN(nearbyintf(F(NAN)));
         TEST_FLT(nearbyintf(F(-3.3)), -3.0);
         TEST_FLT(nearbyintf(F(-3.6)), -4.0);
         TEST_FLT(nearbyintf(F(-3.5)), -4.0);
+        TEST_FLT(nearbyintf(F(-4.5)), -4.0);
         TEST_FLT_NAN(nearbyintf(F(-NAN)));
 
         TEST_FLT(nearbyintl(F(3.3)), 3.0);
         TEST_FLT(nearbyintl(F(3.6)), 4.0);
         TEST_FLT(nearbyintl(F(3.5)), 4.0);
+        TEST_FLT(nearbyintl(F(4.5)), 4.0);
         TEST_FLT_NAN(nearbyintl(F(NAN)));
         TEST_FLT(nearbyintl(F(-3.3)), -3.0);
         TEST_FLT(nearbyintl(F(-3.6)), -4.0);
         TEST_FLT(nearbyintl(F(-3.5)), -4.0);
+        TEST_FLT(nearbyintl(F(-4.5)), -4.0);
         TEST_FLT_NAN(nearbyintl(F(-NAN)));
     }
 
