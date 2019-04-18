@@ -69,7 +69,7 @@ if [ -z "$HOST" ]; then
     mkdir -p build
     cd build
     ../configure --prefix=$HEADER_ROOT \
-        --enable-secure-api --enable-idl --with-default-win32-winnt=$DEFAULT_WIN32_WINNT --with-default-msvcrt=$DEFAULT_MSVCRT INSTALL="install -C"
+        --enable-idl --with-default-win32-winnt=$DEFAULT_WIN32_WINNT --with-default-msvcrt=$DEFAULT_MSVCRT INSTALL="install -C"
     make install
     cd ../..
     if [ -z "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
