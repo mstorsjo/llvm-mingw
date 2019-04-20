@@ -27,6 +27,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <limits.h>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -949,6 +950,60 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(scalblnl(F(0.0), 1), 0.0, 0.001);
     TEST_FLT_ACCURACY(scalblnl(F(2.0), 2), 8.0, 0.001);
     TEST_FLT_ACCURACY(scalblnl(F(2.0), -2), 0.5, 0.001);
+
+    TEST_INT(ilogb(F(1.0)), 0);
+    TEST_INT(ilogb(F(0.25)), -2);
+    TEST_INT(ilogb(3.49514e-308), -1022);
+    TEST_INT(ilogb(1.74757e-308), -1023);
+    TEST_INT(ilogb(9.8813e-324), -1073);
+    TEST_INT(ilogb(F(0.0)), FP_ILOGB0);
+    TEST_INT(ilogb(F(INFINITY)), INT_MAX);
+    TEST_INT(ilogb(F(NAN)), FP_ILOGBNAN);
+
+    TEST_INT(ilogbf(F(1.0)), 0);
+    TEST_INT(ilogbf(F(0.25)), -2);
+    TEST_INT(ilogbf(F(3.69292e-38)), -125);
+    TEST_INT(ilogbf(F(4.61616e-39)), -128);
+    TEST_INT(ilogbf(F(1.4013e-45)), -148);
+    TEST_INT(ilogbf(F(0.0)), FP_ILOGB0);
+    TEST_INT(ilogbf(F(INFINITY)), INT_MAX);
+    TEST_INT(ilogbf(F(NAN)), FP_ILOGBNAN);
+
+    TEST_INT(ilogbl(F(1.0)), 0);
+    TEST_INT(ilogbl(F(0.25)), -2);
+    TEST_INT(ilogbl(3.49514e-308), -1022);
+    TEST_INT(ilogbl(1.74757e-308), -1023);
+    TEST_INT(ilogbl(9.8813e-324), -1073);
+    TEST_INT(ilogbl(F(0.0)), FP_ILOGB0);
+    TEST_INT(ilogbl(F(INFINITY)), INT_MAX);
+    TEST_INT(ilogbl(F(NAN)), FP_ILOGBNAN);
+
+    TEST_FLT(logb(F(1.0)), 0.0);
+    TEST_FLT(logb(F(0.25)), -2.0);
+    TEST_FLT(logb(3.49514e-308), -1022.0);
+    TEST_FLT(logb(1.74757e-308), -1023.0);
+    TEST_FLT(logb(9.8813e-324), -1073.0);
+    TEST_FLT(logb(F(0.0)), -INFINITY);
+    TEST_FLT(logb(F(INFINITY)), INFINITY);
+    TEST_FLT_NAN(logb(F(NAN)));
+
+    TEST_FLT(logbf(F(1.0)), 0.0);
+    TEST_FLT(logbf(F(0.25)), -2.0);
+    TEST_FLT(logbf(F(3.69292e-38)), -125.0);
+    TEST_FLT(logbf(F(4.61616e-39)), -128.0);
+    TEST_FLT(logbf(F(1.4013e-45)), -148.0);
+    TEST_FLT(logbf(F(0.0)), -INFINITY);
+    TEST_FLT(logbf(F(INFINITY)), INFINITY);
+    TEST_FLT_NAN(logbf(F(NAN)));
+
+    TEST_FLT(logbl(F(1.0)), 0.0);
+    TEST_FLT(logbl(F(0.25)), -2.0);
+    TEST_FLT(logbl(3.49514e-308), -1022.0);
+    TEST_FLT(logbl(1.74757e-308), -1023.0);
+    TEST_FLT(logbl(9.8813e-324), -1073.0);
+    TEST_FLT(logbl(F(0.0)), -INFINITY);
+    TEST_FLT(logbl(F(INFINITY)), INFINITY);
+    TEST_FLT_NAN(logbl(F(NAN)));
 
     TEST_INT(llround(F(3.3)), 3);
     TEST_INT(llround(F(3.6)), 4);
