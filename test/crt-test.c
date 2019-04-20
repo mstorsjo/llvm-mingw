@@ -837,7 +837,7 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(log2(F(7.8886e-31)), -100, 0.001);
     TEST_FLT_ACCURACY(log2(F(7.3468e-40)), -130, 0.001);
 #if !defined(__MINGW32__) || !defined(__arm__)
-    // In Wine on arm, the strtod() here returns 0 instead of
+    // In Wine on arm, the strtod() in the F() macro returns 0 instead of
     // the actual denormal value.
     TEST_FLT_ACCURACY(log2(F(9.8813e-324)), -1073, 0.001);
 #endif
