@@ -94,8 +94,13 @@ for arch in $ARCHS; do
         for test in $TESTS_CPP $TESTS_CPP_EXCEPTIONS; do
             $arch-w64-$target_os-clang++ $test.cpp -o $TEST_DIR/$test.exe
         done
+        for test in $TESTS_CPP_EXCEPTIONS; do
+            $arch-w64-$target_os-clang++ $test.cpp -O2 -o $TEST_DIR/$test-opt.exe
+        done
         if [ "$arch" != "aarch64" ] || [ -n "$NATIVE_AARCH64" ]; then
-            TESTS_EXTRA="$TESTS_EXTRA $TESTS_CPP_EXCEPTIONS"
+            for test in $TESTS_CPP_EXCEPTIONS; do
+                TESTS_EXTRA="$TESTS_EXTRA $test $test-opt"
+            done
         fi
         for test in $TESTS_CPP_LOAD_DLL; do
             case $target_os in
