@@ -22,7 +22,7 @@ MINGW*)
 esac
 
 cd bin
-for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmaptool ld64.lld llc lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder wasm-ld yaml2obj libclang.dll LTO.dll OptRemarks.dll *.bat; do
+for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmaptool ld64.lld llc lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder wasm-ld yaml2obj libclang.dll LTO.dll *Remarks.dll *.bat; do
     basename=$i
     if [ -n "$EXEEXT" ]; then
         # Some in the list are expanded globs, some are plain names we list.
