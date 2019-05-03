@@ -21,7 +21,7 @@ cleanup() {
     done
 }
 
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 for arch in i686 x86_64 armv7 aarch64; do
     temp=$(uuidgen)
