@@ -24,7 +24,7 @@ RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
 ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 # Install the usual $TUPLE-clang binaries
-COPY wrappers/*.sh wrappers/*.c ./wrappers/
+COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
 COPY install-wrappers.sh ./
 RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
