@@ -212,6 +212,13 @@ static void print_argv(const TCHAR **exec_argv) {
     _ftprintf(stderr, _T("\n"));
 }
 
+static void check_num_args(int arg, int max_arg) {
+    if (arg > max_arg) {
+        fprintf(stderr, "Too many options added\n");
+        abort();
+    }
+}
+
 static TCHAR *_tcsrchrs(const TCHAR *str, TCHAR char1, TCHAR char2) {
     TCHAR *ptr1 = _tcsrchr(str, char1);
     TCHAR *ptr2 = _tcsrchr(str, char2);
@@ -397,6 +404,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = escape(preproc_rc);
         exec_argv[arg] = NULL;
 
+        check_num_args(arg, max_arg);
         if (verbose)
             print_argv(exec_argv);
         int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
@@ -425,6 +433,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             exec_argv[arg++] = escape(res);
         exec_argv[arg] = NULL;
 
+        check_num_args(arg, max_arg);
         if (verbose)
             print_argv(exec_argv);
         ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
@@ -449,6 +458,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             exec_argv[arg++] = escape(concat(_T("-out:"), output));
             exec_argv[arg] = NULL;
 
+            check_num_args(arg, max_arg);
             if (verbose)
                 print_argv(exec_argv);
             int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
@@ -471,6 +481,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = escape(concat(_T("-out:"), output));
         exec_argv[arg] = NULL;
 
+        check_num_args(arg, max_arg);
         if (verbose)
             print_argv(exec_argv);
         int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
