@@ -40,6 +40,7 @@ if [ -n "$HOST" ]; then
 fi
 $CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
 $CC wrappers/windres-wrapper.c -o $PREFIX/bin/windres-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/llvm-wrapper.c -o $PREFIX/bin/llvm-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
 if [ -n "$EXEEXT" ]; then
     # For Windows, we should prefer the executable wrapper, which also works
     # when invoked from outside of MSYS.
@@ -55,7 +56,12 @@ for arch in $ARCHS; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
         for exec in ar ranlib nm objcopy strings strip; do
-            ln -sf llvm-$exec$EXEEXT $arch-w64-$target_os-$exec$EXEEXT || true
+            if [ -n "$HOST" ]; then
+                link_target=llvm-wrapper
+            else
+                link_target=llvm-$exec
+            fi
+            ln -sf $link_target$EXEEXT $arch-w64-$target_os-$exec$EXEEXT || true
         done
         for exec in windres; do
             ln -sf $exec-wrapper$EXEEXT $arch-w64-$target_os-$exec$EXEEXT

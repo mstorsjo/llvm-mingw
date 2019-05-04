@@ -158,3 +158,25 @@ static void split_argv(const TCHAR *argv0, const TCHAR **dir_ptr, const TCHAR **
     if (exe_ptr)
         *exe_ptr = exe;
 }
+
+static int run_final(const TCHAR *executable, const TCHAR *const *argv) {
+#ifdef _WIN32
+    int ret = _tspawnvp_escape(_P_WAIT, executable, argv);
+    if (ret == -1) {
+        _tperror(executable);
+        return 1;
+    }
+    return ret;
+#else
+    // On unix, exec() runs the target executable within this same process,
+    // making the return code propagate implicitly.
+    // Windows doesn't have such mechanisms, and the exec() family of functions
+    // makes the calling process exit immediately and always returning
+    // a zero return. This doesn't work for our case where we need the
+    // return code propagated.
+    _texecvp(executable, EXECVP_CAST argv);
+
+    _tperror(executable);
+    return 1;
+#endif
+}

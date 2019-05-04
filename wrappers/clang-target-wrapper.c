@@ -222,23 +222,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     for (int i = 1; i < argc; i++)
         if (!_tcscmp(argv[i], _T("-v")))
             return exec_filtered(exec_argv);
-
-    int ret = _tspawnvp_escape(_P_WAIT, exec_argv[0], exec_argv);
-    if (ret == -1) {
-        _tperror(exec_argv[0]);
-        return 1;
-    }
-    return ret;
-#else
-    // On unix, exec() runs the target executable within this same process,
-    // making the return code propagate implicitly.
-    // Windows doesn't have such mechanisms, and the exec() family of functions
-    // makes the calling process exit immediately and always returning
-    // a zero return. This doesn't work for our case where we need the
-    // return code propagated.
-    _texecvp(exec_argv[0], EXECVP_CAST exec_argv);
-
-    _tperror(exec_argv[0]);
-    return 1;
 #endif
+
+    return run_final(exec_argv[0], exec_argv);
 }
