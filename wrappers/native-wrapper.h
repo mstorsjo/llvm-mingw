@@ -56,8 +56,8 @@ typedef char TCHAR;
 #define TS "%s"
 #endif
 
-static TCHAR *escape(const TCHAR *str) {
 #ifdef _WIN32
+static TCHAR *escape(const TCHAR *str) {
     TCHAR *out = malloc((_tcslen(str) * 2 + 3) * sizeof(*out));
     TCHAR *ptr = out;
     int i;
@@ -82,10 +82,19 @@ static TCHAR *escape(const TCHAR *str) {
     *ptr++ = '"';
     *ptr++ = '\0';
     return out;
-#else
-    return _tcsdup(str);
-#endif
 }
+
+static int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR * const *argv) {
+    int num_args = 0;
+    while (argv[num_args])
+        num_args++;
+    const TCHAR **escaped_argv = malloc(num_args * sizeof(*escaped_argv));
+    for (int i = 0; argv[i]; i++)
+        escaped_argv[i] = escape(argv[i]);
+    escaped_argv[num_args] = NULL;
+    return _tspawnvp(mode, filename, escaped_argv);
+}
+#endif
 
 static TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix) {
     int prefixlen = _tcslen(prefix);

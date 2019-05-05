@@ -37,7 +37,7 @@
 
 #ifdef _WIN32
 #else
-#define _tspawnvp _spawnvp
+#define _tspawnvp_escape _spawnvp
 
 #include <sys/wait.h>
 #include <errno.h>
@@ -287,21 +287,21 @@ int _tmain(int argc, TCHAR* argv[]) {
     int arg = 0;
 
     if (!_tcscmp(input_format, _T("rc"))) {
-        exec_argv[arg++] = escape(concat(dir, CC));
+        exec_argv[arg++] = concat(dir, CC);
         exec_argv[arg++] = _T("-E");
         for (int i = 0; i < nb_cpp_options; i++)
-            exec_argv[arg++] = escape(cpp_options[i]);
+            exec_argv[arg++] = cpp_options[i];
         exec_argv[arg++] = _T("-xc");
         exec_argv[arg++] = _T("-DRC_INVOKED=1");
-        exec_argv[arg++] = escape(input);
+        exec_argv[arg++] = input;
         exec_argv[arg++] = _T("-o");
-        exec_argv[arg++] = escape(preproc_rc);
+        exec_argv[arg++] = preproc_rc;
         exec_argv[arg] = NULL;
 
         check_num_args(arg, max_arg);
         if (verbose)
             print_argv(exec_argv);
-        int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+        int ret = _tspawnvp_escape(_P_WAIT, exec_argv[0], exec_argv);
         if (ret == -1) {
             _tperror(exec_argv[0]);
             return 1;
@@ -312,25 +312,25 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
 
         arg = 0;
-        exec_argv[arg++] = escape(concat(dir, _T("llvm-rc")));
+        exec_argv[arg++] = concat(dir, _T("llvm-rc"));
         for (int i = 0; i < nb_rc_options; i++)
-            exec_argv[arg++] = escape(rc_options[i]);
+            exec_argv[arg++] = rc_options[i];
         exec_argv[arg++] = _T("-I");
-        exec_argv[arg++] = escape(inputdir);
-        exec_argv[arg++] = escape(preproc_rc);
+        exec_argv[arg++] = inputdir;
+        exec_argv[arg++] = preproc_rc;
         exec_argv[arg++] = _T("-c");
         exec_argv[arg++] = codepage;
         exec_argv[arg++] = _T("-fo");
         if (!_tcscmp(output_format, _T("res")))
-            exec_argv[arg++] = escape(output);
+            exec_argv[arg++] = output;
         else
-            exec_argv[arg++] = escape(res);
+            exec_argv[arg++] = res;
         exec_argv[arg] = NULL;
 
         check_num_args(arg, max_arg);
         if (verbose)
             print_argv(exec_argv);
-        ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+        ret = _tspawnvp_escape(_P_WAIT, exec_argv[0], exec_argv);
         if (ret == -1) {
             _tperror(exec_argv[0]);
             return 1;
@@ -346,16 +346,16 @@ int _tmain(int argc, TCHAR* argv[]) {
             // All done
         } else if (!_tcscmp(output_format, _T("coff"))) {
             arg = 0;
-            exec_argv[arg++] = escape(concat(dir, _T("llvm-cvtres")));
-            exec_argv[arg++] = escape(res);
+            exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
+            exec_argv[arg++] = res;
             exec_argv[arg++] = concat(_T("-machine:"), machine);
-            exec_argv[arg++] = escape(concat(_T("-out:"), output));
+            exec_argv[arg++] = concat(_T("-out:"), output);
             exec_argv[arg] = NULL;
 
             check_num_args(arg, max_arg);
             if (verbose)
                 print_argv(exec_argv);
-            int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+            int ret = _tspawnvp_escape(_P_WAIT, exec_argv[0], exec_argv);
             if (ret == -1) {
                 _tperror(exec_argv[0]);
                 return 1;
@@ -369,16 +369,16 @@ int _tmain(int argc, TCHAR* argv[]) {
             error(basename, _T("invalid output format: `"TS"'"), output_format);
         }
     } else if (!_tcscmp(input_format, _T("res"))) {
-        exec_argv[arg++] = escape(concat(dir, _T("llvm-cvtres")));
-        exec_argv[arg++] = escape(input);
+        exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
+        exec_argv[arg++] = input;
         exec_argv[arg++] = concat(_T("-machine:"), machine);
-        exec_argv[arg++] = escape(concat(_T("-out:"), output));
+        exec_argv[arg++] = concat(_T("-out:"), output);
         exec_argv[arg] = NULL;
 
         check_num_args(arg, max_arg);
         if (verbose)
             print_argv(exec_argv);
-        int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+        int ret = _tspawnvp_escape(_P_WAIT, exec_argv[0], exec_argv);
         if (ret == -1) {
             _tperror(exec_argv[0]);
             return 1;

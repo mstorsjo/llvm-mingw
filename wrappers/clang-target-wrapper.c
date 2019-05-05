@@ -75,12 +75,13 @@ static void filter_stderr(char *buf, int n) {
 }
 
 static int exec_filtered(const TCHAR **argv) {
+    for (int i = 0; argv[i]; i++)
+        argv[i] = escape(argv[i]);
     int len = 1;
     for (int i = 0; argv[i]; i++)
         len += _tcslen(argv[i]) + 1;
     TCHAR *cmdline = malloc(len * sizeof(*cmdline));
     int pos = 0;
-    // On Windows, the arguments are already quoted and escaped properly.
     for (int i = 0; argv[i]; i++) {
         _tcscpy(&cmdline[pos], argv[i]);
         pos += _tcslen(argv[i]);
@@ -165,7 +166,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     int arg = 0;
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");
-    exec_argv[arg++] = escape(concat(dir, _T(CLANG)));
+    exec_argv[arg++] = concat(dir, _T(CLANG));
 
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.
     if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++")))
@@ -204,7 +205,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     exec_argv[arg++] = _T("-Qunused-arguments");
 
     for (int i = 1; i < argc; i++)
-        exec_argv[arg++] = escape(argv[i]);
+        exec_argv[arg++] = argv[i];
 
     exec_argv[arg] = NULL;
     if (arg > max_arg) {
@@ -222,7 +223,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         if (!_tcscmp(argv[i], _T("-v")))
             return exec_filtered(exec_argv);
 
-    int ret = _tspawnvp(_P_WAIT, exec_argv[0], exec_argv);
+    int ret = _tspawnvp_escape(_P_WAIT, exec_argv[0], exec_argv);
     if (ret == -1) {
         _tperror(exec_argv[0]);
         return 1;
