@@ -165,7 +165,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     int arg = 0;
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");
-    exec_argv[arg++] = concat(dir, _T(CLANG));
+    exec_argv[arg++] = escape(concat(dir, _T(CLANG)));
 
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.
     if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++")))
