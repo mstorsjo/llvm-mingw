@@ -69,18 +69,18 @@ for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmapto
     esac
 done
 if [ -n "$EXEEXT" ]; then
-    # Convert these two from symlinks to regular files, so we can remove
-    # the one they point to. On MSYS, and if packaging built toolchains
+    # Convert ld.lld from a symlink to a regular file, so we can remove
+    # the one it points to. On MSYS, and if packaging built toolchains
     # in a zip file, symlinks are converted into copies.
-    # lld-link isn't used normally, but can be useful for debugging/testing.
-    for i in ld.lld lld-link; do
-        if [ -L $i$EXEEXT ]; then
-            cp $i$EXEEXT tmp
-            rm $i$EXEEXT
-            mv tmp $i$EXEEXT
-        fi
-    done
-    rm -f lld$EXEEXT
+    if [ -L ld.lld$EXEEXT ]; then
+        cp ld.lld$EXEEXT tmp
+        rm ld.lld$EXEEXT
+        mv tmp ld.lld$EXEEXT
+    fi
+    # lld-link isn't used normally, but can be useful for debugging/testing,
+    # and is kept in unix setups. Removing it when packaging for windows,
+    # to conserve space.
+    rm -f lld$EXEEXT lld-link$EXEEXT
     # Remove superfluous frontends; these aren't really used.
     rm -f clang-cpp* clang++*
 fi
