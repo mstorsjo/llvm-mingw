@@ -15,8 +15,8 @@ cd test
 
 DEFAULT_OSES="mingw32 mingw32uwp"
 cat<<EOF > is-ucrt.c
-#include <_mingw.h>
-#if __MSVCRT_VERSION__ < 0x1400
+#include <corecrt.h>
+#if __MSVCRT_VERSION__ < 0x1400 && !defined(_UCRT)
 #error not ucrt
 #endif
 EOF
