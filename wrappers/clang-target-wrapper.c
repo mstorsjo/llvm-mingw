@@ -272,7 +272,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     }
 
     int max_arg = argc + 20;
-    const TCHAR **exec_argv = malloc(max_arg * sizeof(*exec_argv));
+    const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");

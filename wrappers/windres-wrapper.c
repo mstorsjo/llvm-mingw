@@ -389,7 +389,7 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 
     int max_arg = 2 * argc + 20;
-    const TCHAR **exec_argv = malloc(max_arg * sizeof(*exec_argv));
+    const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
 
     if (!_tcscmp(input_format, _T("rc"))) {
