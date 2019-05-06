@@ -1,3 +1,4 @@
+.git
 llvm
 mingw-w64
 compiler-rt
@@ -5,8 +6,10 @@ libunwind
 libcxxabi
 libcxx
 libssp
-*.exe
-*.dll
-*.lib
+**/*.exe
+**/*.dll
+**/*.lib
+**/*.pdb
+**/*.a
 *.tar.xz
 *.zip
