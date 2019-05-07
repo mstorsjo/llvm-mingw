@@ -144,9 +144,8 @@ cmake \
     $CMAKEFLAGS \
     ..
 
-: ${BUILDTARGETS:=install/strip}
 if [ -n "$NINJA" ]; then
-    ninja $BUILDTARGETS
+    ninja install/strip
 else
-    make -j$CORES $BUILDTARGETS
+    make -j$CORES install/strip
 fi
