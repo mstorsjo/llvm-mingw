@@ -89,6 +89,10 @@ build_all() {
     for arch in $ARCHS; do
         mkdir -p build-$arch-$type
         cd build-$arch-$type
+        # CXX_SUPPORTS_CXX11 is not strictly necessary here. But if building
+        # with a stripped llvm install, and the system happens to have an older
+        # llvm-config in /usr/bin, it can end up including older cmake files,
+        # and then CXX_SUPPORTS_CXX11 needs to be set.
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
@@ -102,7 +106,6 @@ build_all() {
             -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR=$PREFIX/bin/llvm-ar \
             -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
-            -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
             -DCXX_SUPPORTS_CXX11=TRUE \
             -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DLIBUNWIND_USE_COMPILER_RT=TRUE \
@@ -110,7 +113,6 @@ build_all() {
             -DLIBUNWIND_ENABLE_SHARED=$SHARED \
             -DLIBUNWIND_ENABLE_STATIC=$STATIC \
             -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
-            -DLIBUNWIND_STANDALONE_BUILD=TRUE \
             -DCMAKE_CXX_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             -DCMAKE_C_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             -DCMAKE_SHARED_LINKER_FLAGS="-lpsapi" \
@@ -161,8 +163,6 @@ build_all() {
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/include \
             -DLIBCXXABI_LIBDIR_SUFFIX="" \
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
-            -DLLVM_NO_OLD_LIBSTDCXX=TRUE \
-            -DCXX_SUPPORTS_CXX11=TRUE \
             -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32" \
             ..
