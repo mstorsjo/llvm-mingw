@@ -88,7 +88,7 @@ static int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR * const
     int num_args = 0;
     while (argv[num_args])
         num_args++;
-    const TCHAR **escaped_argv = malloc(num_args * sizeof(*escaped_argv));
+    const TCHAR **escaped_argv = malloc((num_args + 1) * sizeof(*escaped_argv));
     for (int i = 0; argv[i]; i++)
         escaped_argv[i] = escape(argv[i]);
     escaped_argv[num_args] = NULL;
