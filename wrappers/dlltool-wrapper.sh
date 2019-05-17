@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-export PATH=$DIR:$PATH
+export PATH="$DIR":"$PATH"
 
 BASENAME="$(basename "$0")"
 TARGET="${BASENAME%-*}"

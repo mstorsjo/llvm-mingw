@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-export PATH=$DIR:$PATH
+export PATH="$DIR":"$PATH"
 
 if [ "$1" = "--help" ]; then
     cat<<EOF
