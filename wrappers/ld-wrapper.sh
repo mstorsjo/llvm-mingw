@@ -3,22 +3,6 @@
 DIR="$(cd "$(dirname "$0")" && pwd)"
 export PATH="$DIR":"$PATH"
 
-if [ "$1" = "--help" ]; then
-    cat<<EOF
-GNU ld impersonation
-We don't support the --enable-auto-import flag (it's enabled by default just
-like it is in GNU ld), but we do support the feature itself. Libtool may
-look for this flag.
-EOF
-    exit 0
-fi
-if [ "$1" = "-v" ]; then
-    # This isn't implemented in the lld mingw frontend, so don't
-    # pass the -m <machine> option in this case.
-    ld.lld -v
-    exit 0
-fi
-
 BASENAME="$(basename "$0")"
 TARGET="${BASENAME%-*}"
 DEFAULT_TARGET=x86_64-w64-mingw32
