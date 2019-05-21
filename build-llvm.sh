@@ -145,7 +145,7 @@ cmake \
     ..
 
 if [ -n "$NINJA" ]; then
-    ninja install/strip
+    ninja -j$CORES install/strip
 else
     make -j$CORES install/strip
 fi
