@@ -46,7 +46,7 @@ armv7)
     # Dwarf is the default here.
     ;;
 aarch64)
-    FLAGS="$FLAGS -fseh-exceptions"
+    # SEH is the default here.
     ;;
 esac
 case $TARGET_OS in
