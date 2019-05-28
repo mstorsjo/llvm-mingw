@@ -175,11 +175,11 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (!_tcscmp(arch, _T("i686"))) {
         // Dwarf is the default for i686.
     } else if (!_tcscmp(arch, _T("x86_64"))) {
-        // SEH is the default here.
+        // SEH is the default for x86_64.
     } else if (!_tcscmp(arch, _T("armv7"))) {
-        // Dwarf is the default here.
+        // Dwarf is the default for armv7.
     } else if (!_tcscmp(arch, _T("aarch64"))) {
-        // SEH is the default here.
+        // SEH is the default for aarch64.
     }
 
     if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
