@@ -137,11 +137,17 @@ for arch in $ARCHS; do
     make install
     cd ..
 done
+cd $PREFIX/bin
 if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
-    cd $PREFIX/bin
     for arch in $ALL_ARCHS; do
         if [ "$arch" != "$ARCHS" ]; then
             ln -sf $ARCHS-w64-mingw32-widl$EXEEXT $arch-w64-mingw32-widl$EXEEXT
         fi
     done
+fi
+if [ -n "$EXEEXT" ]; then
+    if [ -z "$HOST" ]; then
+        HOST=$(./clang -dumpmachine | sed 's/-.*//')-w64-mingw32
+    fi
+    ln -sf $HOST-widl$EXEEXT widl$EXEEXT
 fi
