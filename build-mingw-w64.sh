@@ -76,7 +76,9 @@ if [ -z "$HOST" ]; then
     if [ -z "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
         for arch in $ARCHS; do
             mkdir -p $PREFIX/$arch-w64-mingw32
-            ln -sfn ../generic-w64-mingw32/include $PREFIX/$arch-w64-mingw32/include
+            if [ ! -e $PREFIX/$arch-w64-mingw32/include ]; then
+                ln -sfn ../generic-w64-mingw32/include $PREFIX/$arch-w64-mingw32/include
+            fi
         done
     fi
 
