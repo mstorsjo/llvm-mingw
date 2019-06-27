@@ -30,6 +30,7 @@ fi
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
+ORIGPATH="$PATH"
 if [ -z "$HOST" ]; then
     # The newly built toolchain isn't crosscompiled; add it to the path.
     export PATH=$PREFIX/bin:$PATH
@@ -128,6 +129,10 @@ if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
     ARCHS=x86_64
 fi
 
+# If building on windows, we've installed prefixless wrappers - these break
+# building widl, as the toolchain isn't functional yet. Restore the original
+# path.
+export PATH=$ORIGPATH
 cd mingw-w64-tools/widl
 for arch in $ARCHS; do
     mkdir -p build-$CROSS_NAME$arch
