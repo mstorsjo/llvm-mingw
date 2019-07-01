@@ -31,9 +31,8 @@ export PATH=$PREFIX/bin:$PATH
 
 CLANG_VERSION=$(basename $(dirname $(dirname $(dirname $($PREFIX/bin/clang --print-libgcc-file-name -rtlib=compiler-rt)))))
 
-if [ ! -d compiler-rt ]; then
-    git clone -b master https://github.com/llvm-mirror/compiler-rt.git
-    CHECKOUT=1
+if [ ! -d llvm-project/compiler-rt ] || [ -n "$SYNC" ]; then
+    CHECKOUT_ONLY=1 ./build-llvm.sh
 fi
 
 # Add a symlink for i386 -> i686; we normally name the toolchain
@@ -43,12 +42,7 @@ if [ ! -e $PREFIX/i386-w64-mingw32 ]; then
     ln -sfn i686-w64-mingw32 $PREFIX/i386-w64-mingw32 || true
 fi
 
-cd compiler-rt
-
-if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
-    [ -z "$SYNC" ] || git fetch
-    git checkout 806498c6546a07c65bb5c808a7d8964216cc24ca
-fi
+cd llvm-project/compiler-rt
 
 for arch in $ARCHS; do
     buildarchname=$arch

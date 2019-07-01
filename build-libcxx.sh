@@ -34,36 +34,11 @@ export PATH=$PREFIX/bin:$PATH
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
-if [ ! -d libunwind ]; then
-    git clone -b master https://github.com/llvm-mirror/libunwind.git
-    CHECKOUT_LIBUNWIND=1
+if [ ! -d llvm-project/libunwind ] || [ -n "$SYNC" ]; then
+    CHECKOUT_ONLY=1 ./build-llvm.sh
 fi
-if [ ! -d libcxxabi ]; then
-    git clone -b master https://github.com/llvm-mirror/libcxxabi.git
-    CHECKOUT_LIBCXXABI=1
-fi
-if [ ! -d libcxx ]; then
-    git clone -b master https://github.com/llvm-mirror/libcxx.git
-    CHECKOUT_LIBCXX=1
-fi
-if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBUNWIND" ]; then
-    cd libunwind
-    [ -z "$SYNC" ] || git fetch
-    git checkout df9c0cfd896524ae16dd7283cdf722f300c2b45d
-    cd ..
-fi
-if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXXABI" ]; then
-    cd libcxxabi
-    [ -z "$SYNC" ] || git fetch
-    git checkout cac80b29da529d44ceb63930679e3a1af9cace37
-    cd ..
-fi
-if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBCXX" ]; then
-    cd libcxx
-    [ -z "$SYNC" ] || git fetch
-    git checkout f16a595ec76a383f08380c81af3e21a3065364c1
-    cd ..
-fi
+
+cd llvm-project
 
 LIBCXX=$(pwd)/libcxx
 

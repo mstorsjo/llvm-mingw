@@ -2,8 +2,8 @@ FROM ubuntu:16.04
 
 RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim python git-svn ninja-build \
-    subversion ca-certificates && \
+    automake yasm gettext autopoint vim python ninja-build subversion \
+    ca-certificates && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
@@ -15,35 +15,19 @@ WORKDIR /build
 
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
-# Build and strip the LLVM installation
-COPY build-llvm.sh strip-llvm.sh ./
-RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
-    ./strip-llvm.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
-
 ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
-# Install the usual $TUPLE-clang binaries
+# Build everything that uses the llvm monorepo. We need to build the mingw runtime before the compiler-rt/libunwind/libcxxabi/libcxx runtimes.
+COPY build-llvm.sh strip-llvm.sh install-wrappers.sh build-mingw-w64.sh build-compiler-rt.sh build-mingw-w64-libraries.sh build-libcxx.sh ./
 COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
-COPY install-wrappers.sh ./
-RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
-
-# Build MinGW-w64, compiler-rt and mingw-w64's extra libraries
-COPY build-mingw-w64.sh build-compiler-rt.sh build-mingw-w64-libraries.sh ./
-RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX && \
+RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
+    ./strip-llvm.sh $TOOLCHAIN_PREFIX && \
+    ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
+    ./build-mingw-w64.sh $TOOLCHAIN_PREFIX && \
     ./build-compiler-rt.sh $TOOLCHAIN_PREFIX && \
     ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
-
-# Build libunwind/libcxxabi/libcxx
-COPY build-libcxx.sh ./
-RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
-
-# Build sanitizers
-COPY build-compiler-rt.sh ./
-RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
+    ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
+    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
     rm -rf /build/*
 
 # Build libssp
