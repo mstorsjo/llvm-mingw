@@ -55,7 +55,7 @@ for arch in $ARCHS; do
         for exec in clang clang++ gcc g++ cc c99 c11 c++; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
-        for exec in ar ranlib nm objcopy strings strip; do
+        for exec in addr2line ar ranlib nm objcopy strings strip; do
             if [ -n "$HOST" ]; then
                 link_target=llvm-wrapper
             else
@@ -78,7 +78,7 @@ if [ -n "$EXEEXT" ]; then
     if [ -z "$HOST" ]; then
         HOST=$(./clang-$CLANG_MAJOR -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
-    for exec in clang clang++ gcc g++ cc c99 c11 c++ ar ranlib nm objcopy strings strip windres; do
+    for exec in clang clang++ gcc g++ cc c99 c11 c++ addr2line ar ranlib nm objcopy strings strip windres; do
         ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
     done
     for exec in ld objdump dlltool; do
