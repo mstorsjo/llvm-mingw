@@ -826,6 +826,7 @@ int main(int argc, char* argv[]) {
     TEST_FLT(nearbyintl(F(-3.6)), -3.0);
 
     context = "";
+    fesetround(FE_TONEAREST);
 
     TEST_FLT_ACCURACY(log2(F(1.0)), 0.0, 0.001);
     TEST_FLT_ACCURACY(log2(F(8.0)), 3.0, 0.001);
@@ -964,7 +965,7 @@ int main(int argc, char* argv[]) {
     TEST_INT(ilogbf(F(0.25)), -2);
     TEST_INT(ilogbf(F(3.69292e-38)), -125);
     TEST_INT(ilogbf(F(4.61616e-39)), -128);
-    TEST_INT(ilogbf(F(1.4013e-45)), -148);
+    TEST_INT(ilogbf(F(1.4013e-45)), -149);
     TEST_INT(ilogbf(F(0.0)), FP_ILOGB0);
     TEST_INT(ilogbf(F(INFINITY)), INT_MAX);
     TEST_INT(ilogbf(F(NAN)), FP_ILOGBNAN);
@@ -991,7 +992,7 @@ int main(int argc, char* argv[]) {
     TEST_FLT(logbf(F(0.25)), -2.0);
     TEST_FLT(logbf(F(3.69292e-38)), -125.0);
     TEST_FLT(logbf(F(4.61616e-39)), -128.0);
-    TEST_FLT(logbf(F(1.4013e-45)), -148.0);
+    TEST_FLT(logbf(F(1.4013e-45)), -149.0);
     TEST_FLT(logbf(F(0.0)), -INFINITY);
     TEST_FLT(logbf(F(INFINITY)), INFINITY);
     TEST_FLT_NAN(logbf(F(NAN)));
