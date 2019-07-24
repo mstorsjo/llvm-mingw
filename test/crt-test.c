@@ -54,17 +54,17 @@ const char *context = "";
 
 #define TEST_STR(x, expect) do { \
         tests++; \
-        if (strcmp(x, expect)) { \
+        if (strcmp((x), (expect))) { \
             fails++; \
-            printf("%s:%d: %sexpected \"%s\", got \"%s\"\n", __FILE__, __LINE__, context, expect, x); \
+            printf("%s:%d: %sexpected \"%s\", got \"%s\"\n", __FILE__, __LINE__, context, (expect), (x)); \
         } \
     } while (0)
 
 #define TEST_FLT(x, expect) do { \
         tests++; \
-        if (x != expect) { \
+        if ((x) != (expect)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, expected %f, got %f\n", __FILE__, __LINE__, context, #x, (double)expect, (double)x); \
+            printf("%s:%d: %s%s failed, expected %f, got %f\n", __FILE__, __LINE__, context, #x, (double)(expect), (double)(x)); \
         } \
     } while (0)
 
@@ -72,7 +72,7 @@ const char *context = "";
         tests++; \
         if (!(expr)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, got %f\n", __FILE__, __LINE__, context, #expr, (double)x); \
+            printf("%s:%d: %s%s failed, got %f\n", __FILE__, __LINE__, context, #expr, (double)(x)); \
         } \
     } while (0)
 
@@ -80,35 +80,35 @@ const char *context = "";
         tests++; \
         if (!isnan(x)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, got %f, expected NAN\n", __FILE__, __LINE__, context, #x, (double)x); \
+            printf("%s:%d: %s%s failed, got %f, expected NAN\n", __FILE__, __LINE__, context, #x, (double)(x)); \
         } \
     } while (0)
 
 #define TEST_FLT_ACCURACY(x, expect, accuracy) do { \
-        long double val = x; \
-        long double diff = fabsl(val - expect); \
+        long double val = (x); \
+        long double diff = fabsl(val - (expect)); \
         tests++; \
-        if (diff <= accuracy) { \
+        if (diff <= (accuracy)) { \
             /* All ok, not NAN */ \
         } else { \
             fails++; \
-            printf("%s:%d: %s%s failed, expected %f, got %f (diff %f > %f)\n", __FILE__, __LINE__, context, #x, (double)expect, (double)val, (double)diff, (double)accuracy); \
+            printf("%s:%d: %s%s failed, expected %f, got %f (diff %f > %f)\n", __FILE__, __LINE__, context, #x, (double)(expect), (double)val, (double)diff, (double)(accuracy)); \
         } \
     } while (0)
 
 #define TEST_INT(x, expect) do { \
         tests++; \
-        if (x != expect) { \
+        if ((x) != (expect)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, expected %lld, got %lld\n", __FILE__, __LINE__, context, #x, (long long)expect, (long long)x); \
+            printf("%s:%d: %s%s failed, expected %lld, got %lld\n", __FILE__, __LINE__, context, #x, (long long)(expect), (long long)(x)); \
         } \
     } while (0)
 
 #define TEST_PTR(x, expect) do { \
         tests++; \
-        if (x != expect) { \
+        if ((x) != (expect)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, expected %p, got %p\n", __FILE__, __LINE__, context, #x, expect, x); \
+            printf("%s:%d: %s%s failed, expected %p, got %p\n", __FILE__, __LINE__, context, #x, (expect), (x)); \
         } \
     } while (0)
 
