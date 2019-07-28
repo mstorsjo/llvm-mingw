@@ -111,6 +111,16 @@ const char *context = "";
         } \
     } while (0)
 
+#define TEST_FLT_SIGN(x, expect) do { \
+        tests++; \
+        long double val = (x); \
+        long double expval = (expect); \
+        if (val != expval || !!signbit(val) != !!signbit(expval)) { \
+            fails++; \
+            printf("%s:%d: %s%s failed, expected %f, got %f\n", __FILE__, __LINE__, context, #x, (double)expval, (double)val); \
+        } \
+    } while (0)
+
 #define TEST_INT(x, expect) do { \
         tests++; \
         if ((x) != (expect)) { \
@@ -809,22 +819,26 @@ int main(int argc, char* argv[]) {
     TEST_FLT(pow(F(10.0), F(1.0)), 10.0); \
     TEST_FLT_ACCURACY(pow(F(10.0), F(0.5)), 3.162278, 0.01); \
     TEST_FLT_NAN_ANY(pow(F(-1.0), F(1.5))); \
-    TEST_FLT(pow(F(INFINITY), F(-0.5)), 0); \
+    TEST_FLT_SIGN(pow(F(0.0), F(3.0)), 0.0); \
+    TEST_FLT_SIGN(pow(F(-0.0), F(3.0)), -0.0); \
+    TEST_FLT_SIGN(pow(F(0.0), F(4.2)), 0.0); \
+    TEST_FLT_SIGN(pow(F(-0.0), F(4.2)), 0.0); \
+    TEST_FLT_SIGN(pow(F(INFINITY), F(-0.5)), 0.0); \
     TEST_FLT(pow(F(INFINITY), F(0.5)), INFINITY); \
-    TEST_FLT(pow(F(-INFINITY), F(-3)), -0); /* We don't distinguish between +0 and -0 though */ \
-    TEST_FLT(pow(F(-INFINITY), F(-0.5)), 0); \
+    TEST_FLT_SIGN(pow(F(-INFINITY), F(-3)), -0.0); \
+    TEST_FLT_SIGN(pow(F(-INFINITY), F(-0.5)), 0.0); \
     TEST_FLT(pow(F(-INFINITY), F(3.0)), -INFINITY); \
     TEST_FLT(pow(F(-INFINITY), F(2.5)), INFINITY); \
     TEST_FLT(pow(F(2.0), F(INFINITY)), INFINITY); \
     TEST_FLT(pow(F(1.0), F(INFINITY)), 1.0); \
-    TEST_FLT(pow(F(0.5), F(INFINITY)), 0); \
-    TEST_FLT(pow(F(2.0), F(-INFINITY)), 0); \
+    TEST_FLT_SIGN(pow(F(0.5), F(INFINITY)), 0.0); \
+    TEST_FLT_SIGN(pow(F(2.0), F(-INFINITY)), 0.0); \
     TEST_FLT(pow(F(1.0), F(-INFINITY)), 1.0); \
     TEST_FLT(pow(F(0.5), F(-INFINITY)), INFINITY); \
     TEST_FLT(pow(F(-2.0), F(INFINITY)), INFINITY); \
     TEST_FLT(pow(F(-1.0), F(INFINITY)), 1.0); \
-    TEST_FLT(pow(F(-0.5), F(INFINITY)), 0); \
-    TEST_FLT(pow(F(-2.0), F(-INFINITY)), 0); \
+    TEST_FLT_SIGN(pow(F(-0.5), F(INFINITY)), 0.0); \
+    TEST_FLT_SIGN(pow(F(-2.0), F(-INFINITY)), 0.0); \
     TEST_FLT(pow(F(-1.0), F(-INFINITY)), 1.0); \
     TEST_FLT(pow(F(-0.5), F(-INFINITY)), INFINITY); \
     TEST_FLT_NAN(pow(F(NAN), F(2.0)), F(NAN)); \
@@ -932,12 +946,15 @@ int main(int argc, char* argv[]) {
     TEST_ATAN(atanl);
 
 #define TEST_ATAN2(atan2) \
-    /* These depend on the signedness of zero */ \
     TEST_FLT_ACCURACY(atan2(F(0.0), F(-1.0)), 3.141592654, 0.01); \
-    TEST_FLT_ACCURACY(atan2(F(0.0), F(1.0)), 0.0, 0.01); \
+    TEST_FLT_SIGN(atan2(F(0.0), F(1.0)), 0.0); \
+    TEST_FLT_SIGN(atan2(F(-0.0), F(1.0)), -0.0); \
     TEST_FLT_ACCURACY(atan2(F(-1.0), F(0.0)), -3.141592654/2, 0.01); \
     TEST_FLT_ACCURACY(atan2(F(1.0), F(0.0)), 3.141592654/2, 0.01); \
-    TEST_FLT_ACCURACY(atan2(F(0.0), F(0.0)), 0.0, 0.01); \
+    TEST_FLT_SIGN(atan2(F(0.0), F(0.0)), 0.0); \
+    TEST_FLT_ACCURACY(atan2(F(0.0), F(-0.0)), 3.141592654, 0.01); \
+    TEST_FLT_SIGN(atan2(F(-0.0), F(0.0)), -0.0); \
+    TEST_FLT_ACCURACY(atan2(F(-0.0), F(-0.0)), -3.141592654, 0.01); \
     TEST_FLT_ACCURACY(atan2(F(1.0), F(-INFINITY)), 3.141592654, 0.01); \
     TEST_FLT_ACCURACY(atan2(F(-1.0), F(-INFINITY)), -3.141592654, 0.01); \
     TEST_FLT_ACCURACY(atan2(F(1.0), F(INFINITY)), 0.0, 0.01); \
@@ -1054,7 +1071,8 @@ int main(int argc, char* argv[]) {
     TEST_TANH(tanhl);
 
 #define TEST_FABS(fabs, double) \
-    TEST_FLT(fabs((double)F(0.0)), 0.0); \
+    TEST_FLT_SIGN(fabs((double)F(0.0)), 0.0); \
+    TEST_FLT_SIGN(fabs((double)F(-0.0)), 0.0); \
     TEST_FLT(fabs((double)F(3.125)), 3.125); \
     TEST_FLT(fabs((double)F(-3.125)), 3.125); \
     TEST_FLT(fabs((double)F(INFINITY)), INFINITY); \
@@ -1098,6 +1116,7 @@ int main(int argc, char* argv[]) {
 
 #define TEST_TGAMMA(tgamma, HUGE_VAL) \
     TEST_FLT(tgamma(F(0.0)), HUGE_VAL); \
+    TEST_FLT(tgamma(F(-0.0)), -HUGE_VAL); \
     TEST_FLT_ACCURACY(tgamma(F(0.5)), 1.772454, 0.001); \
     TEST_FLT(tgamma(F(1.0)), 1.0); \
     TEST_FLT_ACCURACY(tgamma(F(1.5)), 0.886227, 0.001); \
@@ -1125,6 +1144,7 @@ int main(int argc, char* argv[]) {
 
 #define TEST_LGAMMA(lgamma, HUGE_VAL) \
     TEST_FLT(lgamma(F(0.0)), INFINITY); \
+    TEST_FLT(lgamma(F(-0.0)), INFINITY); \
     TEST_FLT_ACCURACY(lgamma(F(0.5)), 0.572365, 0.001); \
     TEST_SIGNGAM(TEST_INT(signgam, 1)); \
     TEST_FLT(lgamma(F(1.0)), 0.0); \
