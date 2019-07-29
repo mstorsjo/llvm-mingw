@@ -840,7 +840,6 @@ int main(int argc, char* argv[]) {
     TEST_ATANH(atanhf);
     TEST_ATANH(atanhl);
 
-#ifdef _WIN32
 #define TEST_COPYSIGN(copysign) \
     TEST_FLT_ACCURACY(copysign(F(3.125), F(1)), 3.125, 0.0001); \
     TEST_FLT_ACCURACY(copysign(F(3.125), F(-1)), -3.125, 0.0001); \
@@ -854,12 +853,14 @@ int main(int argc, char* argv[]) {
     TEST_FLT_NAN(copysign(F(NAN), F(-1)), -F(NAN)); \
     TEST_FLT_NAN(copysign(-F(NAN), F(NAN)), F(NAN))
 
-    TEST_COPYSIGN(_copysign);
-    TEST_COPYSIGN(_copysignf);
-    TEST_COPYSIGN(_copysignl);
     TEST_COPYSIGN(copysign);
     TEST_COPYSIGN(copysignf);
     TEST_COPYSIGN(copysignl);
+
+#ifdef _WIN32
+    TEST_COPYSIGN(_copysign);
+    TEST_COPYSIGN(_copysignf);
+    TEST_COPYSIGN(_copysignl);
 
     TEST_FLT_ACCURACY(_chgsignl(F(3.125)), -3.125, 0.0001);
     TEST_FLT_ACCURACY(_chgsignl(F(-3.125)), 3.125, 0.0001);
