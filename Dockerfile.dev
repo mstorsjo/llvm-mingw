@@ -131,3 +131,33 @@ RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         cp $TOOLCHAIN_PREFIX/$arch-w64-mingw32/bin/*.dll $arch || exit 1; \
     done
+
+RUN dpkg --add-architecture i386 && apt-get update && apt-get install --no-install-recommends -y lua5.2 libtool automake autoconf autopoint make gettext pkg-config qt4-dev-tools qt5-default git subversion cmake cvs wine64-development-tools zip p7zip nsis bzip2 yasm ragel ant default-jdk protobuf-compiler dos2unix vim gperf python3 wine-development wine32-development wine64-development flex help2man
+
+RUN git clone git://git.videolan.org/vlc.git && \
+    cd vlc && \
+    git checkout b47dd251b5a6715cc58b443deb1e7de2400ab1c2
+
+
+WORKDIR /build/vlc
+
+RUN cd extras/tools && ./bootstrap && make -j$(nproc)
+ENV PATH=/build/vlc/extras/tools/build/bin:$PATH
+
+ARG VLC_ARCH=x86_64
+
+RUN mkdir -p contrib/win32 && \
+    cd contrib/win32 && \
+    ../bootstrap --host=$VLC_ARCH-w64-mingw32 && \
+    make -j$(nproc) fetch
+RUN cd contrib/win32 && \
+    make -j$(nproc)
+RUN ./bootstrap
+ENV PKG_CONFIG_LIBDIR=/build/vlc/contrib/$VLC_ARCH-w64-mingw32/lib/pkgconfig
+RUN mkdir win32 && \
+    cd win32 && \
+    ../extras/package/win32/configure.sh --host=$VLC_ARCH-w64-mingw32 && \
+    make -j$(nproc)
+RUN cd win32 && \
+    make package-win32-zip WINE_SDK_PATH=/usr/include/wine-development/wine/windows -j$(nproc) && \
+    mv vlc*.zip vlc-$VLC_ARCH.zip
