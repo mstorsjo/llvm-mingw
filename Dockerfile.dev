@@ -1,9 +1,9 @@
 FROM ubuntu:16.04
 
-RUN apt-get update -qq && apt-get install -qqy \
+RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
     automake yasm gettext autopoint vim python git-svn ninja-build \
-    subversion && \
+    subversion ca-certificates && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
