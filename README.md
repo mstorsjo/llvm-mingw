@@ -26,8 +26,7 @@ for windows come in 4 versions, one for each of the 4 supported
 architectures, but each one of them can target all 4 architectures.
 
 The toolchain can be reproducibly built into a Docker image, or be
-built and installed in the host environment (currently only tested
-on Linux and macOS).
+built and installed in the host environment.
 
 To build and install all components, just do:
 
