@@ -18,12 +18,18 @@ Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
 binutils with LLVM based tools.
 
+Installation
+------------
+
 Prebuilt docker linux images containing llvm-mingw are available from
 [Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/), and
 prebuilt toolchains (both for use as cross compiler from linux, and
 for use on windows) are available for download on GitHub. The toolchains
 for windows come in 4 versions, one for each of the 4 supported
 architectures, but each one of them can target all 4 architectures.
+
+Building from source
+--------------------
 
 The toolchain can be reproducibly built into a Docker image, or be
 built and installed in the host environment.
