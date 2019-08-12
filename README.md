@@ -101,6 +101,36 @@ normal GCC/binutils based MinGW.
   Sanitizer requires using a PDB file for symbolizing the error location and
   backtraces.
 - The sanitizers are only supported on x86.
+- LLD doesn't support linker script. Linker script can be used for
+  reprogramming how the linker lays out the output, but is in most cases
+  in MinGW setups only used for passing lists of object files to link.
+  This can also be done with response files, which LLD does support.
+  (This was fixed in qmake in [v5.12.0](https://code.qt.io/cgit/qt/qtbase.git/commit/?id=d92c25b1b4ac0423a824715a08b2db2def4b6e25), to use response
+  files instead of linker script.)
+- Libtool based projects fail to link with llvm-mingw if the project contains
+  C++. For such targets, libtool tries to detect which libraries to link
+  by invoking the compiler with `$CC -v` and picking up the libraries that
+  are linked by default, and then invoking the linker driver with `-nostdlib`
+  and specifying the default libraries manually. In doing so, libtool fails
+  to detect when clang is using compiler_rt instead of libgcc, because
+  clang refers to it as an absolute path to a static library, instead of
+  specifying a library path with `-L` and linking the library with `-l`.
+  Clang is [reluctant to changing this behaviour](https://reviews.llvm.org/D51440).
+  A [bug](https://debbugs.gnu.org/cgi/bugreport.cgi?bug=27866) has been filed
+  with libtool, but no fix has been committed, and as libtool files are
+  shipped with the projects that use them (bundled within the configure
+  script), one has to update the configure script in each project to avoid
+  the issue. This can either be done by installing libtool, patching it
+  and running `autoreconf -fi` in the project, or by manually applying the
+  fix on the shipped `configure` script. A patched version of libtool is
+  [shipped in MSYS2](https://github.com/msys2/MINGW-packages/blob/95b093e888/mingw-w64-libtool/0011-Pick-up-clang_rt-static-archives-compiler-internal-l.patch)
+  at least.
+- Libtool, when running on Windows, prefers using linker script over
+  response files, to pass long lists of object files to the linker driver.
+  To fix this, the bundled libtool scripts has to be fixed like explained
+  above, but this fix requires changes both to `configure` and a separate
+  file named `ltmain.{in,sh}`. A fix for this is also
+  [shipped in MSYS2](https://github.com/msys2/MINGW-packages/blob/95b093e888/mingw-w64-libtool/0012-Prefer-response-files-over-linker-scripts-for-mingw-.patch).
 
 Additionally, one may run into other minor differences between GCC and clang.
 
