@@ -108,7 +108,9 @@ normal GCC/binutils based MinGW.
   (This was fixed in qmake in [v5.12.0](https://code.qt.io/cgit/qt/qtbase.git/commit/?id=d92c25b1b4ac0423a824715a08b2db2def4b6e25), to use response
   files instead of linker script.)
 - Libtool based projects fail to link with llvm-mingw if the project contains
-  C++. For such targets, libtool tries to detect which libraries to link
+  C++. (This often manifests with undefined symbols like `___chkstk_ms`,
+  `__alloca` or `___divdi3`.)
+  For such targets, libtool tries to detect which libraries to link
   by invoking the compiler with `$CC -v` and picking up the libraries that
   are linked by default, and then invoking the linker driver with `-nostdlib`
   and specifying the default libraries manually. In doing so, libtool fails
