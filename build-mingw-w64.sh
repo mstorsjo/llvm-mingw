@@ -101,8 +101,7 @@ if [ -z "$HOST" ]; then
             ;;
         esac
         FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
-        ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 $FLAGS \
-            CC=$arch-w64-mingw32-clang AR=llvm-ar RANLIB=llvm-ranlib DLLTOOL=llvm-dlltool
+        ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 $FLAGS
         make -j$CORES
         make install
         cd ..
