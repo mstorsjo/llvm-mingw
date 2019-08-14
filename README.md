@@ -101,7 +101,7 @@ normal GCC/binutils based MinGW.
   Sanitizer requires using a PDB file for symbolizing the error location and
   backtraces.
 - The sanitizers are only supported on x86.
-- LLD doesn't support linker script. Linker script can be used for
+- LLD doesn't support linker script (in the COFF part of LLD. Linker script can be used for
   reprogramming how the linker lays out the output, but is in most cases
   in MinGW setups only used for passing lists of object files to link.
   This can also be done with response files, which LLD does support.
@@ -128,7 +128,9 @@ normal GCC/binutils based MinGW.
   [shipped in MSYS2](https://github.com/msys2/MINGW-packages/blob/95b093e888/mingw-w64-libtool/0011-Pick-up-clang_rt-static-archives-compiler-internal-l.patch)
   at least.
 - Libtool, when running on Windows, prefers using linker script over
-  response files, to pass long lists of object files to the linker driver.
+  response files, to pass long lists of object files to the linker driver,
+  but LLD doesn't support linker script (as described above). This issue
+  produces errors like `lld-link: error: .libs\libfoobar.la.lnkscript: unknown file type`.
   To fix this, the bundled libtool scripts has to be fixed like explained
   above, but this fix requires changes both to `configure` and a separate
   file named `ltmain.{in,sh}`. A fix for this is also
