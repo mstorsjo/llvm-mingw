@@ -101,10 +101,10 @@ normal GCC/binutils based MinGW.
   Sanitizer requires using a PDB file for symbolizing the error location and
   backtraces.
 - The sanitizers are only supported on x86.
-- LLD doesn't support linker script (in the COFF part of LLD. Linker script can be used for
+- LLD doesn't support linker script (in the COFF part of LLD). Linker script can be used for
   reprogramming how the linker lays out the output, but is in most cases
   in MinGW setups only used for passing lists of object files to link.
-  This can also be done with response files, which LLD does support.
+  Passing lists of files can also be done with response files, which LLD does support.
   (This was fixed in qmake in [v5.12.0](https://code.qt.io/cgit/qt/qtbase.git/commit/?id=d92c25b1b4ac0423a824715a08b2db2def4b6e25), to use response
   files instead of linker script.)
 - Libtool based projects fail to link with llvm-mingw if the project contains
