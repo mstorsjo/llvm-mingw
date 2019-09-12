@@ -106,6 +106,30 @@ if [ -n "$FULL_LLVM" ]; then
 fi
 
 cd llvm-project/llvm
+
+case $(uname) in
+MINGW*)
+    EXPLICIT_PROJECTS=1
+    ;;
+*)
+    # If we have working symlinks, hook up other tools by symlinking them
+    # into tools, instead of using LLVM_ENABLE_PROJECTS. This way, all
+    # source code is under the directory tree of the toplevel cmake file
+    # (llvm-project/llvm), which makes cmake use relative paths to all source
+    # files. Using relative paths makes for identical compiler output from
+    # different source trees in different locations (for cases where e.g.
+    # path names are included, in assert messages), allowing ccache to speed
+    # up compilation.
+    cd tools
+    for p in clang lld; do
+        if [ ! -e $p ]; then
+            ln -s ../../$p .
+        fi
+    done
+    cd ..
+    ;;
+esac
+
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 cmake \
@@ -113,7 +137,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
-    -DLLVM_ENABLE_PROJECTS="clang;lld" \
+    ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="clang;lld"} \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip;llvm-cov;llvm-profdata;llvm-addr2line" \
