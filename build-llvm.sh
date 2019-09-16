@@ -89,12 +89,13 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_RC_COMPILER=$HOST-windres"
-    CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE="
+    CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE=-DLLDB_DISABLE_LIBEDIT=ON;-DLLDB_DISABLE_PYTHON=ON;-DLLDB_DISABLE_CURSES=ON"
 
     native=$(find_native_tools)
     if [ -n "$native" ]; then
         CMAKEFLAGS="$CMAKEFLAGS -DLLVM_TABLEGEN=$native/llvm-tblgen"
         CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TABLEGEN=$native/clang-tblgen"
+        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_TABLEGEN=$native/lldb-tblgen"
         CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config"
     fi
     CROSS_ROOT=$(cd $(dirname $(which $HOST-gcc))/../$HOST && pwd)
@@ -133,7 +134,7 @@ MINGW*)
     # path names are included, in assert messages), allowing ccache to speed
     # up compilation.
     cd tools
-    for p in clang lld; do
+    for p in clang lld lldb; do
         if [ ! -e $p ]; then
             ln -s ../../$p .
         fi
@@ -144,16 +145,22 @@ esac
 
 mkdir -p $BUILDDIR
 cd $BUILDDIR
+# Building LLDB for macOS fails unless building libc++ is enabled at the
+# same time, or unless the LLDB tests are disabled.
 cmake \
     ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
-    ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="clang;lld"} \
+    ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="clang;lld;lldb"} \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip;llvm-cov;llvm-profdata;llvm-addr2line;llvm-symbolizer" \
     ${HOST+-DLLVM_HOST_TRIPLE=$HOST} \
+    -DLLDB_DISABLE_LIBEDIT=ON \
+    -DLLDB_DISABLE_PYTHON=ON \
+    -DLLDB_DISABLE_CURSES=ON \
+    -DLLDB_INCLUDE_TESTS=OFF \
     $CMAKEFLAGS \
     ..
 
