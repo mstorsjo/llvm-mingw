@@ -33,7 +33,7 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 
 if [ ! -d llvm-project ]; then
     # When cloning master and checking out a pinned old hash, we can't use --depth=1.
-    git clone -b master https://github.com/llvm/llvm-project.git
+    git clone https://github.com/llvm/llvm-project.git
     CHECKOUT=1
 fi
 
