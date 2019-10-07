@@ -156,7 +156,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (!target)
         target = _T(DEFAULT_TARGET);
 
-
+    const TCHAR *bfd_target = NULL;
     const TCHAR *input = _T("-");
     const TCHAR *output = _T("/dev/stdout");
     const TCHAR *input_format = _T("rc");
@@ -199,7 +199,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         else OPTION("-o", "--output", output)
         else OPTION("-J", "--input-format", input_format)
         else OPTION("-O", "--output-format", output_format)
-        else OPTION("-F", "--target", target)
+        else OPTION("-F", "--target", bfd_target)
         else IF_MATCH_EITHER("-I", "--include-dir") {
             SEPARATE_ARG(includes[nb_includes++]);
         } else if (_tcsstart(argv[i], _T("--include-dir="))) {
@@ -239,6 +239,16 @@ int _tmain(int argc, TCHAR* argv[]) {
             else
                 error(basename, _T("rip: `"TS"'"), argv[i]);
         }
+    }
+    if (bfd_target) {
+        if (!_tcscmp(bfd_target, _T("pe-x86-64")) ||
+            !_tcscmp(bfd_target, _T("pei-x86-64")))
+            target = _T("x86_64-w64-mingw32");
+        else if (!_tcscmp(bfd_target, _T("pe-i386")) ||
+                 !_tcscmp(bfd_target, _T("pei-x86-64")))
+            target = _T("x86_64-w64-mingw32");
+        else
+            error(basename, _T("unsupported target: `"TS"'"), bfd_target);
     }
 
     TCHAR *arch = _tcsdup(target);
