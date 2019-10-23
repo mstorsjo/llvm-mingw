@@ -19,13 +19,15 @@ while [ $# -gt 0 ]; do
     fi
     shift
 done
-if [ -z "$PREFIX" ]; then
-    echo $0 [--enable-asserts] [--full-llvm] dest
-    exit 1
-fi
+if [ -z "$CHECKOUT_ONLY" ]; then
+    if [ -z "$PREFIX" ]; then
+        echo $0 [--enable-asserts] [--full-llvm] dest
+        exit 1
+    fi
 
-mkdir -p "$PREFIX"
-PREFIX="$(cd "$PREFIX" && pwd)"
+    mkdir -p "$PREFIX"
+    PREFIX="$(cd "$PREFIX" && pwd)"
+fi
 
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
