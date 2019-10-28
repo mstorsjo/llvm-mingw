@@ -96,7 +96,7 @@ normal GCC/binutils based MinGW.
   until Windows Vista. This has no effect on code not using thread local
   variables.
 - The runtime libraries libunwind, libcxxabi and libcxx also assume that the
-  target is Vista or newer.
+  target is Windows 7 or newer.
 - Address Sanitizer doesn't produce working backtraces for i686. Address
   Sanitizer requires using a PDB file for symbolizing the error location and
   backtraces.
