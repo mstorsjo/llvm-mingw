@@ -29,6 +29,18 @@
 
 #include "native-wrapper.h"
 
+#ifndef CC
+#define CC "clang"
+#endif
+
+#ifndef LLVM_RC
+#define LLVM_RC "llvm-rc"
+#endif
+
+#ifndef LLVM_CVTRES
+#define LLVM_CVTRES "llvm-cvtres"
+#endif
+
 #ifndef DEFAULT_TARGET
 #define DEFAULT_TARGET "x86_64-w64-mingw32"
 #endif
@@ -266,7 +278,12 @@ int _tmain(int argc, TCHAR* argv[]) {
     else if (!_tcscmp(arch, _T("aarch64")))
         machine = _T("ARM64");
 
-    const TCHAR *CC = concat(target, _T("-clang"));
+    const TCHAR *resolved_CC =
+        concat(dir, concat(target, _T("-") _T(CC)));
+    const TCHAR *resolved_LLVM_RC =
+        concat(dir, concat(target, _T("-") _T(LLVM_RC)));
+    const TCHAR *resolved_LLVM_CVTRES =
+        concat(dir, concat(target, _T("-") _T(LLVM_CVTRES)));
 
     const TCHAR **rc_options = malloc(2 * argc * sizeof(*cpp_options));
     int nb_rc_options = 0;
@@ -297,7 +314,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     int arg = 0;
 
     if (!_tcscmp(input_format, _T("rc"))) {
-        exec_argv[arg++] = concat(dir, CC);
+        exec_argv[arg++] = resolved_CC;
         exec_argv[arg++] = _T("-E");
         for (int i = 0; i < nb_cpp_options; i++)
             exec_argv[arg++] = cpp_options[i];
@@ -322,7 +339,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         }
 
         arg = 0;
-        exec_argv[arg++] = concat(dir, _T("llvm-rc"));
+        exec_argv[arg++] = resolved_LLVM_RC;
         for (int i = 0; i < nb_rc_options; i++)
             exec_argv[arg++] = rc_options[i];
         exec_argv[arg++] = _T("-I");
@@ -356,7 +373,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             // All done
         } else if (!_tcscmp(output_format, _T("coff"))) {
             arg = 0;
-            exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
+            exec_argv[arg++] = resolved_LLVM_CVTRES;
             exec_argv[arg++] = res;
             exec_argv[arg++] = concat(_T("-machine:"), machine);
             exec_argv[arg++] = concat(_T("-out:"), output);
@@ -379,7 +396,7 @@ int _tmain(int argc, TCHAR* argv[]) {
             error(basename, _T("invalid output format: `"TS"'"), output_format);
         }
     } else if (!_tcscmp(input_format, _T("res"))) {
-        exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
+        exec_argv[arg++] = resolved_LLVM_CVTRES;
         exec_argv[arg++] = input;
         exec_argv[arg++] = concat(_T("-machine:"), machine);
         exec_argv[arg++] = concat(_T("-out:"), output);
