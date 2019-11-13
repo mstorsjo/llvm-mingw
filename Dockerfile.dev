@@ -36,9 +36,11 @@ COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
 COPY install-wrappers.sh ./
 RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 
+ARG DEFAULT_CRT=ucrt
+
 # Build MinGW-w64
 COPY build-mingw-w64.sh ./
-RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX
+RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT
 
 # Build compiler-rt
 COPY build-compiler-rt.sh ./
