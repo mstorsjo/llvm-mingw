@@ -2,15 +2,31 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
+unset HOST
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --host=*)
+        HOST="${1#*=}"
+        ;;
+    *)
+        PREFIX="$1"
+        ;;
+    esac
+    shift
+done
+if [ -z "$PREFIX" ]; then
     echo $0 dir
     exit 1
 fi
-PREFIX="$1"
 cd "$PREFIX"
 
 if [ -n "$FULL_LLVM" ]; then
     exit 0
+fi
+
+if [ -n "$HOST" ]; then
+    EXEEXT=.exe
 fi
 
 case $(uname) in

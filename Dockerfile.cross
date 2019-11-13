@@ -19,7 +19,6 @@ RUN apt-get update -qq && \
 ARG CROSS_ARCH=x86_64
 ENV CROSS_TOOLCHAIN_PREFIX=/opt/llvm-mingw-$CROSS_ARCH
 
-ENV EXEEXT=.exe
 ENV HOST=$CROSS_ARCH-w64-mingw32
 
 ARG FULL_LLVM
@@ -27,7 +26,7 @@ ARG FULL_LLVM
 COPY build-llvm.sh .
 RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 COPY strip-llvm.sh .
-RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX
+RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
 ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 

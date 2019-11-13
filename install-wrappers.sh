@@ -36,6 +36,10 @@ MINGW*)
     ;;
 esac
 
+if [ -n "$HOST" ]; then
+    EXEEXT=.exe
+fi
+
 if [ -n "$EXEEXT" ]; then
     CLANG_MAJOR=$(basename $(echo $PREFIX/lib/clang/* | awk '{print $NF}') | cut -f 1 -d .)
     WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
