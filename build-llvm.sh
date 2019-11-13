@@ -4,19 +4,28 @@ set -e
 
 ASSERTS=OFF
 BUILDDIR=build
+unset HOST
 
 while [ $# -gt 0 ]; do
-    if [ "$1" = "--disable-asserts" ]; then
+    case "$1" in
+    --disable-asserts)
         ASSERTS=OFF
         BUILDDIR=build
-    elif [ "$1" = "--enable-asserts" ]; then
+        ;;
+    --enable-asserts)
         ASSERTS=ON
         BUILDDIR=build-asserts
-    elif [ "$1" = "--full-llvm" ]; then
+        ;;
+    --full-llvm)
         FULL_LLVM=1
-    else
+        ;;
+    --host=*)
+        HOST="${1#*=}"
+        ;;
+    *)
         PREFIX="$1"
-    fi
+        ;;
+    esac
     shift
 done
 if [ -z "$CHECKOUT_ONLY" ]; then

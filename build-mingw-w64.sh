@@ -4,6 +4,7 @@ set -e
 
 DEFAULT_WIN32_WINNT=0x600
 DEFAULT_MSVCRT=ucrt
+unset HOST
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -15,6 +16,9 @@ while [ $# -gt 0 ]; do
         ;;
     --with-default-msvcrt=*)
         DEFAULT_MSVCRT="${1#*=}"
+        ;;
+    --host=*)
+        HOST="${1#*=}"
         ;;
     *)
         PREFIX="$1"

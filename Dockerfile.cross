@@ -25,18 +25,18 @@ ENV HOST=$CROSS_ARCH-w64-mingw32
 ARG FULL_LLVM
 
 COPY build-llvm.sh .
-RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX
+RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 COPY strip-llvm.sh .
 RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX
 
 ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 COPY build-mingw-w64.sh ./
-RUN ./build-mingw-w64.sh $CROSS_TOOLCHAIN_PREFIX --skip-include-triplet-prefix
+RUN ./build-mingw-w64.sh $CROSS_TOOLCHAIN_PREFIX --skip-include-triplet-prefix --host=$HOST
 
 COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
 COPY install-wrappers.sh .
-RUN ./install-wrappers.sh $CROSS_TOOLCHAIN_PREFIX
+RUN ./install-wrappers.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
 COPY prepare-cross-toolchain.sh .
 RUN ./prepare-cross-toolchain.sh $TOOLCHAIN_PREFIX $CROSS_TOOLCHAIN_PREFIX $CROSS_ARCH

@@ -12,10 +12,10 @@ CROSS_ARCH="$3"
 
 export PATH=$NATIVE/bin:$PATH
 export EXEEXT=.exe
-export HOST=$CROSS_ARCH-w64-mingw32
+HOST=$CROSS_ARCH-w64-mingw32
 
-./build-llvm.sh $PREFIX
+./build-llvm.sh $PREFIX --host=$HOST
 ./strip-llvm.sh $PREFIX
-./build-mingw-w64.sh $PREFIX --skip-include-triplet-prefix
-./install-wrappers.sh $PREFIX
+./build-mingw-w64.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
+./install-wrappers.sh $PREFIX --host=$HOST
 ./prepare-cross-toolchain.sh $NATIVE $PREFIX $CROSS_ARCH

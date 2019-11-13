@@ -2,11 +2,23 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
+unset HOST
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --host=*)
+        HOST="${1#*=}"
+        ;;
+    *)
+        PREFIX="$1"
+        ;;
+    esac
+    shift
+done
+if [ -z "$PREFIX" ]; then
     echo $0 dest
     exit 1
 fi
-PREFIX="$1"
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
