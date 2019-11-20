@@ -168,12 +168,15 @@ int _tmain(int argc, TCHAR* argv[]) {
     int nb_cpp_options = 0;
     int verbose = 0;
 
-#define _tcsstart(a, b) !_tcsncmp(a, b, sizeof(b)/sizeof(TCHAR) - 1)
+#define _tcslen_const(a) (sizeof(a)/sizeof(TCHAR) - 1)
+#define _tcsstart(a, b) !_tcsncmp(a, b, _tcslen_const(b))
 
 #define IF_MATCH_EITHER(short, long) \
     if (!_tcscmp(argv[i], _T(short)) || !_tcscmp(argv[i], _T(long)))
 #define OPTION(short, long, var) \
-    if (_tcsstart(argv[i], _T(short "=")) || _tcsstart(argv[i], _T(long "="))) { \
+    if (_tcsstart(argv[i], _T(short)) && argv[i][_tcslen_const(_T(short))]) { \
+        var = argv[i] + _tcslen_const(_T(short)); \
+    } else if (_tcsstart(argv[i], _T(long "="))) { \
         var = _tcschr(argv[i], '=') + 1; \
     } else IF_MATCH_EITHER(short, long) { \
         if (i + 1 < argc) \
