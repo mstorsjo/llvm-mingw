@@ -90,7 +90,7 @@ normal GCC/binutils based MinGW.
   everything that GNU windres does.
 - The toolchain defaults to using the Universal CRT (which is only available
   out of the box since Windows 10, but can be installed on Vista or newer)
-  and defaults to targeting Vista. These defaults can be changed in
+  and defaults to targeting Windows 7. These defaults can be changed in
   `build-mingw-w64.sh` though.
 - The toolchain uses Windows native TLS support, which doesn't work properly
   until Windows Vista. This has no effect on code not using thread local

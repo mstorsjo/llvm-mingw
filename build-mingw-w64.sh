@@ -2,7 +2,7 @@
 
 set -e
 
-DEFAULT_WIN32_WINNT=0x600
+DEFAULT_WIN32_WINNT=0x601
 DEFAULT_MSVCRT=ucrt
 unset HOST
 
@@ -27,7 +27,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x600] [--with-default-msvcrt=ucrt] dest
+    echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] dest
     exit 1
 fi
 
