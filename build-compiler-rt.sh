@@ -40,7 +40,11 @@ fi
 # i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
 # need to refer to it as i386 at this stage.
 if [ ! -e "$PREFIX/i386-w64-mingw32" ]; then
-    ln -sfn i686-w64-mingw32 "$PREFIX/i386-w64-mingw32" || true
+    case $ARCHS in
+    *i686*)
+        ln -sfn i686-w64-mingw32 "$PREFIX/i386-w64-mingw32" || true
+        ;;
+    esac
 fi
 
 cd llvm-project/compiler-rt
