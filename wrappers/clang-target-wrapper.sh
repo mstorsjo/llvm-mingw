@@ -71,4 +71,4 @@ FLAGS="$FLAGS -fuse-ld=lld"
 FLAGS="$FLAGS -fuse-cxa-atexit"
 FLAGS="$FLAGS -Qunused-arguments"
 
-$CCACHE $CLANG $FLAGS "$@"
+$CCACHE "$CLANG" $FLAGS "$@"

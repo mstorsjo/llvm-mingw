@@ -22,7 +22,7 @@ for lib in winpthreads winstorecompat; do
     for arch in $ARCHS; do
         mkdir -p build-$arch
         cd build-$arch
-        ../configure --host=$arch-w64-mingw32 --prefix=$PREFIX/$arch-w64-mingw32 --libdir=$PREFIX/$arch-w64-mingw32/lib
+        ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" --libdir="$PREFIX/$arch-w64-mingw32/lib"
         make -j$CORES
         make install
         cd ..

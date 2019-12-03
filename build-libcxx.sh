@@ -71,7 +71,7 @@ build_all() {
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
+            -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
             -DCMAKE_CROSSCOMPILING=TRUE \
@@ -79,8 +79,8 @@ build_all() {
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
             -DLLVM_COMPILER_CHECKED=TRUE \
-            -DCMAKE_AR=$PREFIX/bin/llvm-ar \
-            -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
+            -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
+            -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DCXX_SUPPORTS_CXX11=TRUE \
             -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DLIBUNWIND_USE_COMPILER_RT=TRUE \
@@ -94,8 +94,8 @@ build_all() {
         make -j$CORES
         make install
         if [ "$type" = "shared" ]; then
-            mkdir -p $PREFIX/$arch-w64-mingw32/bin
-            cp lib/libunwind.dll $PREFIX/$arch-w64-mingw32/bin
+            mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
+            cp lib/libunwind.dll "$PREFIX/$arch-w64-mingw32/bin"
         fi
         cd ..
     done
@@ -113,7 +113,7 @@ build_all() {
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
+            -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
             -DCMAKE_CROSSCOMPILING=TRUE \
@@ -121,8 +121,8 @@ build_all() {
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
             -DLLVM_COMPILER_CHECKED=TRUE \
-            -DCMAKE_AR=$PREFIX/bin/llvm-ar \
-            -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
+            -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
+            -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
             -DLIBCXXABI_ENABLE_EXCEPTIONS=ON \
             -DLIBCXXABI_ENABLE_THREADS=ON \
@@ -151,7 +151,7 @@ build_all() {
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$PREFIX/$arch-w64-mingw32 \
+            -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
             -DCMAKE_CROSSCOMPILING=TRUE \
@@ -159,8 +159,8 @@ build_all() {
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
             -DLLVM_COMPILER_CHECKED=TRUE \
-            -DCMAKE_AR=$PREFIX/bin/llvm-ar \
-            -DCMAKE_RANLIB=$PREFIX/bin/llvm-ranlib \
+            -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
+            -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLIBCXX_USE_COMPILER_RT=ON \
             -DLIBCXX_INSTALL_HEADERS=ON \
             -DLIBCXX_ENABLE_EXCEPTIONS=ON \
@@ -187,13 +187,13 @@ build_all() {
         make install
         if [ "$type" = "shared" ]; then
             llvm-ar qcsL \
-                $PREFIX/$arch-w64-mingw32/lib/libc++.dll.a \
-                $PREFIX/$arch-w64-mingw32/lib/libunwind.dll.a
-            cp lib/libc++.dll $PREFIX/$arch-w64-mingw32/bin
+                "$PREFIX/$arch-w64-mingw32/lib/libc++.dll.a" \
+                "$PREFIX/$arch-w64-mingw32/lib/libunwind.dll.a"
+            cp lib/libc++.dll "$PREFIX/$arch-w64-mingw32/bin"
         else
             llvm-ar qcsL \
-                $PREFIX/$arch-w64-mingw32/lib/libc++.a \
-                $PREFIX/$arch-w64-mingw32/lib/libunwind.a
+                "$PREFIX/$arch-w64-mingw32/lib/libc++.a" \
+                "$PREFIX/$arch-w64-mingw32/lib/libunwind.a"
         fi
         cd ..
     done

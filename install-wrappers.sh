@@ -45,18 +45,18 @@ if [ -n "$EXEEXT" ]; then
     WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
 fi
 
-mkdir -p $PREFIX/bin
-cp wrappers/*-wrapper.sh $PREFIX/bin
+mkdir -p "$PREFIX/bin"
+cp wrappers/*-wrapper.sh "$PREFIX/bin"
 if [ -n "$HOST" ]; then
     # TODO: If building natively on msys, pick up the default HOST value from there.
     WRAPPER_FLAGS="$WRAPPER_FLAGS -DDEFAULT_TARGET=\"$HOST\""
     for i in wrappers/*-wrapper.sh; do
-        cat $i | sed 's/^DEFAULT_TARGET=.*/DEFAULT_TARGET='$HOST/ > $PREFIX/bin/$(basename $i)
+        cat $i | sed 's/^DEFAULT_TARGET=.*/DEFAULT_TARGET='$HOST/ > "$PREFIX/bin/$(basename $i)"
     done
 fi
-$CC wrappers/clang-target-wrapper.c -o $PREFIX/bin/clang-target-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
-$CC wrappers/windres-wrapper.c -o $PREFIX/bin/windres-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
-$CC wrappers/llvm-wrapper.c -o $PREFIX/bin/llvm-wrapper$EXEEXT -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/clang-target-wrapper.c -o "$PREFIX/bin/clang-target-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/windres-wrapper.c -o "$PREFIX/bin/windres-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/llvm-wrapper.c -o "$PREFIX/bin/llvm-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
 if [ -n "$EXEEXT" ]; then
     # For Windows, we should prefer the executable wrapper, which also works
     # when invoked from outside of MSYS.
@@ -65,7 +65,7 @@ if [ -n "$EXEEXT" ]; then
 else
     CTW_SUFFIX=.sh
 fi
-cd $PREFIX/bin
+cd "$PREFIX/bin"
 for arch in $ARCHS; do
     for target_os in $TARGET_OSES; do
         for exec in clang clang++ gcc g++ cc c99 c11 c++; do
