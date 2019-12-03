@@ -156,8 +156,10 @@ if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
     done
 fi
 if [ -n "$EXEEXT" ]; then
-    if [ -z "$HOST" ]; then
+    if [ -z "$HOST" ] && [ -f clang$EXEEXT ]; then
         HOST=$(./clang -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
-    ln -sf $HOST-widl$EXEEXT widl$EXEEXT
+    if [ -n "$HOST" ]; then
+        ln -sf $HOST-widl$EXEEXT widl$EXEEXT
+    fi
 fi

@@ -94,10 +94,17 @@ if [ -n "$EXEEXT" ]; then
     if [ -z "$HOST" ]; then
         HOST=$(./clang-$CLANG_MAJOR -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
-    for exec in clang clang++ gcc g++ cc c99 c11 c++ addr2line ar ranlib nm objcopy strings strip windres; do
-        ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
-    done
-    for exec in ld objdump dlltool; do
-        ln -sf $HOST-$exec $exec
-    done
+    HOST_ARCH="${HOST%%-*}"
+    # Install unprefixed wrappers if $HOST is one of the architectures
+    # we are installing wrappers for.
+    case $ARCHS in
+    *$HOST_ARCH*)
+        for exec in clang clang++ gcc g++ cc c99 c11 c++ addr2line ar ranlib nm objcopy strings strip windres; do
+            ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
+        done
+        for exec in ld objdump dlltool; do
+            ln -sf $HOST-$exec $exec
+        done
+        ;;
+    esac
 fi

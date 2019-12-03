@@ -29,7 +29,8 @@ export PATH="$PREFIX/bin:$PATH"
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
-CLANG_VERSION=$(basename "$(dirname "$(dirname "$(dirname "$("$PREFIX/bin/clang" --print-libgcc-file-name -rtlib=compiler-rt)")")")")
+ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
+CLANG_VERSION=$(basename "$(dirname "$(dirname "$(dirname "$("$PREFIX/bin/$ANY_ARCH-w64-mingw32-clang" --print-libgcc-file-name -rtlib=compiler-rt)")")")")
 
 if [ ! -d llvm-project/compiler-rt ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
