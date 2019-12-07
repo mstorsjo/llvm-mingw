@@ -275,6 +275,8 @@ int main(int argc, char* argv[]) {
     TEST_FLT(floor(F(3.9)), 3.0); \
     TEST_FLT(floor(F(-3.3)), -4.0); \
     TEST_FLT(floor(F(-3.9)), -4.0); \
+    TEST_FLT(floor(F(17179869184.0)), 17179869184.0); \
+    TEST_FLT(floor(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
     TEST_FLT(floor(F(INFINITY)), INFINITY); \
     TEST_FLT(floor(F(-INFINITY)), -INFINITY); \
     TEST_FLT_NAN(floor(F(NAN)), F(NAN)); \
@@ -283,12 +285,13 @@ int main(int argc, char* argv[]) {
     TEST_FLOOR(floor);
     TEST_FLOOR(floorf);
     TEST_FLOOR(floorl);
-    TEST_FLT(floor(F(17179869184.0)), 17179869184.0);
 
 #define TEST_CEIL(ceil) \
     TEST_FLT(ceil(F(3.9)), 4.0); \
     TEST_FLT(ceil(F(-3.3)), -3.0); \
     TEST_FLT(ceil(F(-3.9)), -3.0); \
+    TEST_FLT(ceil(F(17179869184.0)), 17179869184.0); \
+    TEST_FLT(ceil(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
     TEST_FLT(ceil(F(INFINITY)), INFINITY); \
     TEST_FLT(ceil(F(-INFINITY)), -INFINITY); \
     TEST_FLT_NAN(ceil(F(NAN)), F(NAN)); \
@@ -302,6 +305,8 @@ int main(int argc, char* argv[]) {
     TEST_FLT(trunc(F(3.9)), 3.0); \
     TEST_FLT(trunc(F(-3.3)), -3.0); \
     TEST_FLT(trunc(F(-3.9)), -3.0); \
+    TEST_FLT(trunc(F(17179869184.0)), 17179869184.0); \
+    TEST_FLT(trunc(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
     TEST_FLT(trunc(F(INFINITY)), INFINITY); \
     TEST_FLT(trunc(F(-INFINITY)), -INFINITY); \
     TEST_FLT_NAN(trunc(F(NAN)), F(NAN)); \
@@ -372,6 +377,10 @@ int main(int argc, char* argv[]) {
     TEST_FLT(retd, 2); \
     TEST_FLT_ACCURACY(modf(F(-2.1), &retd), -0.1, 0.001); \
     TEST_FLT(retd, -2); \
+    TEST_FLT(modf(F(17179869184.0), &retd), 0); \
+    TEST_FLT(retd, 17179869184.0); \
+    TEST_FLT(modf(F(1329227995784915872903807060280344576.0), &retd), 0); \
+    TEST_FLT(retd, 1329227995784915872903807060280344576.0); \
     TEST_FLT(modf(F(INFINITY), &retd), 0); \
     TEST_FLT(retd, INFINITY); \
     TEST_FLT(modf(F(-INFINITY), &retd), 0); \
@@ -392,6 +401,10 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(fmod(F(3.9), F(-4.0)), 3.9, 0.001); \
     TEST_FLT_ACCURACY(fmod(F(7.9), F(-4.0)), 3.9, 0.001); \
     TEST_FLT_ACCURACY(fmod(F(-3.9), F(-4.0)), -3.9, 0.001); \
+    TEST_FLT(fmod(F(17179869184.0), F(17180917760.0)), 17179869184.0); \
+    TEST_FLT(fmod(F(17179869184.0), F(1.0)), 0.0); \
+    TEST_FLT(fmod(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0)), 1329227995784915872903807060280344576.0); \
+    TEST_FLT(fmod(F(1329227995784915872903807060280344576.0), F(1.0)), 0.0); \
     TEST_FLT_NAN_ANY(fmod(F(INFINITY), F(4.0))); \
     TEST_FLT_NAN_ANY(fmod(F(-INFINITY), F(4.0))); \
     TEST_FLT_NAN(fmod(F(0), F(NAN)), F(NAN)); \
@@ -417,6 +430,10 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(remainder(F(-4.1), F(4.0)), -0.1, 0.001); \
     TEST_FLT_ACCURACY(remainder(F(3.9), F(-4.0)), -0.1, 0.001); \
     TEST_FLT_ACCURACY(remainder(F(-3.9), F(-4.0)), 0.1, 0.001); \
+    TEST_FLT(remainder(F(17179869184.0), F(17180917760.0)), -1048576.0); \
+    TEST_FLT(remainder(F(17179869184.0), F(1.0)), 0.0); \
+    TEST_FLT(remainder(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0)), -1298074214633706907132624082305024.0); \
+    TEST_FLT(remainder(F(1329227995784915872903807060280344576.0), F(1.0)), 0.0); \
     TEST_FLT_NAN_ANY(remainder(F(INFINITY), F(4.0))); \
     TEST_FLT_NAN_ANY(remainder(F(-INFINITY), F(4.0))); \
     TEST_FLT_NAN(remainder(F(0), F(NAN)), F(NAN)); \
@@ -439,6 +456,10 @@ int main(int argc, char* argv[]) {
     TEST_INT(quo, 2); \
     TEST_FLT(remquo(F(-6.0), F(4.0), &quo), 2.0); \
     TEST_INT(quo, -2); \
+    TEST_FLT(remquo(F(17179869184.0), F(17180917760.0), &quo), -1048576.0); \
+    TEST_INT(quo, 1); \
+    TEST_FLT(remquo(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0), &quo), -1298074214633706907132624082305024.0); \
+    TEST_INT(quo, 1); \
     TEST_FLT_ACCURACY(remquo(F(3.9), F(4.0), &quo), -0.1, 0.001); \
     TEST_INT(quo, 1); \
     TEST_FLT_ACCURACY(remquo(F(-2.0), F(4.0), &quo), -2.0, 0.001); \
@@ -477,10 +498,15 @@ int main(int argc, char* argv[]) {
         TEST_INT(lrint(F(3.6)), 4); \
         TEST_INT(lrint(F(3.5)), 4); \
         TEST_INT(lrint(F(4.5)), 4); \
+        TEST_INT(lrint(F(1073741824.0)), 1073741824); \
         TEST_INT(lrint(F(-3.3)), -3); \
         TEST_INT(lrint(F(-3.6)), -4); \
         TEST_INT(lrint(F(-3.5)), -4); \
         TEST_INT(lrint(F(-4.5)), -4)
+
+#define TEST_LLRINT_NEAREST(llrint) \
+        TEST_INT(llrint(F(17179869184.0)), 17179869184); \
+        TEST_INT(llrint(F(1152921504606846976.0)), 1152921504606846976)
 
         TEST_LRINT_NEAREST(llrint);
         TEST_LRINT_NEAREST(llrintf);
@@ -488,12 +514,17 @@ int main(int argc, char* argv[]) {
         TEST_LRINT_NEAREST(lrint);
         TEST_LRINT_NEAREST(lrintf);
         TEST_LRINT_NEAREST(lrintl);
+        TEST_LLRINT_NEAREST(llrint);
+        TEST_LLRINT_NEAREST(llrintf);
+        TEST_LLRINT_NEAREST(llrintl);
 
 #define TEST_RINT_NEAREST(rint) \
         TEST_FLT(rint(F(3.3)), 3.0); \
         TEST_FLT(rint(F(3.6)), 4.0); \
         TEST_FLT(rint(F(3.5)), 4.0); \
         TEST_FLT(rint(F(4.5)), 4.0); \
+        TEST_FLT(rint(F(17179869184.0)), 17179869184.0); \
+        TEST_FLT(rint(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
         TEST_FLT_NAN(rint(F(NAN)), F(NAN)); \
         TEST_FLT(rint(F(-3.3)), -3.0); \
         TEST_FLT(rint(F(-3.6)), -4.0); \
@@ -817,10 +848,15 @@ int main(int argc, char* argv[]) {
     TEST_INT(lround(F(3.6)), 4); \
     TEST_INT(lround(F(3.5)), 4); \
     TEST_INT(lround(F(4.5)), 5); \
+    TEST_INT(lround(F(1073741824.0)), 1073741824); \
     TEST_INT(lround(F(-3.3)), -3); \
     TEST_INT(lround(F(-3.6)), -4); \
     TEST_INT(lround(F(-3.5)), -4); \
     TEST_INT(lround(F(-4.5)), -5)
+
+#define TEST_LLROUND(llrint) \
+        TEST_INT(llround(F(17179869184.0)), 17179869184); \
+        TEST_INT(llround(F(1152921504606846976.0)), 1152921504606846976)
 
     TEST_LROUND(llround);
     TEST_LROUND(llroundf);
@@ -828,12 +864,17 @@ int main(int argc, char* argv[]) {
     TEST_LROUND(lround);
     TEST_LROUND(lroundf);
     TEST_LROUND(lroundl);
+    TEST_LLROUND(llround);
+    TEST_LLROUND(llroundf);
+    TEST_LLROUND(llroundl);
 
 #define TEST_ROUND(round) \
     TEST_FLT(round(F(3.3)), 3.0); \
     TEST_FLT(round(F(3.6)), 4.0); \
     TEST_FLT(round(F(3.5)), 4.0); \
     TEST_FLT(round(F(4.5)), 5.0); \
+    TEST_FLT(round(F(17179869184.0)), 17179869184.0); \
+    TEST_FLT(round(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
     TEST_FLT(round(F(INFINITY)), INFINITY); \
     TEST_FLT_NAN(round(F(NAN)), F(NAN)); \
     TEST_FLT(round(F(-3.3)), -3.0); \
