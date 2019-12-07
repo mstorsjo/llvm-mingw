@@ -196,3 +196,4 @@ for arch in $ARCHS; do
         cd ..
     done
 done
+echo All tests succeeded
