@@ -47,6 +47,7 @@ TESTS_C="hello hello-tls crt-test setjmp"
 TESTS_C_DLL="autoimport-lib"
 TESTS_C_LINK_DLL="autoimport-main"
 TESTS_C_NO_BUILTIN="crt-test"
+TESTS_C_ANSI_STDIO="crt-test"
 TESTS_CPP="hello-cpp"
 TESTS_CPP_LOAD_DLL="tlstest-main"
 TESTS_CPP_EXCEPTIONS="hello-exception exception-locale exception-reduced"
@@ -90,6 +91,10 @@ for arch in $ARCHS; do
         for test in $TESTS_C_NO_BUILTIN; do
             $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test-no-builtin.exe -fno-builtin
             TESTS_EXTRA="$TESTS_EXTRA $test-no-builtin"
+        done
+        for test in $TESTS_C_ANSI_STDIO; do
+            $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test-ansi-stdio.exe -D__USE_MINGW_ANSI_STDIO=1
+            TESTS_EXTRA="$TESTS_EXTRA $test-ansi-stdio"
         done
         for test in $TESTS_CPP $TESTS_CPP_EXCEPTIONS; do
             $arch-w64-$target_os-clang++ $test.cpp -o $TEST_DIR/$test.exe
