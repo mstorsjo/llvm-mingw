@@ -208,6 +208,41 @@ int main(int argc, char* argv[]) {
     }
     tests++;
 
+    float val_f;
+    double val_d;
+    if (sscanf("0.8 0.8", "%f %lf", &val_f, &val_d) != 2) {
+        fails++;
+        printf("sscanf for floats failed\n");
+    } else {
+        double diff = 0;
+        diff += fabs(val_f - 0.8);
+        diff += fabs(val_d - 0.8);
+        // Testing for the success case, to make NaNs trigger the failure case
+        if (diff < 0.0001) {
+            // All ok
+        } else {
+            fails++;
+            printf("sscanf output for floats failed, %f %f - diff %f\n", val_f, val_d, diff);
+        }
+    }
+    tests++;
+#if !defined(__MINGW32__) || (!defined(__i386__) && !defined(__x86_64__)) || (defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO)
+    long double val_ld;
+    if (sscanf("0.8", "%Lf", &val_ld) != 1) {
+        fails++;
+        printf("sscanf for long double failed\n");
+    } else {
+        // Testing for the success case, to make NaNs trigger the failure case
+        if (fabsl(val_ld - 0.8) < 0.0001) {
+            // All ok
+        } else {
+            fails++;
+            printf("sscanf output for long double failed, %f vs %f\n", (double) val_ld, 0.8);
+        }
+    }
+    tests++;
+#endif
+
 #ifdef _WIN32
     _set_invalid_parameter_handler(invalid_parameter);
 #endif
