@@ -61,12 +61,7 @@ Building in MSYS2
 
 To build in MSYS2, install the following set of packages with `pacman -S`:
 
-    git subversion mingw-w64-x86_64-gcc mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake make mingw-w64-x86_64-python2
-
-Do note that this installs python2, not python3. python3 on windows
-seems to have a bug in running subprocesses the way it's done by a
-script in libcxx, a bug that only seems to be
-[fixed in python 3.8](https://github.com/python/cpython/commit/9e3c4526394856d6376eed4968d27d53e1d69b7d).
+    git subversion mingw-w64-x86_64-gcc mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake make mingw-w64-x86_64-python3
 
 
 Status
