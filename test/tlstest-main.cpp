@@ -26,8 +26,6 @@
 HANDLE event1, event2, event3;
 void (*func)(void);
 
-DWORD fls_key = FLS_OUT_OF_INDEXES;
-
 class Hello {
 public:
     Hello(const char* s) {
