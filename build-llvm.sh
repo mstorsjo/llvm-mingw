@@ -2,6 +2,7 @@
 
 set -e
 
+: ${LLVM_VERSION:=llvmorg-9.0.0}
 ASSERTS=OFF
 BUILDDIR=build
 unset HOST
@@ -51,7 +52,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     cd llvm-project
     [ -z "$SYNC" ] || git fetch
-    git checkout llvmorg-9.0.0
+    git checkout $LLVM_VERSION
     cd ..
 fi
 

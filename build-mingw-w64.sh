@@ -3,7 +3,7 @@
 set -e
 
 DEFAULT_WIN32_WINNT=0x601
-DEFAULT_MSVCRT=ucrt
+: ${DEFAULT_MSVCRT:=ucrt}
 unset HOST
 
 while [ $# -gt 0 ]; do
