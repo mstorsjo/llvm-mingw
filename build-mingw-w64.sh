@@ -2,8 +2,9 @@
 
 set -e
 
-DEFAULT_WIN32_WINNT=0x601
+: ${DEFAULT_WIN32_WINNT:=0x601}
 : ${DEFAULT_MSVCRT:=ucrt}
+: ${MINGW_W64_VERSION:=0a1d495478d8ed1a94fc77b9dbb428b7e0372588}
 unset HOST
 
 while [ $# -gt 0 ]; do
@@ -58,7 +59,7 @@ cd mingw-w64
 
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
-    git checkout 0a1d495478d8ed1a94fc77b9dbb428b7e0372588
+    git checkout $MINGW_W64_VERSION
 fi
 
 # If crosscompiling the toolchain itself, we already have a mingw-w64
