@@ -201,7 +201,6 @@ int _tmain(int argc, TCHAR* argv[]) {
     exec_argv[arg++] = _T("-rtlib=compiler-rt");
     exec_argv[arg++] = _T("-stdlib=libc++");
     exec_argv[arg++] = _T("-fuse-ld=lld");
-    exec_argv[arg++] = _T("-fuse-cxa-atexit");
     exec_argv[arg++] = _T("-Qunused-arguments");
 
     for (int i = 1; i < argc; i++)
