@@ -16,7 +16,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 dest
+    echo $0 [--host=<triple>] dest
     exit 1
 fi
 mkdir -p "$PREFIX"

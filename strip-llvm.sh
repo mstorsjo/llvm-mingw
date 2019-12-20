@@ -16,7 +16,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 dir
+    echo $0 [--host=<triple>] dir
     exit 1
 fi
 cd "$PREFIX"

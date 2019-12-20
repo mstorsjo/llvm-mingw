@@ -28,7 +28,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] dest
+    echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--host=<triple>] dest
     exit 1
 fi
 

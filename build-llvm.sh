@@ -31,7 +31,7 @@ while [ $# -gt 0 ]; do
 done
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--full-llvm] dest
+        echo $0 [--enable-asserts] [--full-llvm] [--host=<triple>] dest
         exit 1
     fi
 
