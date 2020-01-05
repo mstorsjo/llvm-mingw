@@ -173,6 +173,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 #define IF_MATCH_EITHER(short, long) \
     if (!_tcscmp(argv[i], _T(short)) || !_tcscmp(argv[i], _T(long)))
+#define IF_MATCH_THREE(first, second, third) \
+    if (!_tcscmp(argv[i], _T(first)) || !_tcscmp(argv[i], _T(second)) || !_tcscmp(argv[i], _T(third)))
 #define OPTION(short, long, var) \
     if (_tcsstart(argv[i], _T(short)) && argv[i][_tcslen_const(_T(short))]) { \
         var = argv[i] + _tcslen_const(_T(short)); \
@@ -203,9 +205,10 @@ int _tmain(int argc, TCHAR* argv[]) {
         else OPTION("-J", "--input-format", input_format)
         else OPTION("-O", "--output-format", output_format)
         else OPTION("-F", "--target", bfd_target)
-        else IF_MATCH_EITHER("-I", "--include-dir") {
+        else IF_MATCH_THREE("-I", "--include-dir", "--include") {
             SEPARATE_ARG(includes[nb_includes++]);
-        } else if (_tcsstart(argv[i], _T("--include-dir="))) {
+        } else if (_tcsstart(argv[i], _T("--include-dir=")) ||
+                   _tcsstart(argv[i], _T("--include="))) {
             includes[nb_includes++] = _tcschr(argv[i], '=') + 1;
         } else if (_tcsstart(argv[i], _T("-I"))) {
             includes[nb_includes++] = argv[i] + 2;
