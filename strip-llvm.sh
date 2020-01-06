@@ -88,7 +88,7 @@ for i in bugpoint c-index-test clang-* clangd diagtool dsymutil find-all-symbols
             rm $i
         fi
         ;;
-    lldb|lldb-server|lldb-argdumper|lldb-instr|lldb-mi)
+    lldb|lldb-server|lldb-argdumper|lldb-instr|lldb-mi|lldb-vscode)
         ;;
     *)
         if [ -f $i ]; then
