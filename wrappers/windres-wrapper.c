@@ -115,10 +115,10 @@ static void print_help(void) {
 "  res                        Binary Windows Resource\n"
 "  coff                       COFF object\n"
 "Targets:\n"
-"  armv7-w64-mingw32\n"
-"  aarch64-w64-mingw32\n"
-"  i686-w64-mingw32\n"
-"  x86_86-w64-mingw32\n"
+"  pe-x86-64\n"
+"  pei-x86-64\n"
+"  pe-i386\n"
+"  pei-i386\n"
     );
     exit(1);
 }
@@ -251,8 +251,8 @@ int _tmain(int argc, TCHAR* argv[]) {
             !_tcscmp(bfd_target, _T("pei-x86-64")))
             target = _T("x86_64-w64-mingw32");
         else if (!_tcscmp(bfd_target, _T("pe-i386")) ||
-                 !_tcscmp(bfd_target, _T("pei-x86-64")))
-            target = _T("x86_64-w64-mingw32");
+                 !_tcscmp(bfd_target, _T("pei-i386")))
+            target = _T("i686-w64-mingw32");
         else
             error(basename, _T("unsupported target: `"TS"'"), bfd_target);
     }
