@@ -74,7 +74,7 @@ for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmapto
             rm $i
         fi
         ;;
-    lldb|lldb-server)
+    lldb|lldb-server|lldb-argdumper|lldb-instr)
         ;;
     *)
         if [ -f $i ]; then
