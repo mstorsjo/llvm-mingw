@@ -39,3 +39,5 @@ RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
 
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
+
+RUN dpkg --add-architecture i386 && apt-get update && apt-get install --no-install-recommends -y lua5.2 libtool automake autoconf autopoint make gettext pkg-config qt4-dev-tools qt5-default git subversion cmake cvs wine64-development-tools zip p7zip nsis bzip2 yasm ragel ant default-jdk protobuf-compiler dos2unix vim gperf python3 wine-development wine32-development wine64-development flex help2man
