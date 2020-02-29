@@ -6,6 +6,12 @@ if [ $# -lt 1 ]; then
     echo $0 dest
     exit 1
 fi
+
+MAKE=make
+if [ "$(which gmake)" != "" ]; then
+    MAKE=gmake
+fi
+
 PREFIX="$1"
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
@@ -41,7 +47,7 @@ cat ssp/ssp.h.in | sed 's/@ssp_have_usable_vsnprintf@/define/' > ssp/ssp.h
 for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
-    make -f ../Makefile -j$CORES CROSS=$arch-w64-mingw32-
+    $MAKE -f ../Makefile -j$CORES CROSS=$arch-w64-mingw32-
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     cp libssp.a "$PREFIX/$arch-w64-mingw32/lib"
     cp libssp_nonshared.a "$PREFIX/$arch-w64-mingw32/lib"
