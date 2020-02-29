@@ -1,0 +1,26 @@
+diff --git a/mingw-w64-tools/widl/include/pathtools.h b/mingw-w64-tools/widl/include/pathtools.h
+index 139b7c20..cac95763 100644
+--- a/mingw-w64-tools/widl/include/pathtools.h
++++ b/mingw-w64-tools/widl/include/pathtools.h
+@@ -12,7 +12,7 @@
+ #define PATHTOOLS_H
+ 
+ #include <unistd.h>
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(__FreeBSD__)
+ #include <stdlib.h>
+ #else
+ #include <malloc.h>
+diff --git a/mingw-w64-tools/widl/src/pathtools.c b/mingw-w64-tools/widl/src/pathtools.c
+index d85a7a2d..fccdd14a 100644
+--- a/mingw-w64-tools/widl/src/pathtools.c
++++ b/mingw-w64-tools/widl/src/pathtools.c
+@@ -8,7 +8,7 @@
+   .email: <mingw.android@gmail.com>.
+  */
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(__FreeBSD__)
+ #include <stdlib.h>
+ #else
+ #include <malloc.h>

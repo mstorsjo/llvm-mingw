@@ -32,6 +32,7 @@ if [ -z "$PREFIX" ]; then
     exit 1
 fi
 
+MAKE=gmake
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
@@ -53,6 +54,10 @@ fi
 if [ ! -d mingw-w64 ]; then
     git clone git://git.code.sf.net/p/mingw-w64/mingw-w64
     CHECKOUT=1
+    if [ $(uname) = "FreeBSD" ]
+    then
+        ./patch-mingw-w64-freebsd.sh
+    fi
 fi
 
 cd mingw-w64
@@ -76,7 +81,7 @@ if [ -z "$HOST" ]; then
     cd build
     ../configure --prefix="$HEADER_ROOT" \
         --enable-idl --with-default-win32-winnt=$DEFAULT_WIN32_WINNT --with-default-msvcrt=$DEFAULT_MSVCRT INSTALL="install -C"
-    make install
+    $MAKE install
     cd ../..
     if [ -z "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
         for arch in $ARCHS; do
@@ -107,8 +112,8 @@ if [ -z "$HOST" ]; then
         esac
         FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
         ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS
-        make -j$CORES
-        make install
+        $MAKE -j$CORES
+        $MAKE install
         cd ..
     done
     cd ..
@@ -144,8 +149,8 @@ for arch in $ARCHS; do
     mkdir -p build-$CROSS_NAME$arch
     cd build-$CROSS_NAME$arch
     ../configure --prefix="$PREFIX" --target=$arch-w64-mingw32 $CONFIGFLAGS
-    make -j$CORES
-    make install-strip
+    $MAKE -j$CORES
+    $MAKE install-strip
     cd ..
 done
 cd "$PREFIX/bin"
