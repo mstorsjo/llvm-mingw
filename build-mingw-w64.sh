@@ -32,7 +32,10 @@ if [ -z "$PREFIX" ]; then
     exit 1
 fi
 
-MAKE=gmake
+MAKE=make
+if [ $(uname) = "FreeBSD" ]; then
+    MAKE=gmake
+fi
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 

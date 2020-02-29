@@ -6,7 +6,12 @@ if [ $# -lt 1 ]; then
     echo $0 dest
     exit 1
 fi
-MAKE=gmake
+MAKE=make
+
+if [ $(uname) = "FreeBSD" ]; then
+    MAKE=gmake
+fi
+
 PREFIX="$1"
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
