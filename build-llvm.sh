@@ -187,3 +187,5 @@ if [ -n "$NINJA" ]; then
 else
     make -j$CORES install/strip
 fi
+
+cp ../LICENSE.TXT $PREFIX
