@@ -8,8 +8,8 @@ if [ $# -lt 1 ]; then
 fi
 MAKE=make
 
-if [ $(uname) = "FreeBSD" ]; then
-    MAKE=gmake
+if [ "$(which gmake)" != "" ]; then
+    MAKE=gmake;
 fi
 
 PREFIX="$1"

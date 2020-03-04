@@ -33,8 +33,8 @@ if [ -z "$PREFIX" ]; then
 fi
 
 MAKE=make
-if [ $(uname) = "FreeBSD" ]; then
-    MAKE=gmake
+if [ "$(which gmake)" != "" ]; then
+    MAKE=gmake;
 fi
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
@@ -57,7 +57,6 @@ fi
 if [ ! -d mingw-w64 ]; then
     git clone git://git.code.sf.net/p/mingw-w64/mingw-w64
     CHECKOUT=1
-    
 fi
 
 cd mingw-w64
@@ -65,10 +64,6 @@ cd mingw-w64
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
     git checkout $MINGW_W64_VERSION
-    
-    if [ $(uname) = "FreeBSD" ]; then
-        ./patch-mingw-w64-freebsd.sh
-    fi
 fi
 
 # If crosscompiling the toolchain itself, we already have a mingw-w64
