@@ -148,7 +148,7 @@ for arch in $ARCHS; do
         for test in $TESTS_UWP; do
             set +e
             # compilation should fail for UWP and WinRT
-            $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test-$target_os.exe -Wimplicit-function-declaration -Werror
+            $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test-$target_os.exe -Wimplicit-function-declaration -Werror > /dev/null 2>&1
             UWP_ERROR=$?
             set -e
             case $target_os in
