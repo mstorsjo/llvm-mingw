@@ -202,17 +202,20 @@ for arch in $ARCHS; do
             DLL="$DLL $i"
         fi
     done
+    RUN_TESTS="$TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_EXTRA $TESTS_SSP"
     cd $TEST_DIR
     if [ -n "$COPY" ]; then
+        COPYFILES=""
         for i in $DLL; do
-            $COPY $i.dll
+            COPYFILES="$COPYFILES $i.dll"
         done
+        for i in $RUN_TESTS; do
+            COPYFILES="$COPYFILES $i.exe"
+        done
+        $COPY $COPYFILES
     fi
-    for test in $TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_EXTRA $TESTS_SSP; do
+    for test in $RUN_TESTS; do
         file=$test.exe
-        if [ -n "$COPY" ]; then
-            $COPY $file
-        fi
         if [ -n "$RUN" ]; then
             $RUN $file
         fi
