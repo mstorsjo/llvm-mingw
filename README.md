@@ -81,6 +81,12 @@ Known issues
 LLD, the LLVM linker, is what causes most of the major differences to the
 normal GCC/binutils based MinGW.
 
+- As this toolchain uses a different CRT and C++ standard library than
+  most mingw toolchains, it is incompatible with object files and
+  static libraries built with other toolchains. Mixing DLLs from other
+  toolchains is supported, but only as long as CRT resources aren't
+  shared across DLL boundaries (no sharing of file handles etc, and memory
+  should be freed by the same DLL that allocated it).
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
   everything that GNU windres does.
 - The toolchain defaults to using the Universal CRT (which is only available
