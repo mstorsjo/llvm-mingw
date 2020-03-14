@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -93,6 +94,14 @@ static inline int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR 
         escaped_argv[i] = escape(argv[i]);
     escaped_argv[num_args] = NULL;
     return _tspawnvp(mode, filename, escaped_argv);
+}
+#else
+static inline int _tcsicmp(const TCHAR *a, const TCHAR *b) {
+    while (*a && tolower(*a) == tolower(*b)) {
+        a++;
+        b++;
+    }
+    return *a - *b;
 }
 #endif
 

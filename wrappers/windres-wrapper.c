@@ -292,7 +292,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
 
-    if (!_tcscmp(input_format, _T("rc"))) {
+    if (!_tcsicmp(input_format, _T("rc"))) {
         exec_argv[arg++] = concat(dir, CC);
         exec_argv[arg++] = _T("-E");
         for (int i = 0; i < nb_cpp_options; i++)
@@ -327,7 +327,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-c");
         exec_argv[arg++] = codepage;
         exec_argv[arg++] = _T("-fo");
-        if (!_tcscmp(output_format, _T("res")))
+        if (!_tcsicmp(output_format, _T("res")))
             exec_argv[arg++] = output;
         else
             exec_argv[arg++] = res;
@@ -348,9 +348,9 @@ int _tmain(int argc, TCHAR* argv[]) {
             return ret;
         }
 
-        if (!_tcscmp(output_format, _T("res"))) {
+        if (!_tcsicmp(output_format, _T("res"))) {
             // All done
-        } else if (!_tcscmp(output_format, _T("coff"))) {
+        } else if (!_tcsicmp(output_format, _T("coff"))) {
             arg = 0;
             exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
             exec_argv[arg++] = res;
@@ -374,7 +374,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         } else {
             error(basename, _T("invalid output format: `"TS"'"), output_format);
         }
-    } else if (!_tcscmp(input_format, _T("res"))) {
+    } else if (!_tcsicmp(input_format, _T("res"))) {
         exec_argv[arg++] = concat(dir, _T("llvm-cvtres"));
         exec_argv[arg++] = input;
         exec_argv[arg++] = concat(_T("-machine:"), machine);
