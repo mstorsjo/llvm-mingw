@@ -57,7 +57,7 @@ typedef char TCHAR;
 #endif
 
 #ifdef _WIN32
-static TCHAR *escape(const TCHAR *str) {
+static inline TCHAR *escape(const TCHAR *str) {
     TCHAR *out = malloc((_tcslen(str) * 2 + 3) * sizeof(*out));
     TCHAR *ptr = out;
     int i;
@@ -84,7 +84,7 @@ static TCHAR *escape(const TCHAR *str) {
     return out;
 }
 
-static int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR * const *argv) {
+static inline int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR * const *argv) {
     int num_args = 0;
     while (argv[num_args])
         num_args++;
@@ -96,7 +96,7 @@ static int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR * const
 }
 #endif
 
-static TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix) {
+static inline TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix) {
     int prefixlen = _tcslen(prefix);
     int suffixlen = _tcslen(suffix);
     TCHAR *buf = malloc((prefixlen + suffixlen + 1) * sizeof(*buf));
@@ -105,7 +105,7 @@ static TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix) {
     return buf;
 }
 
-static TCHAR *_tcsrchrs(const TCHAR *str, TCHAR char1, TCHAR char2) {
+static inline TCHAR *_tcsrchrs(const TCHAR *str, TCHAR char1, TCHAR char2) {
     TCHAR *ptr1 = _tcsrchr(str, char1);
     TCHAR *ptr2 = _tcsrchr(str, char2);
     if (!ptr1)
@@ -117,7 +117,7 @@ static TCHAR *_tcsrchrs(const TCHAR *str, TCHAR char1, TCHAR char2) {
     return ptr1;
 }
 
-static void split_argv(const TCHAR *argv0, const TCHAR **dir_ptr, const TCHAR **basename_ptr, const TCHAR **target_ptr, const TCHAR **exe_ptr) {
+static inline void split_argv(const TCHAR *argv0, const TCHAR **dir_ptr, const TCHAR **basename_ptr, const TCHAR **target_ptr, const TCHAR **exe_ptr) {
     const TCHAR *sep = _tcsrchrs(argv0, '/', '\\');
     TCHAR *dir = _tcsdup(_T(""));
     const TCHAR *basename = argv0;
@@ -159,7 +159,7 @@ static void split_argv(const TCHAR *argv0, const TCHAR **dir_ptr, const TCHAR **
         *exe_ptr = exe;
 }
 
-static int run_final(const TCHAR *executable, const TCHAR *const *argv) {
+static inline int run_final(const TCHAR *executable, const TCHAR *const *argv) {
 #ifdef _WIN32
     int ret = _tspawnvp_escape(_P_WAIT, executable, argv);
     if (ret == -1) {
