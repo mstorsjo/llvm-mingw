@@ -53,10 +53,6 @@ if [ -z "$CHECKOUT_ONLY" ]; then
     PREFIX="$(cd "$PREFIX" && pwd)"
 fi
 
-: ${CORES:=$(nproc 2>/dev/null)}
-: ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
-: ${CORES:=4}
-
 if [ ! -d llvm-project ]; then
     # When cloning master and checking out a pinned old hash, we can't use --depth=1.
     git clone https://github.com/llvm/llvm-project.git
@@ -76,6 +72,10 @@ if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
 else
+    : ${CORES:=$(nproc 2>/dev/null)}
+    : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
+    : ${CORES:=4}
+
     case $(uname) in
     MINGW*)
         CMAKE_GENERATOR="MSYS Makefiles"
@@ -180,7 +180,7 @@ cmake \
     ..
 
 if [ -n "$NINJA" ]; then
-    ninja -j$CORES install/strip
+    ninja ${CORES+-j$CORES} install/strip
 else
     make -j$CORES install/strip
 fi
