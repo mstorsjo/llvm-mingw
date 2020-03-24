@@ -71,6 +71,7 @@ fi
 if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
+    BUILDCMD=ninja
 else
     : ${CORES:=$(nproc 2>/dev/null)}
     : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
@@ -83,6 +84,7 @@ else
     *)
         ;;
     esac
+    BUILDCMD=make
 fi
 
 if [ -n "$HOST" ]; then
@@ -179,10 +181,6 @@ cmake \
     $CMAKEFLAGS \
     ..
 
-if [ -n "$NINJA" ]; then
-    ninja ${CORES+-j$CORES} install/strip
-else
-    make -j$CORES install/strip
-fi
+$BUILDCMD ${CORES+-j$CORES} install/strip
 
 cp ../LICENSE.TXT $PREFIX
