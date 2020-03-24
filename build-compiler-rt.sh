@@ -38,9 +38,6 @@ mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH="$PREFIX/bin:$PATH"
 
-: ${CORES:=$(nproc 2>/dev/null)}
-: ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
-: ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
@@ -61,13 +58,24 @@ if [ ! -e "$PREFIX/i386-w64-mingw32" ]; then
     esac
 fi
 
-case $(uname) in
-MINGW*)
-    CMAKE_GENERATOR="MSYS Makefiles"
-    ;;
-*)
-    ;;
-esac
+if [ -n "$(which ninja)" ]; then
+    CMAKE_GENERATOR="Ninja"
+    NINJA=1
+    BUILDCMD=ninja
+else
+    : ${CORES:=$(nproc 2>/dev/null)}
+    : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
+    : ${CORES:=4}
+
+    case $(uname) in
+    MINGW*)
+        CMAKE_GENERATOR="MSYS Makefiles"
+        ;;
+    *)
+        ;;
+    esac
+    BUILDCMD=make
+fi
 
 cd llvm-project/compiler-rt
 
@@ -111,7 +119,7 @@ for arch in $ARCHS; do
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
         -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
         $SRC_DIR
-    make -j$CORES
+    $BUILDCMD ${CORES+-j$CORES}
     mkdir -p "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     for i in lib/windows/libclang_rt.*-$buildarchname*.a; do
@@ -123,7 +131,7 @@ for arch in $ARCHS; do
         fi
     done
     if [ -n "$SANITIZERS" ]; then
-        make install-compiler-rt-headers
+        $BUILDCMD install-compiler-rt-headers
     fi
     cd ..
 done

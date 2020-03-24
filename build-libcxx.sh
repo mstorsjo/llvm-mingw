@@ -43,9 +43,6 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 
 export PATH="$PREFIX/bin:$PATH"
 
-: ${CORES:=$(nproc 2>/dev/null)}
-: ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
-: ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 if [ ! -d llvm-project/libunwind ] || [ -n "$SYNC" ]; then
@@ -56,13 +53,24 @@ cd llvm-project
 
 LIBCXX=$(pwd)/libcxx
 
-case $(uname) in
-MINGW*)
-    CMAKE_GENERATOR="MSYS Makefiles"
-    ;;
-*)
-    ;;
-esac
+if [ -n "$(which ninja)" ]; then
+    CMAKE_GENERATOR="Ninja"
+    NINJA=1
+    BUILDCMD=ninja
+else
+    : ${CORES:=$(nproc 2>/dev/null)}
+    : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
+    : ${CORES:=4}
+
+    case $(uname) in
+    MINGW*)
+        CMAKE_GENERATOR="MSYS Makefiles"
+        ;;
+    *)
+        ;;
+    esac
+    BUILDCMD=make
+fi
 
 build_all() {
     type="$1"
@@ -105,8 +113,8 @@ build_all() {
             -DCMAKE_CXX_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             -DCMAKE_C_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             ..
-        make -j$CORES
-        make install
+        $BUILDCMD ${CORES+-j$CORES}
+        $BUILDCMD install
         if [ "$type" = "shared" ]; then
             mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
             cp lib/libunwind.dll "$PREFIX/$arch-w64-mingw32/bin"
@@ -148,7 +156,7 @@ build_all() {
             -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS -D_LIBCPP_HAS_THREAD_API_WIN32" \
             ..
-        make -j$CORES
+        $BUILDCMD ${CORES+-j$CORES}
         cd ..
     done
     cd ..
@@ -197,8 +205,8 @@ build_all() {
             -DCMAKE_SHARED_LINKER_FLAGS="-lunwind" \
             -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=FALSE \
             ..
-        make -j$CORES
-        make install
+        $BUILDCMD ${CORES+-j$CORES}
+        $BUILDCMD install
         if [ "$type" = "shared" ]; then
             llvm-ar qcsL \
                 "$PREFIX/$arch-w64-mingw32/lib/libc++.dll.a" \
