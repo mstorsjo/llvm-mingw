@@ -61,6 +61,14 @@ if [ ! -e "$PREFIX/i386-w64-mingw32" ]; then
     esac
 fi
 
+case $(uname) in
+MINGW*)
+    CMAKE_GENERATOR="MSYS Makefiles"
+    ;;
+*)
+    ;;
+esac
+
 cd llvm-project/compiler-rt
 
 for arch in $ARCHS; do
@@ -83,14 +91,6 @@ for arch in $ARCHS; do
     i686)
         buildarchname=i386
         libarchname=i386
-        ;;
-    esac
-
-    case $(uname) in
-    MINGW*)
-        CMAKE_GENERATOR="MSYS Makefiles"
-        ;;
-    *)
         ;;
     esac
 
