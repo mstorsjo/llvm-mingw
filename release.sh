@@ -26,7 +26,7 @@ TAG=$1
 time docker build -f Dockerfile . -t mstorsjo/llvm-mingw:latest -t mstorsjo/llvm-mingw:$TAG
 time docker build -f Dockerfile.dev . -t mstorsjo/llvm-mingw:dev -t mstorsjo/llvm-mingw:dev-$TAG
 
-DISTRO=ubuntu-16.04
+DISTRO=ubuntu-18.04
 docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-$DISTRO" > llvm-mingw-$TAG-$DISTRO.tar.xz
 
 cleanup() {
