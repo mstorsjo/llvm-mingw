@@ -84,6 +84,7 @@ build_all() {
 
     cd libunwind
     for arch in $ARCHS; do
+        [ -z "$CLEAN" ] || rm -rf build-$arch-$type
         mkdir -p build-$arch-$type
         cd build-$arch-$type
         # CXX_SUPPORTS_CXX11 is not strictly necessary here. But if building
@@ -125,6 +126,7 @@ build_all() {
 
     cd libcxxabi
     for arch in $ARCHS; do
+        [ -z "$CLEAN" ] || rm -rf build-$arch-$type
         mkdir -p build-$arch-$type
         cd build-$arch-$type
         if [ "$type" = "shared" ]; then
@@ -163,6 +165,7 @@ build_all() {
 
     cd libcxx
     for arch in $ARCHS; do
+        [ -z "$CLEAN" ] || rm -rf build-$arch-$type
         mkdir -p build-$arch-$type
         cd build-$arch-$type
         if [ "$type" = "shared" ]; then

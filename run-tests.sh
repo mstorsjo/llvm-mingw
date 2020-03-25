@@ -91,6 +91,7 @@ for arch in $ARCHS; do
     esac
 
     TEST_DIR="$arch"
+    [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     mkdir -p $TEST_DIR
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe

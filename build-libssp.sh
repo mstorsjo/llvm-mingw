@@ -59,6 +59,7 @@ done
 cat ssp/ssp.h.in | sed 's/@ssp_have_usable_vsnprintf@/define/' > ssp/ssp.h
 
 for arch in $ARCHS; do
+    [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
     $MAKE -f ../Makefile -j$CORES CROSS=$arch-w64-mingw32-

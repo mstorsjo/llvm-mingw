@@ -102,6 +102,7 @@ for arch in $ARCHS; do
         ;;
     esac
 
+    [ -z "$CLEAN" ] || rm -rf build-$arch$BUILD_SUFFIX
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX
     cmake \

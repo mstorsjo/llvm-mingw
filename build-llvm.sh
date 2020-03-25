@@ -159,6 +159,7 @@ MINGW*)
     ;;
 esac
 
+[ -z "$CLEAN" ] || rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 # Building LLDB for macOS fails unless building libc++ is enabled at the

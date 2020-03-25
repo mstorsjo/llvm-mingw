@@ -91,6 +91,7 @@ if [ -z "$HOST" ]; then
     fi
 
     cd mingw-w64-headers
+    [ -z "$CLEAN" ] || rm -rf build
     mkdir -p build
     cd build
     ../configure --prefix="$HEADER_ROOT" \
@@ -108,6 +109,7 @@ if [ -z "$HOST" ]; then
 
     cd mingw-w64-crt
     for arch in $ARCHS; do
+        [ -z "$CLEAN" ] || rm -rf build-$arch
         mkdir -p build-$arch
         cd build-$arch
         case $arch in
@@ -160,6 +162,7 @@ fi
 export PATH="$ORIGPATH"
 cd mingw-w64-tools/widl
 for arch in $ARCHS; do
+    [ -z "$CLEAN" ] || rm -rf build-$CROSS_NAME$arch
     mkdir -p build-$CROSS_NAME$arch
     cd build-$CROSS_NAME$arch
     ../configure --prefix="$PREFIX" --target=$arch-w64-mingw32 $CONFIGFLAGS
