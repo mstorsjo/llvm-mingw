@@ -1,0 +1,95 @@
+From 5810d08c5c979b904dfe7b958c6b609f175a280f Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 7 Apr 2020 13:14:52 +0200
+Subject: [PATCH 2/2] favor bcrypt over wincrypt for the random generator on
+ Windows
+
+BCrypt is more modern and supported in Universal Apps, Wincrypt is not and
+CryptGenRandom is deprecated:
+https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptgenrandom
+
+BCrypt is available since Vista
+https://docs.microsoft.com/en-us/windows/win32/api/bcrypt/nf-bcrypt-bcryptopenalgorithmprovider
+
+It requires linking with bcrypt rather than advapi32 for wincrypt.
+---
+ libssp/configure.ac | 16 ++++++++++++++++
+ libssp/ssp.c        | 20 ++++++++++++++++++++
+ 2 files changed, 36 insertions(+)
+
+diff --git a/libssp/configure.ac b/libssp/configure.ac
+index b29a1a760c9..f519ebb1f85 100644
+--- a/libssp/configure.ac
++++ b/libssp/configure.ac
+@@ -153,6 +153,22 @@ else
+ fi
+ AC_SUBST(ssp_have_usable_vsnprintf)
+ 
++AC_ARG_ENABLE(bcrypt,
++AS_HELP_STRING([--disable-bcrypt],
++  [use bcrypt for random generator on Windows (otherwise wincrypt)]),
++  use_win_bcrypt=$enableval,
++  use_win_bcrypt=yes)
++if test "x$use_win_bcrypt" != xno; then
++  case "$target_os" in
++    win32 | pe | mingw32*)
++      AC_CHECK_TYPES([BCRYPT_ALG_HANDLE],[
++  LDFLAGS="$LDFLAGS -lbcrypt"
++],[],[#include <windows.h>
++#include <bcrypt.h>])
++    ;;
++  esac
++fi
++
+ AM_PROG_LIBTOOL
+ case $host in
+   *-cygwin* | *-mingw*)
+diff --git a/libssp/ssp.c b/libssp/ssp.c
+index 28f3e9cc64a..f07cc41fd4f 100644
+--- a/libssp/ssp.c
++++ b/libssp/ssp.c
+@@ -56,7 +56,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+    to the console using  "CONOUT$"   */
+ #if defined (_WIN32) && !defined (__CYGWIN__)
+ #include <windows.h>
++#ifdef HAVE_BCRYPT_ALG_HANDLE
++#include <bcrypt.h>
++#else
+ #include <wincrypt.h>
++#endif
+ # define _PATH_TTY "CONOUT$"
+ #else
+ # define _PATH_TTY "/dev/tty"
+@@ -77,6 +81,21 @@ __guard_setup (void)
+     return;
+ 
+ #if defined (_WIN32) && !defined (__CYGWIN__)
++#ifdef HAVE_BCRYPT_ALG_HANDLE
++  BCRYPT_ALG_HANDLE algo = 0;
++  NTSTATUS err = BCryptOpenAlgorithmProvider(&algo, BCRYPT_RNG_ALGORITHM, 
++                                             NULL, 0);
++  if (BCRYPT_SUCCESS(err))
++    {
++      if (BCryptGenRandom(algo, (BYTE *)&__stack_chk_guard,
++                          sizeof (__stack_chk_guard), 0) && __stack_chk_guard != 0)
++        {
++           BCryptCloseAlgorithmProvider(algo, 0);
++           return;
++        }
++      BCryptCloseAlgorithmProvider(algo, 0);
++    }
++#else /* !HAVE_BCRYPT_ALG_HANDLE */
+   HCRYPTPROV hprovider = 0;
+   if (CryptAcquireContext(&hprovider, NULL, NULL, PROV_RSA_FULL,
+                           CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+@@ -89,6 +108,7 @@ __guard_setup (void)
+         }
+       CryptReleaseContext(hprovider, 0);
+     }
++#endif /* !HAVE_BCRYPT_ALG_HANDLE */
+ #else
+   int fd = open ("/dev/urandom", O_RDONLY);
+   if (fd != -1)
+-- 
+2.26.0.windows.1
+
