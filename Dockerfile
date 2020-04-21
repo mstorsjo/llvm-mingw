@@ -33,7 +33,8 @@ RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
 
 # Build libssp
-COPY build-libssp.sh libssp-Makefile ./
+COPY build-libssp.sh ./
+COPY patches/libssp/*.patch ./patches/libssp/
 RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
     rm -rf /build/*
 

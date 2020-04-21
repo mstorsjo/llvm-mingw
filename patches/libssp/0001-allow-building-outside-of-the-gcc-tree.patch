@@ -1,0 +1,124 @@
+From 08fc23c3581c13ff0d749a2565d134b337995bff Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 7 Apr 2020 13:56:58 +0200
+Subject: [PATCH 1/2] allow building outside of the gcc tree
+
+DO NOT MERGE
+---
+ libssp/Makefile.am  |  8 ++------
+ libssp/configure.ac | 32 ++++++++++++++++++++------------
+ 2 files changed, 22 insertions(+), 18 deletions(-)
+
+diff --git a/libssp/Makefile.am b/libssp/Makefile.am
+index 45fee02da4f..60e7f25a381 100644
+--- a/libssp/Makefile.am
++++ b/libssp/Makefile.am
+@@ -4,11 +4,10 @@
+ ##
+ 
+ AUTOMAKE_OPTIONS = foreign
+-ACLOCAL_AMFLAGS = -I .. -I ../config
+ MAINT_CHARSET = latin1
+ 
+ # May be used by various substitution variables.
+-gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
++gcc_version := 9.2.0
+ 
+ if LIBSSP_USE_SYMVER
+ if LIBSSP_USE_SYMVER_GNU
+@@ -39,7 +38,7 @@ AM_CFLAGS += $(XCFLAGS)
+ toolexeclib_LTLIBRARIES = libssp.la libssp_nonshared.la
+ 
+ target_noncanonical = @target_noncanonical@
+-libsubincludedir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include
++libsubincludedir = $(libdir)/../include
+ nobase_libsubinclude_HEADERS = ssp/ssp.h ssp/string.h ssp/stdio.h ssp/unistd.h
+ 
+ libssp_la_SOURCES = \
+@@ -105,6 +104,3 @@ AM_MAKEFLAGS = \
+ 
+ MAKEOVERRIDES=
+ 
+-## ################################################################
+-
+-include $(top_srcdir)/../multilib.am
+diff --git a/libssp/configure.ac b/libssp/configure.ac
+index f30f81c54f6..b29a1a760c9 100644
+--- a/libssp/configure.ac
++++ b/libssp/configure.ac
+@@ -5,7 +5,6 @@
+ AC_INIT(libssp, 1.0)
+ AC_CONFIG_SRCDIR(ssp.c)
+ AC_CANONICAL_SYSTEM
+-ACX_NONCANONICAL_TARGET
+ 
+ AM_INIT_AUTOMAKE([no-dist])
+ 
+@@ -22,10 +21,6 @@ AC_MSG_RESULT($version_specific_libs)
+ 
+ AM_MAINTAINER_MODE
+ 
+-GCC_NO_EXECUTABLES
+-
+-AM_ENABLE_MULTILIB(, ..)
+-
+ target_alias=${target_alias-$host_alias}
+ AC_SUBST(target_alias)
+ 
+@@ -62,8 +57,8 @@ void __attribute__((noinline)) bar (char *x)
+ CFLAGS="$save_CFLAGS"
+ 
+ # Add CET specific flags if CET is enabled
+-GCC_CET_FLAGS(CET_FLAGS)
+-XCFLAGS="$XCFLAGS $CET_FLAGS"
++# GCC_CET_FLAGS(CET_FLAGS)
++# XCFLAGS="$XCFLAGS $CET_FLAGS"
+ AC_SUBST(XCFLAGS)
+ 
+ AC_MSG_CHECKING([whether hidden visibility is supported])
+@@ -159,7 +154,23 @@ fi
+ AC_SUBST(ssp_have_usable_vsnprintf)
+ 
+ AM_PROG_LIBTOOL
+-ACX_LT_HOST_FLAGS
++case $host in
++  *-cygwin* | *-mingw*)
++    # 'host' will be top-level target in the case of a target lib,
++    # we must compare to with_cross_host to decide if this is a native
++    # or cross-compiler and select where to install dlls appropriately.
++    if test -n "$with_cross_host" &&
++	test x"$with_cross_host" != x"no"; then
++      lt_host_flags='-no-undefined -bindir "$(toolexeclibdir)"';
++    else
++      lt_host_flags='-no-undefined -bindir "$(bindir)"';
++    fi
++    ;;
++  *)
++    lt_host_flags=[$1]
++    ;;
++esac
++AC_SUBST(lt_host_flags)
+ AC_SUBST(enable_shared)
+ AC_SUBST(enable_static)
+ 
+@@ -192,7 +203,7 @@ case ${version_specific_libs} in
+       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+       toolexeclibdir='$(libdir)'
+     fi
+-    multi_os_directory=`$CC -print-multi-os-directory`
++    multi_os_directory=.
+     case $multi_os_directory in
+       .) ;; # Avoid trailing /.
+       *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+@@ -208,8 +219,5 @@ else
+   multilib_arg=
+ fi
+ 
+-# Determine what GCC version number to use in filesystem paths.
+-GCC_BASE_VER
+-
+ AC_CONFIG_FILES([Makefile ssp/ssp.h])
+ AC_OUTPUT
+-- 
+2.26.0.windows.1
+

@@ -108,7 +108,8 @@ RUN cd test && \
     done
 
 # Build libssp
-COPY build-libssp.sh libssp-Makefile ./
+COPY build-libssp.sh ./
+COPY patches/libssp/*.patch ./patches/libssp/
 RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 
 RUN cd test && \
