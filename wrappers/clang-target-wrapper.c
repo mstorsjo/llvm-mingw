@@ -191,9 +191,11 @@ int _tmain(int argc, TCHAR* argv[]) {
         // the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
         exec_argv[arg++] = _T("-DUNICODE");
         // add the minimum runtime to use for UWP targets
-        exec_argv[arg++] = _T("-Wl,-lmincore");
+        exec_argv[arg++] = _T("-Wl,-lwindowsapp");
         // This requires that the default crt is ucrt.
         exec_argv[arg++] = _T("-Wl,-lvcruntime140_app");
+        // force the user of Universal C Runtime
+        exec_argv[arg++] = _T("-D_UCRT");
     }
 
     exec_argv[arg++] = _T("-target");
