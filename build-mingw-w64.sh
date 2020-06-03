@@ -18,7 +18,7 @@ set -e
 
 : ${DEFAULT_WIN32_WINNT:=0x601}
 : ${DEFAULT_MSVCRT:=ucrt}
-: ${MINGW_W64_VERSION:=823bc20b3c9aea724acbd60400a923c35757b08c}
+: ${MINGW_W64_VERSION:=bb73d2e3a260d20e72fe4221411032f4175f58ec}
 unset HOST
 
 while [ $# -gt 0 ]; do
