@@ -192,8 +192,9 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-DUNICODE");
         // add the minimum runtime to use for UWP targets
         exec_argv[arg++] = _T("-Wl,-lwindowsapp");
-        // This requires that the default crt is ucrt.
-        exec_argv[arg++] = _T("-Wl,-lvcruntime140_app");
+        // This still requires that the toolchain (in particular, libc++.a) has
+        // been built targeting UCRT originally.
+        exec_argv[arg++] = _T("-Wl,-lucrtapp");
         // force the user of Universal C Runtime
         exec_argv[arg++] = _T("-D_UCRT");
     }

@@ -74,8 +74,9 @@ mingw32uwp)
     FLAGS="$FLAGS -DUNICODE"
     # add the minimum runtime to use for UWP targets
     FLAGS="$FLAGS -Wl,-lwindowsapp"
-    # This requires that the default crt is ucrt.
-    FLAGS="$FLAGS -Wl,-lvcruntime140_app"
+    # This still requires that the toolchain (in particular, libc++.a) has
+    # been built targeting UCRT originally.
+    FLAGS="$FLAGS -Wl,-lucrtapp"
     # Force the Universal C Runtime
     FLAGS="$FLAGS -D_UCRT"
     ;;
