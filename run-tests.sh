@@ -100,13 +100,12 @@ for arch in $ARCHS; do
         # Check that some generic tests build successfully for other targets.
         # These tests are included in other groups, so skip the for the default
         # mingw32 target, only test them for e.g. UWP.
-        # These tests are only built, not run, because the Windows Store specific
-        # CRT DLL isn't usually available outside of such a context.
         if [ "$target_os" = "mingw32" ]; then
             continue
         fi
         for test in $TESTS_OTHER_TARGETS; do
             $arch-w64-$target_os-clang $test.c -o $TEST_DIR/$test-$target_os.exe
+            TESTS_EXTRA="$TESTS_EXTRA $test-$target_os"
         done
     done
     for test in $TESTS_C_DLL; do
