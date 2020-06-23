@@ -94,6 +94,7 @@ static void print_help(void) {
 "  -D, --define <arg[=val]>   Define to pass to preprocessor.\n"
 "  -U, --undefine <arg[=val]> Undefine to pass to preprocessor.\n"
 "  -c, --codepage <arg>       Default codepage to use when reading an rc file (0x0-0xffff).\n"
+"  -l, --language <arg>       Specify default language (0x0-0xffff).\n"
 "      --use-temp-file        Use a temporary file for the preprocessing output.\n"
 "  -v, --verbose              Enable verbose output.\n"
 "  -V, --version              Display version.\n"
@@ -154,6 +155,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     const TCHAR **includes = malloc(argc * sizeof(*includes));
     int nb_includes = 0;
     const TCHAR *codepage = _T("1252");
+    const TCHAR *language = NULL;
     const TCHAR **cpp_options = malloc(argc * sizeof(*cpp_options));
     int nb_cpp_options = 0;
     int verbose = 0;
@@ -203,6 +205,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         } else if (_tcsstart(argv[i], _T("-I"))) {
             includes[nb_includes++] = argv[i] + 2;
         } else OPTION("-c", "--codepage", codepage)
+        else OPTION("-l", "--language", language)
         else if (!_tcscmp(argv[i], _T("--preprocessor"))) {
             error(basename, _T("ENOSYS"));
         } else if (_tcsstart(argv[i], _T("--preprocessor-arg="))) {
@@ -326,6 +329,10 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = preproc_rc;
         exec_argv[arg++] = _T("-c");
         exec_argv[arg++] = codepage;
+        if (language) {
+            exec_argv[arg++] = _T("-l");
+            exec_argv[arg++] = language;
+        }
         exec_argv[arg++] = _T("-fo");
         if (!_tcsicmp(output_format, _T("res")))
             exec_argv[arg++] = output;
