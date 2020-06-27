@@ -51,6 +51,8 @@ fi
 
 cd llvm-project
 
+LLVM_PATH="$(pwd)/llvm"
+
 if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
@@ -99,6 +101,7 @@ build_all() {
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DLLVM_PATH="$LLVM_PATH" \
             -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
@@ -142,6 +145,7 @@ build_all() {
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
+            -DLLVM_PATH="$LLVM_PATH" \
             -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
@@ -184,6 +188,7 @@ build_all() {
             -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
+            -DLLVM_PATH="$LLVM_PATH" \
             -DLIBCXX_USE_COMPILER_RT=ON \
             -DLIBCXX_INSTALL_HEADERS=ON \
             -DLIBCXX_ENABLE_EXCEPTIONS=ON \
