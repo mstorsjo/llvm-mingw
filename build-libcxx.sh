@@ -51,8 +51,6 @@ fi
 
 cd llvm-project
 
-LIBCXX=$(pwd)/libcxx
-
 if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
