@@ -52,7 +52,7 @@ MINGW*)
 esac
 
 cd bin
-for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmaptool ld64.lld* llc lldb-* lli llvm-* obj2yaml opt sancov sanstats scan-build scan-view verify-uselistorder wasm-ld yaml2obj libclang.dll *LTO.dll *Remarks.dll *.bat; do
+for i in bugpoint c-index-test clang-* clangd diagtool dsymutil find-all-symbols git-clang-format hmaptool ld64.lld* llc lldb-* lli llvm-* modularize obj2yaml opt pp-trace sancov sanstats scan-build scan-view verify-uselistorder wasm-ld yaml2obj libclang.dll *LTO.dll *Remarks.dll *.bat; do
     basename=$i
     if [ -n "$EXEEXT" ]; then
         # Some in the list are expanded globs, some are plain names we list.
@@ -67,6 +67,10 @@ for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmapto
     *.sh)
         ;;
     clang++|clang-*.*|clang-cpp)
+        ;;
+    clangd)
+        ;;
+    clang-tidy)
         ;;
     clang-*)
         suffix="${basename#*-}"

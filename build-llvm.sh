@@ -23,6 +23,7 @@ BUILDDIR="build"
 LINK_DYLIB=ON
 ASSERTSSUFFIX=""
 LLDB=ON
+CLANG_TOOLS_EXTRA=ON
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -64,6 +65,9 @@ while [ $# -gt 0 ]; do
     --disable-lldb)
         unset LLDB
         ;;
+    --disable-clang-tools-extra)
+        unset CLANG_TOOLS_EXTRA
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -73,7 +77,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] dest
         exit 1
     fi
 
@@ -246,11 +250,21 @@ if [ -n "$SYMLINK_PROJECTS" ]; then
         fi
     done
     cd ..
+    if [ -n "$CLANG_TOOLS_EXTRA" ]; then
+        cd ../clang/tools
+        if [ ! -e extra ]; then
+            ln -s ../../clang-tools-extra extra
+        fi
+        cd ../../llvm
+    fi
 else
     EXPLICIT_PROJECTS=1
     PROJECTS="clang;lld"
     if [ -n "$LLDB" ]; then
         PROJECTS="$PROJECTS;lldb"
+    fi
+    if [ -n "$CLANG_TOOLS_EXTRA" ]; then
+        PROJECTS="$PROJECTS;clang-tools-extra"
     fi
 fi
 
