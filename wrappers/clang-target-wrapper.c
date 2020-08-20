@@ -59,7 +59,7 @@ static void filter_stderr(char *buf, int n) {
                     // Last output char was a backslash converted into a
                     // forward slash. Ignore this one, but handle the next
                     // one in case there's more.
-                    last = ' ';
+                    cur = ' ';
                 }
             } else {
                 buf[out++] = cur;
