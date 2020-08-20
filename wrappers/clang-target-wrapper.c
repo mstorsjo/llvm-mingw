@@ -39,9 +39,9 @@ static void filter_stderr(char *buf, int n) {
         TCHAR cur = buf[i];
         // All lines that contain command lines or paths currently start
         // with a space.
-        if (last == '\n') {
+        if (last == '\n')
             filter_line = cur == ' ';
-}
+
         if (filter_line) {
             if (cur == '"') {
                 // Do nothing; skip the quotes. This assumes that after
