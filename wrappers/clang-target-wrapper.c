@@ -27,20 +27,28 @@
 
 #ifdef _WIN32
 static int filter_line = 0, last_char = '\n';
-static void filter_stderr(char *buf, int n) {
+static void filter_output(char *buf, int n, FILE *dest, int line_start_filter) {
     // Filter the stderr output from "-v" to rewrite paths from backslash
     // to forward slash form. libtool parses the output of "-v" and can't
     // handle the backslash form of paths. A proper upstream solution has
     // been discussed at https://reviews.llvm.org/D53066 but hasn't been
     // finished yet.
+    // Similarly, filter the stdout output from --print-search-dirs.
     int out = 0;
     int last = last_char;
     for (int i = 0; i < n; i++) {
         TCHAR cur = buf[i];
-        // All lines that contain command lines or paths currently start
-        // with a space.
-        if (last == '\n')
-            filter_line = cur == ' ';
+        if (last == '\n') {
+            // A new line - check whether we want to filter it.
+            if (line_start_filter >= 0) {
+                // Only filter the line if it starts with the line_start_filter
+                // char. (For "-v", this is ' '.)
+                filter_line = cur == line_start_filter;
+            } else {
+                // Else, filter all lines.
+                filter_line = 1;
+            }
+        }
 
         if (filter_line) {
             if (cur == '"') {
@@ -71,10 +79,24 @@ static void filter_stderr(char *buf, int n) {
         last = cur;
     }
     last_char = last;
-    fwrite(buf, 1, out, stderr);
+    fwrite(buf, 1, out, dest);
 }
 
-static int exec_filtered(const TCHAR **argv) {
+static void filter_v(char *buf, int n) {
+    // For -v, all lines that contain command lines or paths currently start
+    // with a space.
+    filter_output(buf, n, stderr, ' ');
+}
+
+static void filter_all_stdout(char *buf, int n) {
+    // For --print-search-dirs, filter all lines, into stdout.
+    // Here, the paths aren't quoted, and thus only use single backslashes.
+    filter_output(buf, n, stdout, -1);
+}
+
+typedef void (*filter_func)(char *buf, int n);
+
+static int exec_filtered(const TCHAR **argv, filter_func filter, FILE *stream) {
     for (int i = 0; argv[i]; i++)
         argv[i] = escape(argv[i]);
     int len = 1;
@@ -101,8 +123,8 @@ static int exec_filtered(const TCHAR **argv) {
     si.cb = sizeof(si);
     si.dwFlags = STARTF_USESTDHANDLES;
     si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-    si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError = pipe_write;
+    si.hStdOutput = stream == stdout ? pipe_write : GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError = stream == stderr ? pipe_write : GetStdHandle(STD_ERROR_HANDLE);
     if (!CreateProcess(NULL, cmdline, NULL, NULL, /* bInheritHandles */ TRUE,
                       0, NULL, NULL, &si, &pi)) {
         DWORD err = GetLastError();
@@ -119,10 +141,10 @@ static int exec_filtered(const TCHAR **argv) {
     }
 
     CloseHandle(pipe_write);
-    char stderr_buf[8192];
+    char out_buf[8192];
     DWORD n;
-    while (ReadFile(pipe_read, stderr_buf, sizeof(stderr_buf), &n, NULL))
-        filter_stderr(stderr_buf, n);
+    while (ReadFile(pipe_read, out_buf, sizeof(out_buf), &n, NULL))
+        filter(out_buf, n);
     CloseHandle(pipe_read);
 
     WaitForSingleObject(pi.hProcess, INFINITE);
@@ -221,9 +243,13 @@ int _tmain(int argc, TCHAR* argv[]) {
     // libtool parses the output of "-v" and can't handle the backslash
     // form of paths. A proper upstream solution has been discussed at
     // https://reviews.llvm.org/D53066 but hasn't been finished yet.
-    for (int i = 1; i < argc; i++)
+    for (int i = 1; i < argc; i++) {
         if (!_tcscmp(argv[i], _T("-v")))
-            return exec_filtered(exec_argv);
+            return exec_filtered(exec_argv, filter_v, stderr);
+        else if (!_tcscmp(argv[i], _T("-print-search-dirs")) ||
+                 !_tcscmp(argv[i], _T("--print-search-dirs")))
+            return exec_filtered(exec_argv, filter_all_stdout, stdout);
+    }
 #endif
 
     return run_final(exec_argv[0], exec_argv);
