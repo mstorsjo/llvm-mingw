@@ -82,7 +82,7 @@ fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
     for target_os in $TARGET_OSES; do
-        for exec in clang clang++ gcc g++ cc c99 c11 c++; do
+        for exec in clang clang++ gcc g++ cc c99 c11 c++ as; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
         for exec in addr2line ar ranlib nm objcopy strings strip; do
