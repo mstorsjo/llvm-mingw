@@ -25,6 +25,7 @@ PREFIX="$1"
 ./build-llvm.sh $PREFIX
 ./install-wrappers.sh $PREFIX
 ./build-mingw-w64.sh $PREFIX
+./build-mingw-w64-tools.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX
 ./build-mingw-w64-libraries.sh $PREFIX
 ./build-libcxx.sh $PREFIX

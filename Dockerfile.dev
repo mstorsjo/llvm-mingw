@@ -42,6 +42,9 @@ ARG DEFAULT_CRT=ucrt
 COPY build-mingw-w64.sh ./
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT
 
+COPY build-mingw-w64-tools.sh ./
+RUN ./build-mingw-w64-tools.sh $TOOLCHAIN_PREFIX
+
 # Build compiler-rt
 COPY build-compiler-rt.sh ./
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
