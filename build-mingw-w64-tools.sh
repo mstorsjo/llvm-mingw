@@ -87,12 +87,18 @@ $MAKE -j$CORES
 $MAKE install-strip
 cd ..
 cd "$PREFIX/bin"
+# The build above produced $ANY_ARCH-w64-mingw32-widl, add symlinks to it
+# with other prefixes.
 for arch in $ARCHS; do
     if [ "$arch" != "$ANY_ARCH" ]; then
         ln -sf $ANY_ARCH-w64-mingw32-widl$EXEEXT $arch-w64-mingw32-widl$EXEEXT
     fi
 done
 if [ -n "$EXEEXT" ]; then
+    # In a build of the tools for windows, we also want to provide an
+    # unprefixed one. If crosscompiling, we know what the native arch is;
+    # $HOST. If building natively, check the built clang to see what the
+    # default arch is.
     if [ -z "$HOST" ] && [ -f clang$EXEEXT ]; then
         HOST=$(./clang -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
