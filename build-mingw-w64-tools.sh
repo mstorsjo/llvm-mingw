@@ -76,7 +76,7 @@ if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
     # If using the same includedir for all archs, it's enough to
     # build one single binary.
     ALL_ARCHS="$ARCHS"
-    ARCHS=x86_64
+    ARCHS=$(echo $ARCHS | awk '{print $1}')
 fi
 
 cd mingw-w64-tools/widl
