@@ -60,7 +60,7 @@ fi
 
 if [ -n "$HOST" ]; then
     CONFIGFLAGS="$CONFIGFLAGS --host=$HOST"
-    CROSS_NAME=$HOST-
+    CROSS_NAME=-$HOST
     EXEEXT=.exe
 else
     case $(uname) in
@@ -72,31 +72,26 @@ else
     esac
 fi
 if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
-    CONFIGFLAGS="$CONFIGFLAGS --with-widl-includedir=$PREFIX/include"
-    # If using the same includedir for all archs, it's enough to
-    # build one single binary.
-    ALL_ARCHS="$ARCHS"
-    ARCHS=$(echo $ARCHS | awk '{print $1}')
+    INCLUDEDIR="$PREFIX/include"
+else
+    INCLUDEDIR="$PREFIX/generic-w64-mingw32/include"
 fi
+ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
 
 cd mingw-w64-tools/widl
-for arch in $ARCHS; do
-    [ -z "$CLEAN" ] || rm -rf build-$CROSS_NAME$arch
-    mkdir -p build-$CROSS_NAME$arch
-    cd build-$CROSS_NAME$arch
-    ../configure --prefix="$PREFIX" --target=$arch-w64-mingw32 $CONFIGFLAGS
-    $MAKE -j$CORES
-    $MAKE install-strip
-    cd ..
-done
+[ -z "$CLEAN" ] || rm -rf build${CROSS_NAME}
+mkdir -p build${CROSS_NAME}
+cd build${CROSS_NAME}
+../configure --prefix="$PREFIX" --target=$ANY_ARCH-w64-mingw32 --with-widl-includedir="$INCLUDEDIR" $CONFIGFLAGS
+$MAKE -j$CORES
+$MAKE install-strip
+cd ..
 cd "$PREFIX/bin"
-if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
-    for arch in $ALL_ARCHS; do
-        if [ "$arch" != "$ARCHS" ]; then
-            ln -sf $ARCHS-w64-mingw32-widl$EXEEXT $arch-w64-mingw32-widl$EXEEXT
-        fi
-    done
-fi
+for arch in $ARCHS; do
+    if [ "$arch" != "$ANY_ARCH" ]; then
+        ln -sf $ANY_ARCH-w64-mingw32-widl$EXEEXT $arch-w64-mingw32-widl$EXEEXT
+    fi
+done
 if [ -n "$EXEEXT" ]; then
     if [ -z "$HOST" ] && [ -f clang$EXEEXT ]; then
         HOST=$(./clang -dumpmachine | sed 's/-.*//')-w64-mingw32
