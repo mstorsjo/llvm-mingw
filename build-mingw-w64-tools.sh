@@ -103,6 +103,13 @@ if [ -n "$EXEEXT" ]; then
         HOST=$(./clang -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
     if [ -n "$HOST" ]; then
-        ln -sf $HOST-widl$EXEEXT widl$EXEEXT
+        HOST_ARCH="${HOST%%-*}"
+        # Only install an unprefixed symlink if $HOST is one of the architectures
+        # we are installing wrappers for.
+        case $ARCHS in
+        *$HOST_ARCH*)
+            ln -sf $HOST-widl$EXEEXT widl$EXEEXT
+            ;;
+        esac
     fi
 fi
