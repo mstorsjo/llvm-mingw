@@ -41,18 +41,34 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-if [ -z "$PREFIX" ]; then
-    echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--host=<triple>] dest
-    exit 1
+if [ -z "$CHECKOUT_ONLY" ]; then
+    if [ -z "$PREFIX" ]; then
+        echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--host=<triple>] dest
+        exit 1
+    fi
+
+    mkdir -p "$PREFIX"
+    PREFIX="$(cd "$PREFIX" && pwd)"
 fi
+
+if [ ! -d mingw-w64 ]; then
+    git clone git://git.code.sf.net/p/mingw-w64/mingw-w64
+    CHECKOUT=1
+fi
+
+cd mingw-w64
+
+if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
+    [ -z "$SYNC" ] || git fetch
+    git checkout $MINGW_W64_VERSION
+fi
+
+[ -z "$CHECKOUT_ONLY" ] || exit 0
 
 MAKE=make
 if [ "$(which gmake)" != "" ]; then
     MAKE=gmake
 fi
-
-mkdir -p "$PREFIX"
-PREFIX="$(cd "$PREFIX" && pwd)"
 
 ORIGPATH="$PATH"
 if [ -z "$HOST" ]; then
@@ -68,18 +84,6 @@ fi
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
-
-if [ ! -d mingw-w64 ]; then
-    git clone git://git.code.sf.net/p/mingw-w64/mingw-w64
-    CHECKOUT=1
-fi
-
-cd mingw-w64
-
-if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
-    [ -z "$SYNC" ] || git fetch
-    git checkout $MINGW_W64_VERSION
-fi
 
 # If crosscompiling the toolchain itself, we already have a mingw-w64
 # runtime and don't need to rebuild it.
