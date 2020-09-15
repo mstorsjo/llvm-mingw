@@ -53,7 +53,7 @@ RUN ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX
 # Build C test applications
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 
-COPY test/*.c test/*.h ./test/
+COPY test/*.c test/*.h test/*.idl ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir -p $arch && \
@@ -65,6 +65,11 @@ RUN cd test && \
         done; \
         for test in autoimport-main; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -L$arch -l${test%-main}-lib || exit 1; \
+        done; \
+        for test in idltest; do \
+            # The IDL output isn't arch specific, but test each arch frontend \
+            $arch-w64-mingw32-widl $test.idl -h -o $arch/$test.h && \
+            $arch-w64-mingw32-clang $test.c -I$arch -o $arch/$test.exe -lole32 || exit 1; \
         done; \
     done
 

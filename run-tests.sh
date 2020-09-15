@@ -70,6 +70,7 @@ TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
 TESTS_UBSAN="ubsan"
 TESTS_UWP="uwp-error"
+TESTS_IDL="idltest"
 TESTS_OTHER_TARGETS="hello"
 for arch in $ARCHS; do
     case $arch in
@@ -140,6 +141,13 @@ for arch in $ARCHS; do
     done
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
+    done
+    for test in $TESTS_IDL; do
+        # This is primary a build-only test, so no need to execute it.
+        # The IDL output isn't arch specific, but we want to test the
+        # individual widl frontends.
+        $arch-w64-mingw32-widl $test.idl -h -o $TEST_DIR/$test.h
+        $arch-w64-mingw32-clang $test.c -I$TEST_DIR -o $TEST_DIR/$test.exe -lole32
     done
     for target_os in $TARGET_OSES; do
         for test in $TESTS_UWP; do
