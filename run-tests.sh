@@ -123,17 +123,14 @@ for arch in $ARCHS; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-ansi-stdio.exe -D__USE_MINGW_ANSI_STDIO=1
         TESTS_EXTRA="$TESTS_EXTRA $test-ansi-stdio"
     done
-    for test in $TESTS_CPP $TESTS_CPP_EXCEPTIONS; do
+    for test in $TESTS_CPP; do
         $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe
     done
     for test in $TESTS_CPP_EXCEPTIONS; do
+        $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe
         $arch-w64-mingw32-clang++ $test.cpp -O2 -o $TEST_DIR/$test-opt.exe
+        TESTS_EXTRA="$TESTS_EXTRA $test $test-opt"
     done
-    if [ "$arch" != "aarch64" ] || [ -n "$NATIVE_AARCH64" ]; then
-        for test in $TESTS_CPP_EXCEPTIONS; do
-            TESTS_EXTRA="$TESTS_EXTRA $test $test-opt"
-        done
-    fi
     for test in $TESTS_CPP_LOAD_DLL; do
         $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe
         TESTS_EXTRA="$TESTS_EXTRA $test"
