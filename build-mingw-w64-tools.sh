@@ -57,6 +57,7 @@ fi
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+: ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-mingw32 mingw32uwp}}
 
 if [ -n "$HOST" ]; then
     CONFIGFLAGS="$CONFIGFLAGS --host=$HOST"
@@ -90,9 +91,11 @@ cd "$PREFIX/bin"
 # The build above produced $ANY_ARCH-w64-mingw32-widl, add symlinks to it
 # with other prefixes.
 for arch in $ARCHS; do
-    if [ "$arch" != "$ANY_ARCH" ]; then
-        ln -sf $ANY_ARCH-w64-mingw32-widl$EXEEXT $arch-w64-mingw32-widl$EXEEXT
-    fi
+    for target_os in $TARGET_OSES; do
+        if [ "$arch" != "$ANY_ARCH" ] || [ "$target_os" != "mingw32" ]; then
+            ln -sf $ANY_ARCH-w64-mingw32-widl$EXEEXT $arch-w64-$target_os-widl$EXEEXT
+        fi
+    done
 done
 if [ -n "$EXEEXT" ]; then
     # In a build of the tools for windows, we also want to provide an
