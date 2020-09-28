@@ -26,12 +26,9 @@ void whoa() {
 }
 
 int main(int argc, char *argv[]) {
-#ifdef __aarch64__
-    // This test succeeds with latest mingw-w64 (since 9718ecee1b95, Sept
-    // 2020) and latest clang (since 20f7773bb4bb458, Sept 2020, on the
-    // clang 12.0 branch), but fails before that.
-    // Additionally it uses the __C_specific_handler function, which
-    // isn't implemented in wine for aarch64 yet.
+#if defined(__aarch64__) && defined(__clang__) && __clang_major__ < 12
+    // This test succeeds with latest clang (since 20f7773bb4bb458, Sept 2020,
+    // on the clang 12.0 branch), but fails before that.
     return 0;
 #else
     ::std::set_terminate(whoa);
