@@ -28,6 +28,7 @@ export PATH="$NATIVE/bin:$PATH"
 HOST=$CROSS_ARCH-w64-mingw32
 
 ./build-llvm.sh $PREFIX --host=$HOST
+./build-lldb-mi.sh $PREFIX --host=$HOST
 ./strip-llvm.sh $PREFIX --host=$HOST
 ./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
 ./install-wrappers.sh $PREFIX --host=$HOST

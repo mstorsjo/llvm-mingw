@@ -46,6 +46,10 @@ ARG FULL_LLVM
 COPY build-llvm.sh ./
 RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 
+# Build LLDB-MI
+COPY build-lldb-mi.sh ./
+RUN ./build-lldb-mi.sh $TOOLCHAIN_PREFIX
+
 # Strip the LLVM install output immediately. (This doesn't reduce the
 # total docker image size as long as it is in a separate RUN layer though,
 # but reduces build times if tweaking the contents of strip-llvm.sh.)

@@ -20,6 +20,10 @@ ARG FULL_LLVM
 
 COPY build-llvm.sh .
 RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
+
+COPY build-lldb-mi.sh .
+RUN ./build-lldb-mi.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
+
 COPY strip-llvm.sh .
 RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
