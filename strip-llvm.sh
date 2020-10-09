@@ -58,7 +58,7 @@ for i in bugpoint c-index-test clang-* diagtool dsymutil git-clang-format hmapto
         # Some in the list are expanded globs, some are plain names we list.
         case $i in
         *$EXEEXT)
-            basename=$(echo $i | sed s/$EXEEXT//)
+            basename=$(echo $i | sed "s/$EXEEXT\$//")
             ;;
         esac
         i=$basename
