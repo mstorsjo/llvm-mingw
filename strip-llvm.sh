@@ -119,7 +119,7 @@ fi
 cd ..
 rm -rf share libexec
 cd include
-rm -rf clang clang-c lld llvm llvm-c
+rm -rf clang clang-c lld llvm llvm-c lldb
 cd ..
 cd lib
 for i in lib*.a *.so* *.dylib* cmake; do
