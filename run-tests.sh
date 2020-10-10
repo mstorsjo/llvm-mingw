@@ -69,6 +69,7 @@ TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
 TESTS_UBSAN="ubsan"
+TESTS_OMP="hello-omp"
 TESTS_UWP="uwp-error"
 TESTS_IDL="idltest"
 TESTS_OTHER_TARGETS="hello"
@@ -196,12 +197,21 @@ for arch in $ARCHS; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fsanitize=undefined
         TESTS_EXTRA="$TESTS_EXTRA $test"
     done
+    for test in $TESTS_OMP; do
+        case $arch in
+        # OpenMP on windows only supports x86.
+        i686|x86_64) ;;
+        *) continue ;;
+        esac
+        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fopenmp=libomp
+        TESTS_EXTRA="$TESTS_EXTRA $test"
+    done
     DLL="$TESTS_C_DLL $TESTS_CPP_DLL"
     compiler_rt_arch=$arch
     if [ "$arch" = "i686" ]; then
         compiler_rt_arch=i386
     fi
-    for i in libc++ libunwind libssp-0 libclang_rt.asan_dynamic-$compiler_rt_arch; do
+    for i in libc++ libunwind libssp-0 libclang_rt.asan_dynamic-$compiler_rt_arch libomp; do
         if [ -f $PREFIX/$arch-w64-mingw32/bin/$i.dll ]; then
             cp $PREFIX/$arch-w64-mingw32/bin/$i.dll $TEST_DIR
             DLL="$DLL $i"
