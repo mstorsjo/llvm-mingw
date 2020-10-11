@@ -92,7 +92,7 @@ COPY test/*.cpp ./test/
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir -p $arch && \
-        for test in hello-cpp hello-exception tlstest-main exception-locale exception-reduced global-terminate; do \
+        for test in hello-cpp hello-exception tlstest-main exception-locale exception-reduced global-terminate longjmp-cleanup; do \
             $arch-w64-mingw32-clang++ $test.cpp -o $arch/$test.exe || exit 1; \
         done; \
         for test in hello-exception; do \
