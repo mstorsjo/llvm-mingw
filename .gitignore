@@ -1,8 +1,4 @@
 /llvm-project
 /mingw-w64
-/compiler-rt
-/libunwind
-/libcxxabi
-/libcxx
 /libssp
 /make-*
