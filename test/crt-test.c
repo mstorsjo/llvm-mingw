@@ -1456,6 +1456,7 @@ int main(int argc, char* argv[]) {
     TEST_INT(LL(0) / LL(4294967296), 0); // __rt_sdiv64
     TEST_INT(LL(4294967296) / LL(4294967296), 1); // __rt_sdiv64
     TEST_INT(LL(4294967295) / LL(4294967296), 0); // __rt_sdiv64
+    TEST_INT(LL(883547321287490176) / LL(128), 6902713447558517LL); // __rt_sdiv64
 
     TEST_INT(ULL(7) / 7, 1); // __rt_udiv64
     TEST_INT(ULL(4294967289) / LL(7), 613566755); // __rt_udiv64
@@ -1472,6 +1473,7 @@ int main(int argc, char* argv[]) {
     TEST_INT(ULL(0) / ULL(4294967296), 0); // __rt_udiv64
     TEST_INT(ULL(4294967296) / ULL(4294967296), 1); // __rt_udiv64
     TEST_INT(ULL(4294967297) / ULL(8589934593), 0); // __rt_udiv64
+    TEST_INT(ULL(883547321287490176) / ULL(128), 6902713447558517ULL); // __rt_udiv64
 
 
     TEST_INT(L(7) % L(7), 0); // __rt_sdiv
