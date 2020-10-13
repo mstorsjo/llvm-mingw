@@ -23,10 +23,12 @@
 class RecurseClass {
 public:
     RecurseClass(int v) : val(v) {
-        printf("ctor %d\n", val);
+        fprintf(stderr, "ctor %d\n", val);
+        fflush(stderr);
     }
     ~RecurseClass() {
-        printf("dtor %d\n", val);
+        fprintf(stderr, "dtor %d\n", val);
+        fflush(stderr);
     }
 private:
     int val;
@@ -45,19 +47,21 @@ void recurse(int val) {
         try {
             recurse(val - 1);
         } catch (std::exception& e) {
-            printf("caught exception at %d\n", val);
+            fprintf(stderr, "caught exception at %d\n", val);
+            fflush(stderr);
         }
     } else {
         recurse(val - 1);
     }
-    printf("finishing function recurse %d\n", val);
+    fprintf(stderr, "finishing function recurse %d\n", val);
+    fflush(stderr);
 }
 
 int main(int argc, char* argv[]) {
     if (argc > 1 && !strcmp(argv[1], "-crash")) {
         /* This mode is useful for testing backtraces in a debugger. */
         crash = true;
-        printf("Crashing instead of throwing an exception\n");
+        fprintf(stderr, "Crashing instead of throwing an exception\n");
     }
     recurse(10);
     return 0;
