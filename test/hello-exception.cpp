@@ -16,20 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <iostream>
+#include <exception>
 #include <stdio.h>
-
-class Hello {
-public:
-    Hello() {
-        printf("Hello ctor\n");
-    }
-    ~Hello() {
-        printf("Hello dtor\n");
-    }
-};
-
-Hello global_h;
 
 class RecurseClass {
 public:
@@ -61,7 +49,6 @@ void recurse(int val) {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout<<"Hello world C++"<<std::endl;
     recurse(10);
     return 0;
 }
