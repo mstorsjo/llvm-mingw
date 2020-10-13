@@ -18,6 +18,7 @@
 
 #include <exception>
 #include <stdio.h>
+#include <string.h>
 
 class RecurseClass {
 public:
@@ -31,9 +32,13 @@ private:
     int val;
 };
 
+bool crash = false;
+
 void recurse(int val) {
     RecurseClass obj(val);
     if (val == 0) {
+        if (crash)
+            *(volatile int*)NULL = 0x42;
         throw std::exception();
     }
     if (val == 5) {
@@ -49,6 +54,11 @@ void recurse(int val) {
 }
 
 int main(int argc, char* argv[]) {
+    if (argc > 1 && !strcmp(argv[1], "-crash")) {
+        /* This mode is useful for testing backtraces in a debugger. */
+        crash = true;
+        printf("Crashing instead of throwing an exception\n");
+    }
     recurse(10);
     return 0;
 }
