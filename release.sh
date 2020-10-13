@@ -27,7 +27,7 @@ time docker build -f Dockerfile . -t mstorsjo/llvm-mingw:latest -t mstorsjo/llvm
 time docker build -f Dockerfile.dev . -t mstorsjo/llvm-mingw:dev -t mstorsjo/llvm-mingw:dev-$TAG
 
 DISTRO=ubuntu-18.04
-docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-$DISTRO" > llvm-mingw-$TAG-$DISTRO.tar.xz
+docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
 
 cleanup() {
     for i in $temp_images; do
@@ -40,6 +40,19 @@ trap cleanup EXIT INT TERM
 for arch in i686 x86_64 armv7 aarch64; do
     temp=$(uuidgen)
     temp_images="$temp_images $temp"
-    time docker build -f Dockerfile.cross --build-arg BASE=mstorsjo/llvm-mingw:dev --build-arg CROSS_ARCH=$arch --build-arg TAG=$TAG- -t $temp .
-    ./extract-docker.sh $temp /llvm-mingw-$TAG-$arch.zip
+    time docker build -f Dockerfile.cross --build-arg BASE=mstorsjo/llvm-mingw:dev --build-arg CROSS_ARCH=$arch --build-arg TAG=$TAG-ucrt- -t $temp .
+    ./extract-docker.sh $temp /llvm-mingw-$TAG-ucrt-$arch.zip
+done
+
+msvcrt_image=llvm-mingw-msvcrt-$(uuidgen)
+temp_images="$temp_images $msvcrt_image"
+time docker build -f Dockerfile.dev -t $msvcrt_image --build-arg DEFAULT_CRT=msvcrt .
+
+docker run --rm $msvcrt_image sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-msvcrt-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-msvcrt-$DISTRO" > llvm-mingw-$TAG-msvcrt-$DISTRO.tar.xz
+
+for arch in i686 x86_64; do
+    temp=$(uuidgen)
+    temp_images="$temp_images $temp"
+    time docker build -f Dockerfile.cross --build-arg BASE=$msvcrt_image --build-arg CROSS_ARCH=$arch --build-arg TAG=$TAG-msvcrt- -t $temp .
+    ./extract-docker.sh $temp /llvm-mingw-$TAG-msvcrt-$arch.zip
 done
