@@ -29,7 +29,7 @@ HOST=$CROSS_ARCH-w64-mingw32
 
 ./build-llvm.sh $PREFIX --host=$HOST
 ./strip-llvm.sh $PREFIX --host=$HOST
-./build-mingw-w64.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
+./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
 ./install-wrappers.sh $PREFIX --host=$HOST
 ./prepare-cross-toolchain.sh $NATIVE $PREFIX $CROSS_ARCH
 ./build-make.sh $PREFIX --host=$HOST
