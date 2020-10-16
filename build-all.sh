@@ -22,7 +22,7 @@ if [ $# -lt 1 ]; then
 fi
 PREFIX="$1"
 
-for dep in git svn cmake; do
+for dep in git wget cmake; do
     if ! hash $dep 2>/dev/null; then
         echo "$dep not installed. Please install it and retry" 1>&2
         exit 1
