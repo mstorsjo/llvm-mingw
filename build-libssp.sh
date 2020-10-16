@@ -37,7 +37,9 @@ export PATH="$PREFIX/bin:$PATH"
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 if [ ! -d libssp ]; then
-    svn checkout -q svn://gcc.gnu.org/svn/gcc/tags/gcc_7_3_0_release/libssp
+    wget -O libssp.tar.bz2 'https://gitlab.com/watched/gcc-mirror/gcc/-/archive/releases/gcc-7.3.0/gcc-releases-gcc-7.3.0.tar.bz2?path=libssp'
+    tar xf libssp.tar.bz2 --strip-components=1
+    rm -f libssp.tar.bz2
 fi
 
 cp libssp-Makefile libssp/Makefile
