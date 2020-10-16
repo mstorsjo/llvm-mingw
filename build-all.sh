@@ -22,6 +22,13 @@ if [ $# -lt 1 ]; then
 fi
 PREFIX="$1"
 
+for dep in git svn cmake; do
+    if ! hash $dep 2>/dev/null; then
+        echo "$dep not installed. Please install it and retry" 1>&2
+        exit 1
+    fi
+done
+
 ./build-llvm.sh $PREFIX
 ./install-wrappers.sh $PREFIX
 ./build-mingw-w64.sh $PREFIX
