@@ -160,7 +160,7 @@ build_all() {
             -DLIBCXX_ENABLE_STATIC=$STATIC \
             -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
-            -DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON \
+            -DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
@@ -213,7 +213,7 @@ build_all() {
             -DLIBCXXABI_ENABLE_SHARED=OFF \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/build-$arch-$type/include/c++/v1 \
             -DLIBCXXABI_LIBDIR_SUFFIX="" \
-            -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
+            -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=ON \
             -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS" \
             ..
