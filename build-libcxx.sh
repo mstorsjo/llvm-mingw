@@ -202,6 +202,7 @@ build_all() {
             -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
             -DLIBCXX_ENABLE_FILESYSTEM=OFF \
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
+            -DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
