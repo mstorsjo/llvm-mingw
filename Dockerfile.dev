@@ -7,6 +7,13 @@ RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
+RUN cd /opt && \
+    wget https://github.com/Kitware/CMake/releases/download/v3.16.2/cmake-3.16.2-Linux-x86_64.tar.gz && \
+    tar -zxvf cmake-*.tar.gz && \
+    rm cmake-*.tar.gz && \
+    mv cmake-* cmake
+ENV PATH=/opt/cmake/bin:$PATH
+
 
 RUN git config --global user.name "LLVM MinGW" && \
     git config --global user.email root@localhost
