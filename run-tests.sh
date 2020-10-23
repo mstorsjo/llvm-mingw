@@ -65,6 +65,7 @@ TESTS_C_ANSI_STDIO="crt-test"
 TESTS_CPP="hello-cpp global-terminate"
 TESTS_CPP_LOAD_DLL="tlstest-main"
 TESTS_CPP_EXCEPTIONS="hello-exception exception-locale exception-reduced"
+TESTS_CPP_STATIC="hello-exception"
 TESTS_CPP_DLL="tlstest-lib"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
@@ -132,6 +133,10 @@ for arch in $ARCHS; do
         $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe
         $arch-w64-mingw32-clang++ $test.cpp -O2 -o $TEST_DIR/$test-opt.exe
         TESTS_EXTRA="$TESTS_EXTRA $test $test-opt"
+    done
+    for test in $TESTS_CPP_STATIC; do
+        $arch-w64-mingw32-clang++ $test.cpp -static -o $TEST_DIR/$test-static.exe
+        TESTS_EXTRA="$TESTS_EXTRA $test-static"
     done
     for test in $TESTS_CPP_LOAD_DLL; do
         $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe
