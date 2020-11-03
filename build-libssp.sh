@@ -22,7 +22,7 @@ if [ $# -lt 1 ]; then
 fi
 
 MAKE=make
-if [ "$(which gmake)" != "" ]; then
+if [ -n "$(which gmake)" ]; then
     MAKE=gmake
 fi
 

@@ -49,7 +49,7 @@ fi
 cd mingw-w64
 
 MAKE=make
-if [ "$(which gmake)" != "" ]; then
+if [ -n "$(which gmake)" ]; then
     MAKE=gmake
 fi
 
