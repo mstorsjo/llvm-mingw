@@ -36,8 +36,24 @@ export PATH="$PREFIX/bin:$PATH"
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
+download() {
+    if [ -n "$(which wget)" ]; then
+        if [ -n "$2" ]; then
+            wget -O "$2" "$1"
+        else
+            wget "$1"
+        fi
+    else
+        if [ -n "$2" ]; then
+            curl -L -o "$2" "$1"
+        else
+            curl -LO "$1"
+        fi
+    fi
+}
+
 if [ ! -d libssp ]; then
-    wget -O libssp.tar.bz2 'https://gitlab.com/watched/gcc-mirror/gcc/-/archive/releases/gcc-7.3.0/gcc-releases-gcc-7.3.0.tar.bz2?path=libssp'
+    download 'https://gitlab.com/watched/gcc-mirror/gcc/-/archive/releases/gcc-7.3.0/gcc-releases-gcc-7.3.0.tar.bz2?path=libssp' libssp.tar.bz2
     tar xf libssp.tar.bz2 --strip-components=1
     rm -f libssp.tar.bz2
 fi
