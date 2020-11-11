@@ -100,8 +100,6 @@ for arch in $ARCHS; do
         -DCMAKE_ASM_MASM_COMPILER=$UASM \
         -DCMAKE_CROSSCOMPILING=TRUE \
         -DCMAKE_SYSTEM_NAME=Windows \
-        -DCMAKE_C_COMPILER_WORKS=TRUE \
-        -DCMAKE_CXX_COMPILER_WORKS=TRUE \
         -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
         -DLIBOMP_ENABLE_SHARED=TRUE \
