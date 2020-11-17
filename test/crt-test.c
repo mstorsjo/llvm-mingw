@@ -652,6 +652,8 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(log2(F(1024.0)), 10.0, 0.001); \
     TEST_FLT_ACCURACY(log2(F(1048576.0)), 20.0, 0.001); \
     TEST_FLT_ACCURACY(log2(F(4294967296.0)), 32.0, 0.001); \
+    TEST_FLT_ACCURACY(log2(F(0.5)), -1.0, 0.001); \
+    TEST_FLT_ACCURACY(log2(F(0.125)), -3.0, 0.001); \
     TEST_FLT_ACCURACY(log2(F(9.7656e-04)), -10, 0.001); \
     TEST_FLT_ACCURACY(log2(F(9.5367e-07)), -20, 0.001); \
     TEST_FLT_ACCURACY(log2(F(3.5527e-15)), -48, 0.001); \
