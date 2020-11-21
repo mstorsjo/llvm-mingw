@@ -73,7 +73,7 @@ static void print_version(void) {
     printf(
 "version: LLVM windres (GNU windres compatible) 0.1\n"
     );
-    exit(1);
+    exit(0);
 }
 
 static void print_help(void) {
