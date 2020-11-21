@@ -111,7 +111,7 @@ static void print_help(void) {
 "  pe-i386\n"
 "  pei-i386\n"
     );
-    exit(1);
+    exit(0);
 }
 
 static void error(const TCHAR *basename, const TCHAR *fmt, ...) {
