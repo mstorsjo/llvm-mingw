@@ -24,7 +24,7 @@ NATIVE="$1"
 PREFIX="$2"
 CROSS_ARCH="$3"
 
-export PATH=$NATIVE/bin:$PATH
+export PATH="$NATIVE/bin:$PATH"
 HOST=$CROSS_ARCH-w64-mingw32
 
 ./build-llvm.sh $PREFIX --host=$HOST
