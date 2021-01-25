@@ -35,13 +35,17 @@ private:
 };
 
 bool crash = false;
+bool breakpoint = false;
 
 void recurse(int val) {
     RecurseClass obj(val);
     if (val == 0) {
         if (crash)
             *(volatile int*)NULL = 0x42;
-        throw std::exception();
+        else if (breakpoint)
+            __debugbreak();
+        else
+            throw std::exception();
     }
     if (val == 5) {
         try {
@@ -58,10 +62,15 @@ void recurse(int val) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc > 1 && !strcmp(argv[1], "-crash")) {
-        /* This mode is useful for testing backtraces in a debugger. */
-        crash = true;
-        fprintf(stderr, "Crashing instead of throwing an exception\n");
+    for (int i = 1; i < argc; i++) {
+        /* These modes are useful for testing backtraces in a debugger. */
+        if (!strcmp(argv[i], "-crash")) {
+            crash = true;
+            fprintf(stderr, "Crashing instead of throwing an exception\n");
+        } else if (!strcmp(argv[i], "-breakpoint")) {
+            breakpoint = true;
+            fprintf(stderr, "Triggering breakpoint instead of throwing an exception\n");
+        }
     }
     recurse(10);
     return 0;
