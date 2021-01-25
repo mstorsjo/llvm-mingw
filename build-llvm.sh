@@ -105,7 +105,7 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_RC_COMPILER=$HOST-windres"
-    CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE=-DLLDB_ENABLE_LIBEDIT=OFF;-DLLDB_ENABLE_PYTHON=OFF;-DLLDB_ENABLE_CURSES=OFF;-DLLDB_ENABLE_LUA=OFF"
+    CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE="
 
     native=$(find_native_tools)
     if [ -n "$native" ]; then
@@ -178,10 +178,6 @@ cmake \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip;llvm-cov;llvm-profdata;llvm-addr2line;llvm-symbolizer" \
     ${HOST+-DLLVM_HOST_TRIPLE=$HOST} \
-    -DLLDB_ENABLE_LIBEDIT=OFF \
-    -DLLDB_ENABLE_PYTHON=OFF \
-    -DLLDB_ENABLE_CURSES=OFF \
-    -DLLDB_ENABLE_LUA=OFF \
     -DLLDB_INCLUDE_TESTS=OFF \
     $CMAKEFLAGS \
     ..
