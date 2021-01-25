@@ -2,8 +2,8 @@ FROM ubuntu:18.04
 
 RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim python ninja-build \
-    ca-certificates curl less && \
+    automake yasm gettext autopoint vim python3 python3-distutils \
+    ninja-build ca-certificates curl less && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
