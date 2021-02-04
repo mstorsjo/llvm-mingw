@@ -68,6 +68,8 @@ fi
 
 export PATH="$PREFIX/bin:$PATH"
 
+unset CC
+
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
