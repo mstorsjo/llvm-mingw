@@ -17,7 +17,7 @@
 set -e
 
 if [ $# -lt 3 ]; then
-    echo $0 native prefix arch
+    echo $0 native prefix arch [--with-python]
     exit 1
 fi
 NATIVE="$1"
@@ -27,7 +27,18 @@ CROSS_ARCH="$3"
 export PATH="$NATIVE/bin:$PATH"
 HOST=$CROSS_ARCH-w64-mingw32
 
-./build-llvm.sh $PREFIX --host=$HOST
+if [ "$4" = "--with-python" ]; then
+    PYTHON_NATIVE_PREFIX="$(cd "$(dirname "$0")" && pwd)/python-native"
+    [ -d "$PYTHON_NATIVE_PREFIX" ] || rm -rf "$PYTHON_NATIVE_PREFIX"
+    ./build-python.sh $PYTHON_NATIVE_PREFIX
+    export PATH="$PYTHON_NATIVE_PREFIX/bin:$PATH"
+    ./build-python.sh $PREFIX/python --host=$HOST
+    mkdir -p $PREFIX/bin
+    cp $PREFIX/python/bin/*.dll $PREFIX/bin
+    LLVM_WITH_PYTHON="--with-python"
+fi
+
+./build-llvm.sh $PREFIX --host=$HOST $LLVM_WITH_PYTHON
 ./build-lldb-mi.sh $PREFIX --host=$HOST
 ./strip-llvm.sh $PREFIX --host=$HOST
 ./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
