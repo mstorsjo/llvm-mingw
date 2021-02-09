@@ -11,15 +11,38 @@
 ARG BASE=mstorsjo/llvm-mingw:dev
 FROM $BASE
 
+RUN apt-get update -qq && \
+    apt-get install -qqy libltdl-dev swig autoconf-archive && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY build-python.sh .
+COPY patches/python/ ./patches/python/
+
+ARG WITH_PYTHON
+
+RUN if [ -n "$WITH_PYTHON" ]; then \
+        ./build-python.sh /opt/python; \
+    fi
+
+ENV PATH=/opt/python/bin:$PATH
+
 ARG CROSS_ARCH=x86_64
 ENV CROSS_TOOLCHAIN_PREFIX=/opt/llvm-mingw-$CROSS_ARCH
 
 ENV HOST=$CROSS_ARCH-w64-mingw32
 
+RUN if [ -n "$WITH_PYTHON" ]; then \
+        ./build-python.sh $CROSS_TOOLCHAIN_PREFIX/python --host=$HOST && \
+        mkdir -p $CROSS_TOOLCHAIN_PREFIX/bin && \
+        cp $CROSS_TOOLCHAIN_PREFIX/python/bin/*.dll $CROSS_TOOLCHAIN_PREFIX/bin; \
+    fi
+
 ARG FULL_LLVM
 
 COPY build-llvm.sh .
-RUN ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
+RUN if [ -n "$WITH_PYTHON" ]; then ARG="--with-python"; fi && \
+    ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST $ARG
 
 COPY build-lldb-mi.sh .
 RUN ./build-lldb-mi.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
