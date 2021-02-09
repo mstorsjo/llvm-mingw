@@ -34,7 +34,7 @@ while [ $# -gt 0 ]; do
 done
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--skip-include-triplet-prefix] [--host=<triple>] dest
+        echo $0 [--skip-include-triplet-prefix] [--host=triple] dest
         exit 1
     fi
 

@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--host=<triple>] dest
+    echo $0 [--host=triple] dest
     exit 1
 fi
 
