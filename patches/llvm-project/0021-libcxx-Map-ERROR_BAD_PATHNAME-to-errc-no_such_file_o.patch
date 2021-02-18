@@ -1,0 +1,46 @@
+From cd87c3f6b36fd6cd991b8e3a3ac85dc208d55ea1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sat, 27 Feb 2021 16:09:49 +0200
+Subject: [PATCH 21/24] [libcxx] Map ERROR_BAD_PATHNAME to
+ errc::no_such_file_or_directory on windows
+
+Opening a path like \\server (without a trailing share name and
+path) produces this error, while opening e.g. \\server\share
+(for a nonexistent server/share) produces ERROR_BAD_NETPATH (which
+already is mapped).
+
+This happens in some testcases (in fs.op.proximate); as proximate()
+calls weakly_canonical() on the inputs, weakly_canonical() checks
+whether the path exists or not. When the error code wasn't recognized
+(it mapped to errc::invalid_argument), the stat operation wasn't
+conclusive and weakly_canonical() errored out. With the proper error
+code mapping, this isn't considered an error, just a nonexistent
+path, and weakly_canonical() can proceed.
+
+This roughly matches what MS STL does - it doesn't have
+ERROR_BAD_PATHNAME in its error code mapping table, but it
+checks for this error code specifically in the return of their
+correspondence of the stat function.
+
+Differential Revision: https://reviews.llvm.org/D97619
+
+(cherry picked from commit 29012ce986fcb24175f19317b4e2d119cd8cdbb2)
+---
+ libcxx/src/filesystem/operations.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index 7c77660538b5..360643d4c241 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -411,6 +411,7 @@ errc __win_err_to_errc(int err) {
+       {ERROR_ACCESS_DENIED, errc::permission_denied},
+       {ERROR_ALREADY_EXISTS, errc::file_exists},
+       {ERROR_BAD_NETPATH, errc::no_such_file_or_directory},
++      {ERROR_BAD_PATHNAME, errc::no_such_file_or_directory},
+       {ERROR_BAD_UNIT, errc::no_such_device},
+       {ERROR_BROKEN_PIPE, errc::broken_pipe},
+       {ERROR_BUFFER_OVERFLOW, errc::filename_too_long},
+-- 
+2.25.1
+

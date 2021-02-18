@@ -1,0 +1,78 @@
+From 0bdb2f73e8ba72de291d1ca95363835ab538bdab Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Wed, 4 Nov 2020 23:46:12 +0200
+Subject: [PATCH 06/24] [libcxx] Implement the current_path function for
+ windows
+
+Differential Revision: https://reviews.llvm.org/D91169
+
+(cherry picked from commit 0c71c914faa371ba502a2e1835f763104837cb9f)
+---
+ libcxx/src/filesystem/operations.cpp | 25 +++++++++++++++++++++----
+ libcxx/src/filesystem/posix_compat.h |  2 ++
+ 2 files changed, 23 insertions(+), 4 deletions(-)
+
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index fcb5c2def23c..429a58501a49 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -1022,15 +1022,32 @@ void __create_symlink(path const& from, path const& to, error_code* ec) {
+ path __current_path(error_code* ec) {
+   ErrorHandler<path> err("current_path", ec);
+ 
++#if defined(_LIBCPP_WIN32API)
++  // Common extension outside of POSIX getcwd() spec, without needing to
++  // preallocate a buffer. Also supported by a number of other POSIX libcs.
++  int size = 0;
++  path::value_type* ptr = nullptr;
++  typedef decltype(&::free) Deleter;
++  Deleter deleter = &::free;
++#else
+   auto size = ::pathconf(".", _PC_PATH_MAX);
+   _LIBCPP_ASSERT(size >= 0, "pathconf returned a 0 as max size");
+ 
+-  auto buff = unique_ptr<char[]>(new char[size + 1]);
+-  char* ret;
+-  if ((ret = ::getcwd(buff.get(), static_cast<size_t>(size))) == nullptr)
++  auto buff = unique_ptr<path::value_type[]>(new path::value_type[size + 1]);
++  path::value_type* ptr = buff.get();
++
++  // Preallocated buffer, don't free the buffer in the second unique_ptr
++  // below.
++  struct Deleter { void operator()(void*) const {} };
++  Deleter deleter;
++#endif
++
++  unique_ptr<path::value_type, Deleter> hold(detail::getcwd(ptr, size),
++                                             deleter);
++  if (hold.get() == nullptr)
+     return err.report(capture_errno(), "call to getcwd failed");
+ 
+-  return {buff.get()};
++  return {hold.get()};
+ }
+ 
+ void __current_path(const path& p, error_code* ec) {
+diff --git a/libcxx/src/filesystem/posix_compat.h b/libcxx/src/filesystem/posix_compat.h
+index 5f868a090693..13753fdbb760 100644
+--- a/libcxx/src/filesystem/posix_compat.h
++++ b/libcxx/src/filesystem/posix_compat.h
+@@ -311,6 +311,7 @@ int statvfs(const wchar_t *p, StatVFS *buf) {
+   return 0;
+ }
+ 
++wchar_t *getcwd(wchar_t *buff, size_t size) { return _wgetcwd(buff, size); }
+ #else
+ int symlink_file(const char *oldname, const char *newname) {
+   return ::symlink(oldname, newname);
+@@ -322,6 +323,7 @@ using ::chdir;
+ using ::close;
+ using ::fstat;
+ using ::ftruncate;
++using ::getcwd;
+ using ::link;
+ using ::lstat;
+ using ::mkdir;
+-- 
+2.25.1
+

@@ -1,0 +1,337 @@
+From 7a94808f488301270f4a55ff7a17a8ebff3d388c Mon Sep 17 00:00:00 2001
+From: Arthur O'Dwyer <arthur.j.odwyer@gmail.com>
+Date: Fri, 5 Mar 2021 20:13:35 -0500
+Subject: [PATCH 24/24] [libc++] Improve src/filesystem's formatting of paths.
+
+This is my attempt to merge D98077 (bugfix the format strings for
+Windows paths, which use wchar_t not char)
+and D96986 (replace C++ variadic templates with C-style varargs so that
+`__attribute__((format(printf)))` can be applied, for better safety)
+and D98065 (remove an unused function overload).
+
+The one intentional functional change here is in `__create_what`.
+It now prints path1 and path2 in square-brackets _and_ double-quotes,
+rather than just square-brackets. Prior to this patch, it would
+print either path double-quoted if-and-only-if it was the empty
+string. Now the double-quotes are always present. I doubt anybody's
+code is relying on the current format, right?
+
+Differential Revision: https://reviews.llvm.org/D98097
+---
+ libcxx/include/__config                      |   7 +
+ libcxx/src/filesystem/directory_iterator.cpp |   7 +-
+ libcxx/src/filesystem/filesystem_common.h    | 146 ++++++++++---------
+ libcxx/src/filesystem/operations.cpp         |  25 ++--
+ libcxx/test/support/filesystem_test_helper.h |   4 +-
+ 5 files changed, 101 insertions(+), 88 deletions(-)
+
+diff --git a/libcxx/include/__config b/libcxx/include/__config
+index a3838c89e8e1..89838ca76c8c 100644
+--- a/libcxx/include/__config
++++ b/libcxx/include/__config
+@@ -1445,6 +1445,13 @@ extern "C" _LIBCPP_FUNC_VIS void __sanitizer_annotate_contiguous_container(
+ # define _LIBCPP_INIT_PRIORITY_MAX
+ #endif
+ 
++#if defined(__GNUC__) || defined(__clang__)
++#define _LIBCPP_FORMAT_PRINTF(a, b)                                            \
++  __attribute__((__format__(__printf__, a, b)))
++#else
++#define _LIBCPP_FORMAT_PRINTF(a, b)
++#endif
++
+ #endif // __cplusplus
+ 
+ #endif // _LIBCPP_CONFIG
+diff --git a/libcxx/src/filesystem/directory_iterator.cpp b/libcxx/src/filesystem/directory_iterator.cpp
+index bb3653076bfc..7b83ba9ff123 100644
+--- a/libcxx/src/filesystem/directory_iterator.cpp
++++ b/libcxx/src/filesystem/directory_iterator.cpp
+@@ -273,7 +273,7 @@ directory_iterator& directory_iterator::__increment(error_code* ec) {
+     path root = move(__imp_->__root_);
+     __imp_.reset();
+     if (m_ec)
+-      err.report(m_ec, "at root \"%s\"", root);
++      err.report(m_ec, "at root " PATH_CSTR_FMT, root.c_str());
+   }
+   return *this;
+ }
+@@ -360,7 +360,7 @@ void recursive_directory_iterator::__advance(error_code* ec) {
+   if (m_ec) {
+     path root = move(stack.top().__root_);
+     __imp_.reset();
+-    err.report(m_ec, "at root \"%s\"", root);
++    err.report(m_ec, "at root " PATH_CSTR_FMT, root.c_str());
+   } else {
+     __imp_.reset();
+   }
+@@ -405,7 +405,8 @@ bool recursive_directory_iterator::__try_recursion(error_code* ec) {
+     } else {
+       path at_ent = move(curr_it.__entry_.__p_);
+       __imp_.reset();
+-      err.report(m_ec, "attempting recursion into \"%s\"", at_ent);
++      err.report(m_ec, "attempting recursion into " PATH_CSTR_FMT,
++                 at_ent.c_str());
+     }
+   }
+   return false;
+diff --git a/libcxx/src/filesystem/filesystem_common.h b/libcxx/src/filesystem/filesystem_common.h
+index a4505171c3eb..df50a7de1059 100644
+--- a/libcxx/src/filesystem/filesystem_common.h
++++ b/libcxx/src/filesystem/filesystem_common.h
+@@ -42,8 +42,10 @@
+ 
+ #if defined(_LIBCPP_WIN32API)
+ #define PS(x) (L##x)
++#define PATH_CSTR_FMT "\"%ls\""
+ #else
+ #define PS(x) (x)
++#define PATH_CSTR_FMT "\"%s\""
+ #endif
+ 
+ _LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+@@ -57,68 +59,47 @@ errc __win_err_to_errc(int err);
+ 
+ namespace {
+ 
+-static string format_string_imp(const char* msg, ...) {
+-  // we might need a second shot at this, so pre-emptivly make a copy
+-  struct GuardVAList {
+-    va_list& target;
+-    bool active = true;
+-    GuardVAList(va_list& tgt) : target(tgt), active(true) {}
+-    void clear() {
+-      if (active)
+-        va_end(target);
+-      active = false;
+-    }
+-    ~GuardVAList() {
+-      if (active)
+-        va_end(target);
+-    }
+-  };
+-  va_list args;
+-  va_start(args, msg);
+-  GuardVAList args_guard(args);
+-
+-  va_list args_cp;
+-  va_copy(args_cp, args);
+-  GuardVAList args_copy_guard(args_cp);
+-
+-  std::string result;
+-
+-  array<char, 256> local_buff;
+-  size_t size_with_null = local_buff.size();
+-  auto ret = ::vsnprintf(local_buff.data(), size_with_null, msg, args_cp);
+-
+-  args_copy_guard.clear();
+-
+-  // handle empty expansion
+-  if (ret == 0)
+-    return result;
+-  if (static_cast<size_t>(ret) < size_with_null) {
+-    result.assign(local_buff.data(), static_cast<size_t>(ret));
+-    return result;
++static _LIBCPP_FORMAT_PRINTF(1, 0) string
++format_string_impl(const char* msg, va_list ap) {
++  array<char, 256> buf;
++
++  va_list apcopy;
++  va_copy(apcopy, ap);
++  int ret = ::vsnprintf(buf.data(), buf.size(), msg, apcopy);
++  va_end(apcopy);
++
++  string result;
++  if (static_cast<size_t>(ret) < buf.size()) {
++    result.assign(buf.data(), static_cast<size_t>(ret));
++  } else {
++    // we did not provide a long enough buffer on our first attempt. The
++    // return value is the number of bytes (excluding the null byte) that are
++    // needed for formatting.
++    size_t size_with_null = static_cast<size_t>(ret) + 1;
++    result.__resize_default_init(size_with_null - 1);
++    ret = ::vsnprintf(&result[0], size_with_null, msg, ap);
++    _LIBCPP_ASSERT(static_cast<size_t>(ret) == (size_with_null - 1), "TODO");
+   }
+-
+-  // we did not provide a long enough buffer on our first attempt. The
+-  // return value is the number of bytes (excluding the null byte) that are
+-  // needed for formatting.
+-  size_with_null = static_cast<size_t>(ret) + 1;
+-  result.__resize_default_init(size_with_null - 1);
+-  ret = ::vsnprintf(&result[0], size_with_null, msg, args);
+-  _LIBCPP_ASSERT(static_cast<size_t>(ret) == (size_with_null - 1), "TODO");
+-
+   return result;
+ }
+ 
+-const path::value_type* unwrap(path::string_type const& s) { return s.c_str(); }
+-const path::value_type* unwrap(path const& p) { return p.native().c_str(); }
+-template <class Arg>
+-Arg const& unwrap(Arg const& a) {
+-  static_assert(!is_class<Arg>::value, "cannot pass class here");
+-  return a;
+-}
+-
+-template <class... Args>
+-string format_string(const char* fmt, Args const&... args) {
+-  return format_string_imp(fmt, unwrap(args)...);
++static _LIBCPP_FORMAT_PRINTF(1, 2) string
++format_string(const char* msg, ...) {
++  string ret;
++  va_list ap;
++  va_start(ap, msg);
++#ifndef _LIBCPP_NO_EXCEPTIONS
++  try {
++#endif  // _LIBCPP_NO_EXCEPTIONS
++    ret = format_string_impl(msg, ap);
++#ifndef _LIBCPP_NO_EXCEPTIONS
++  } catch (...) {
++    va_end(ap);
++    throw;
++  }
++#endif  // _LIBCPP_NO_EXCEPTIONS
++  va_end(ap);
++  return ret;
+ }
+ 
+ error_code capture_errno() {
+@@ -190,14 +171,14 @@ struct ErrorHandler {
+     _LIBCPP_UNREACHABLE();
+   }
+ 
+-  template <class... Args>
+-  T report(const error_code& ec, const char* msg, Args const&... args) const {
++  _LIBCPP_FORMAT_PRINTF(3, 0)
++  void report_impl(const error_code& ec, const char* msg, va_list ap) const {
+     if (ec_) {
+       *ec_ = ec;
+-      return error_value<T>();
++      return;
+     }
+     string what =
+-        string("in ") + func_name_ + ": " + format_string(msg, args...);
++        string("in ") + func_name_ + ": " + format_string_impl(msg, ap);
+     switch (bool(p1_) + bool(p2_)) {
+     case 0:
+       __throw_filesystem_error(what, ec);
+@@ -209,11 +190,44 @@ struct ErrorHandler {
+     _LIBCPP_UNREACHABLE();
+   }
+ 
+-  T report(errc const& err) const { return report(make_error_code(err)); }
++  _LIBCPP_FORMAT_PRINTF(3, 4)
++  T report(const error_code& ec, const char* msg, ...) const {
++    va_list ap;
++    va_start(ap, msg);
++#ifndef _LIBCPP_NO_EXCEPTIONS
++    try {
++#endif  // _LIBCPP_NO_EXCEPTIONS
++      report_impl(ec, msg, ap);
++#ifndef _LIBCPP_NO_EXCEPTIONS
++    } catch (...) {
++      va_end(ap);
++      throw;
++    }
++#endif  // _LIBCPP_NO_EXCEPTIONS
++    va_end(ap);
++    return error_value<T>();
++  }
++
++  T report(errc const& err) const {
++    return report(make_error_code(err));
++  }
+ 
+-  template <class... Args>
+-  T report(errc const& err, const char* msg, Args const&... args) const {
+-    return report(make_error_code(err), msg, args...);
++  _LIBCPP_FORMAT_PRINTF(3, 4)
++  T report(errc const& err, const char* msg, ...) const {
++    va_list ap;
++    va_start(ap, msg);
++#ifndef _LIBCPP_NO_EXCEPTIONS
++    try {
++#endif  // _LIBCPP_NO_EXCEPTIONS
++      report_impl(make_error_code(err), msg, ap);
++#ifndef _LIBCPP_NO_EXCEPTIONS
++    } catch (...) {
++      va_end(ap);
++      throw;
++    }
++#endif  // _LIBCPP_NO_EXCEPTIONS
++    va_end(ap);
++    return error_value<T>();
+   }
+ 
+ private:
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index 360643d4c241..0cc4bad34c72 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -666,27 +666,20 @@ _FilesystemClock::time_point _FilesystemClock::now() noexcept {
+ 
+ filesystem_error::~filesystem_error() {}
+ 
+-#if defined(_LIBCPP_WIN32API)
+-#define PS_FMT "%ls"
+-#else
+-#define PS_FMT "%s"
+-#endif
+-
+ void filesystem_error::__create_what(int __num_paths) {
+   const char* derived_what = system_error::what();
+   __storage_->__what_ = [&]() -> string {
+-    const path::value_type* p1 = path1().native().empty() ? PS("\"\"") : path1().c_str();
+-    const path::value_type* p2 = path2().native().empty() ? PS("\"\"") : path2().c_str();
+     switch (__num_paths) {
+-    default:
++    case 0:
+       return detail::format_string("filesystem error: %s", derived_what);
+     case 1:
+-      return detail::format_string("filesystem error: %s [" PS_FMT "]", derived_what,
+-                                   p1);
++      return detail::format_string("filesystem error: %s [" PATH_CSTR_FMT "]",
++                                   derived_what, path1().c_str());
+     case 2:
+-      return detail::format_string("filesystem error: %s [" PS_FMT "] [" PS_FMT "]",
+-                                   derived_what, p1, p2);
++      return detail::format_string("filesystem error: %s [" PATH_CSTR_FMT "] [" PATH_CSTR_FMT "]",
++                                   derived_what, path1().c_str(), path2().c_str());
+     }
++    _LIBCPP_UNREACHABLE();
+   }();
+ }
+ 
+@@ -1456,11 +1449,11 @@ path __temp_directory_path(error_code* ec) {
+   error_code m_ec;
+   file_status st = detail::posix_stat(p, &m_ec);
+   if (!status_known(st))
+-    return err.report(m_ec, "cannot access path \"" PS_FMT "\"", p);
++    return err.report(m_ec, "cannot access path " PATH_CSTR_FMT, p.c_str());
+ 
+   if (!exists(st) || !is_directory(st))
+-    return err.report(errc::not_a_directory, "path \"" PS_FMT "\" is not a directory",
+-                      p);
++    return err.report(errc::not_a_directory,
++                      "path " PATH_CSTR_FMT " is not a directory", p.c_str());
+ 
+   return p;
+ }
+diff --git a/libcxx/test/support/filesystem_test_helper.h b/libcxx/test/support/filesystem_test_helper.h
+index 92c017f610fe..9d4062a987eb 100644
+--- a/libcxx/test/support/filesystem_test_helper.h
++++ b/libcxx/test/support/filesystem_test_helper.h
+@@ -653,9 +653,7 @@ struct ExceptionChecker {
+       additional_msg = opt_message + ": ";
+     }
+     auto transform_path = [](const fs::path& p) {
+-      if (p.native().empty())
+-        return std::string("\"\"");
+-      return p.string();
++      return "\"" + p.string() + "\"";
+     };
+     std::string format = [&]() -> std::string {
+       switch (num_paths) {
+-- 
+2.25.1
+

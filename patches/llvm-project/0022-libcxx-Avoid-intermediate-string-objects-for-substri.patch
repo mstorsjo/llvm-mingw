@@ -1,0 +1,63 @@
+From 497842a9ebb0ca1a6f871a07c0f4b4f1c700a798 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 11 Mar 2021 13:06:08 +0200
+Subject: [PATCH 22/24] [libcxx] Avoid intermediate string objects for
+ substrings in windows operator/=
+
+Check that appends with a path object doesn't do allocations, even
+on windows.
+
+Suggested by Marek in D98398. The patch might apply without D98398
+(depending on how much of the diff context has to match), but doesn't
+make much sense until after that patch has landed.
+
+Differential Revision: https://reviews.llvm.org/D98412
+
+(cherry picked from commit 49173ca4db21e4d1576c2440b79ebff48c6c4156)
+---
+ libcxx/include/filesystem                                | 4 ++--
+ .../class.path/path.member/path.append.pass.cpp          | 9 +++++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/libcxx/include/filesystem b/libcxx/include/filesystem
+index 19efca2d8fc2..2fc110715559 100644
+--- a/libcxx/include/filesystem
++++ b/libcxx/include/filesystem
+@@ -1020,12 +1020,12 @@ public:
+     if (__p.has_root_directory()) {
+       path __root_name_str = root_name();
+       __pn_ = __root_name_str.native();
+-      __pn_ += __p.__pn_.substr(__p_root_name_size);
++      __pn_ += __string_view(__p.__pn_).substr(__p_root_name_size);
+       return *this;
+     }
+     if (has_filename() || (!has_root_directory() && is_absolute()))
+       __pn_ += preferred_separator;
+-    __pn_ += __p.__pn_.substr(__p_root_name_size);
++    __pn_ += __string_view(__p.__pn_).substr(__p_root_name_size);
+     return *this;
+   }
+   template <class _Source>
+diff --git a/libcxx/test/std/input.output/filesystems/class.path/path.member/path.append.pass.cpp b/libcxx/test/std/input.output/filesystems/class.path/path.member/path.append.pass.cpp
+index ad9d06eb9849..834d5e999abb 100644
+--- a/libcxx/test/std/input.output/filesystems/class.path/path.member/path.append.pass.cpp
++++ b/libcxx/test/std/input.output/filesystems/class.path/path.member/path.append.pass.cpp
+@@ -189,6 +189,15 @@ void doAppendSourceAllocTest(AppendOperatorTestcase const& TC)
+     }
+     assert(PathEq(LHS, E));
+   }
++  {
++    path LHS(L); PathReserve(LHS, ReserveSize);
++    path RHS(R);
++    {
++      DisableAllocationGuard g;
++      LHS /= RHS;
++    }
++    assert(PathEq(LHS, E));
++  }
+   // input iterator - For non-native char types, appends needs to copy the
+   // iterator range into a contiguous block of memory before it can perform the
+   // code_cvt conversions.
+-- 
+2.25.1
+

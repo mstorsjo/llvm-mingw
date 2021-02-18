@@ -1,0 +1,53 @@
+From 6c968da9f1e9281055d31f66c292f81de204924d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sat, 27 Feb 2021 19:12:25 +0200
+Subject: [PATCH 20/24] [libcxx] Avoid infinite recursion in
+ create_directories, if the root directory doesn't exist
+
+Differential Revision: https://reviews.llvm.org/D97618
+
+(cherry picked from commit 99c7b532946508efcf6cd978d86ee24b2a66d096)
+---
+ libcxx/src/filesystem/operations.cpp               |  2 ++
+ .../create_directories.pass.cpp                    | 14 ++++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index bfc6c44d4ce4..7c77660538b5 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -1018,6 +1018,8 @@ bool __create_directories(const path& p, error_code* ec) {
+     if (not status_known(parent_st))
+       return err.report(m_ec);
+     if (not exists(parent_st)) {
++      if (parent == p)
++        return err.report(errc::invalid_argument);
+       __create_directories(parent, ec);
+       if (ec && *ec) {
+         return false;
+diff --git a/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp b/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp
+index 9ce450a0e48d..54820cad0f55 100644
+--- a/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp
++++ b/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp
+@@ -138,4 +138,18 @@ TEST_CASE(dest_final_part_is_file)
+     TEST_CHECK(!exists(dir));
+ }
+ 
++#ifdef _WIN32
++TEST_CASE(nonexistent_root)
++{
++    std::error_code ec = GetTestEC();
++    // If Q:\ doesn't exist, create_directories would try to recurse upwards
++    // to parent_path() until it finds a directory that does exist. As the
++    // whole path is the root name, parent_path() returns itself, and it
++    // would recurse indefinitely, unless the recursion is broken.
++    if (!exists("Q:\\"))
++       TEST_CHECK(fs::create_directories("Q:\\", ec) == false);
++    TEST_CHECK(fs::create_directories("\\\\nonexistentserver", ec) == false);
++}
++#endif
++
+ TEST_SUITE_END()
+-- 
+2.25.1
+

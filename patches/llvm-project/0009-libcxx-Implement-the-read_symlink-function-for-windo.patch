@@ -1,0 +1,171 @@
+From f28542330202fae54a6fee1bf02a311feef3f60a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Wed, 4 Nov 2020 23:51:18 +0200
+Subject: [PATCH 09/24] [libcxx] Implement the read_symlink function for
+ windows
+
+Differential Revision: https://reviews.llvm.org/D91172
+
+(cherry picked from commit cdc60a3b9aa523b49329a7a5e4c1774d3b9e3db9)
+---
+ libcxx/src/filesystem/operations.cpp | 16 +++---
+ libcxx/src/filesystem/posix_compat.h | 79 ++++++++++++++++++++++++++++
+ 2 files changed, 89 insertions(+), 6 deletions(-)
+
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index 47cd5e23c092..a5463e48f4d7 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -1227,21 +1227,25 @@ void __permissions(const path& p, perms prms, perm_options opts,
+ path __read_symlink(const path& p, error_code* ec) {
+   ErrorHandler<path> err("read_symlink", ec, &p);
+ 
+-#ifdef PATH_MAX
++#if defined(PATH_MAX) || defined(MAX_SYMLINK_SIZE)
+   struct NullDeleter { void operator()(void*) const {} };
++#ifdef MAX_SYMLINK_SIZE
++  const size_t size = MAX_SYMLINK_SIZE + 1;
++#else
+   const size_t size = PATH_MAX + 1;
+-  char stack_buff[size];
+-  auto buff = std::unique_ptr<char[], NullDeleter>(stack_buff);
++#endif
++  path::value_type stack_buff[size];
++  auto buff = std::unique_ptr<path::value_type[], NullDeleter>(stack_buff);
+ #else
+   StatT sb;
+   if (detail::lstat(p.c_str(), &sb) == -1) {
+     return err.report(capture_errno());
+   }
+   const size_t size = sb.st_size + 1;
+-  auto buff = unique_ptr<char[]>(new char[size]);
++  auto buff = unique_ptr<path::value_type[]>(new path::value_type[size]);
+ #endif
+-  ::ssize_t ret;
+-  if ((ret = ::readlink(p.c_str(), buff.get(), size)) == -1)
++  detail::SSizeT ret;
++  if ((ret = detail::readlink(p.c_str(), buff.get(), size)) == -1)
+     return err.report(capture_errno());
+   _LIBCPP_ASSERT(ret > 0, "TODO");
+   if (static_cast<size_t>(ret) >= size)
+diff --git a/libcxx/src/filesystem/posix_compat.h b/libcxx/src/filesystem/posix_compat.h
+index af4a3691db33..8062bd65ce00 100644
+--- a/libcxx/src/filesystem/posix_compat.h
++++ b/libcxx/src/filesystem/posix_compat.h
+@@ -32,6 +32,7 @@
+ # define NOMINMAX
+ # include <windows.h>
+ # include <io.h>
++# include <winioctl.h>
+ #else
+ # include <unistd.h>
+ # include <sys/stat.h>
+@@ -39,6 +40,36 @@
+ #endif
+ #include <time.h>
+ 
++#if defined(_LIBCPP_WIN32API)
++// This struct isn't defined in the normal Windows SDK, but only in the
++// Windows Driver Kit.
++struct LIBCPP_REPARSE_DATA_BUFFER {
++  unsigned long  ReparseTag;
++  unsigned short ReparseDataLength;
++  unsigned short Reserved;
++  union {
++    struct {
++      unsigned short SubstituteNameOffset;
++      unsigned short SubstituteNameLength;
++      unsigned short PrintNameOffset;
++      unsigned short PrintNameLength;
++      unsigned long  Flags;
++      wchar_t        PathBuffer[1];
++    } SymbolicLinkReparseBuffer;
++    struct {
++      unsigned short SubstituteNameOffset;
++      unsigned short SubstituteNameLength;
++      unsigned short PrintNameOffset;
++      unsigned short PrintNameLength;
++      wchar_t        PathBuffer[1];
++    } MountPointReparseBuffer;
++    struct {
++      unsigned char DataBuffer[1];
++    } GenericReparseBuffer;
++  };
++};
++#endif
++
+ _LIBCPP_BEGIN_NAMESPACE_FILESYSTEM
+ 
+ namespace detail {
+@@ -400,6 +431,52 @@ int fchmod(int fd, int perms) {
+   return fchmod_handle(h, perms);
+ }
+ 
++#define MAX_SYMLINK_SIZE MAXIMUM_REPARSE_DATA_BUFFER_SIZE
++using SSizeT = ::int64_t;
++
++SSizeT readlink(const wchar_t *path, wchar_t *ret_buf, size_t bufsize) {
++  uint8_t buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
++  detail::WinHandle h(path, FILE_READ_ATTRIBUTES, FILE_FLAG_OPEN_REPARSE_POINT);
++  if (!h)
++    return set_errno();
++  DWORD out;
++  if (!DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, nullptr, 0, buf, sizeof(buf),
++                       &out, 0))
++    return set_errno();
++  const auto *reparse = reinterpret_cast<LIBCPP_REPARSE_DATA_BUFFER *>(buf);
++  size_t path_buf_offset = offsetof(LIBCPP_REPARSE_DATA_BUFFER,
++                                    SymbolicLinkReparseBuffer.PathBuffer[0]);
++  if (out < path_buf_offset) {
++    errno = EINVAL;
++    return -1;
++  }
++  if (reparse->ReparseTag != IO_REPARSE_TAG_SYMLINK) {
++    errno = EINVAL;
++    return -1;
++  }
++  const auto &symlink = reparse->SymbolicLinkReparseBuffer;
++  unsigned short name_offset, name_length;
++  if (symlink.PrintNameLength == 0) {
++    name_offset = symlink.SubstituteNameOffset;
++    name_length = symlink.SubstituteNameLength;
++  } else {
++    name_offset = symlink.PrintNameOffset;
++    name_length = symlink.PrintNameLength;
++  }
++  // name_offset/length are expressed in bytes, not in wchar_t
++  if (path_buf_offset + name_offset + name_length > out) {
++    errno = EINVAL;
++    return -1;
++  }
++  if (name_length / sizeof(wchar_t) > bufsize) {
++    errno = ENOMEM;
++    return -1;
++  }
++  memcpy(ret_buf, &symlink.PathBuffer[name_offset / sizeof(wchar_t)],
++         name_length);
++  return name_length / sizeof(wchar_t);
++}
++
+ #else
+ int symlink_file(const char *oldname, const char *newname) {
+   return ::symlink(oldname, newname);
+@@ -418,6 +495,7 @@ using ::link;
+ using ::lstat;
+ using ::mkdir;
+ using ::open;
++using ::readlink;
+ using ::realpath;
+ using ::remove;
+ using ::rename;
+@@ -429,6 +507,7 @@ using ::truncate;
+ 
+ using StatVFS = struct statvfs;
+ using ModeT = ::mode_t;
++using SSizeT = ::ssize_t;
+ 
+ #endif
+ 
+-- 
+2.25.1
+

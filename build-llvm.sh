@@ -77,6 +77,11 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     cd llvm-project
     [ -z "$SYNC" ] || git fetch
     git checkout $LLVM_VERSION
+    if [ "$LLVM_VERSION" = "llvmorg-12.0.0" ]; then
+        # The bundled patches for std::filesystem apply on the 12.0.0 release,
+        # but don't try to apply them if a different version was requested.
+        git am -3 --keep-non-patch ../patches/llvm-project/*.patch
+    fi
     cd ..
 fi
 

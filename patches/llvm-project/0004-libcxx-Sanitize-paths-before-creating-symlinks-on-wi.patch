@@ -1,0 +1,65 @@
+From 21ffff20ef2e05f8c99bd120d7b1212d75f14dcd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 9 Nov 2020 15:20:18 +0200
+Subject: [PATCH 04/24] [libcxx] Sanitize paths before creating symlinks on
+ windows
+
+The MS STL does even more cleanup (corresponding to lexically_normal
+I think), but this seems to be the very minimum needed for making the
+symlinks work when the target path contains non-native paths.
+
+Differential Revision: https://reviews.llvm.org/D91145
+
+(cherry picked from commit f65ba25cf37a57dc87db7af389c9dc637ca7dd8c)
+---
+ libcxx/src/filesystem/posix_compat.h          |  3 +++
+ .../create_symlink.pass.cpp                   | 20 +++++++++++++++++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/libcxx/src/filesystem/posix_compat.h b/libcxx/src/filesystem/posix_compat.h
+index 1e70e12cb4d7..0dbae1235a00 100644
+--- a/libcxx/src/filesystem/posix_compat.h
++++ b/libcxx/src/filesystem/posix_compat.h
+@@ -202,6 +202,9 @@ int mkdir(const wchar_t *path, int permissions) {
+ 
+ int symlink_file_dir(const wchar_t *oldname, const wchar_t *newname,
+                      bool is_dir) {
++  path dest(oldname);
++  dest.make_preferred();
++  oldname = dest.c_str();
+   DWORD flags = is_dir ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0;
+   if (CreateSymbolicLinkW(newname, oldname,
+                           flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))
+diff --git a/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_symlink/create_symlink.pass.cpp b/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_symlink/create_symlink.pass.cpp
+index 47ec916a169b..3b54cff309b7 100644
+--- a/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_symlink/create_symlink.pass.cpp
++++ b/libcxx/test/std/input.output/filesystems/fs.op.funcs/fs.op.create_symlink/create_symlink.pass.cpp
+@@ -71,5 +71,25 @@ TEST_CASE(create_symlink_basic)
+     }
+ }
+ 
++TEST_CASE(create_symlink_dest_cleanup)
++{
++    scoped_test_env env;
++    const path dir = env.create_dir("dir");
++    const path file = env.create_file("file", 42);
++    const path sym = dir / "link";
++    // The target path has to be normalized to backslashes before creating
++    // the link on windows, otherwise the link isn't dereferencable.
++    const path sym_target = "../file";
++    path sym_target_normalized = sym_target;
++    sym_target_normalized.make_preferred();
++    std::error_code ec;
++    fs::create_symlink(sym_target, sym, ec);
++    TEST_REQUIRE(!ec);
++    TEST_CHECK(equivalent(sym, file, ec));
++    const path ret = fs::read_symlink(sym, ec);
++    TEST_CHECK(!ec);
++    TEST_CHECK(ret.native() == sym_target_normalized.native());
++}
++
+ 
+ TEST_SUITE_END()
+-- 
+2.25.1
+

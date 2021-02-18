@@ -1,0 +1,104 @@
+From b6ef948856bfde6326ebc2d1fddc24890b4182f9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Wed, 4 Nov 2020 23:51:12 +0200
+Subject: [PATCH 07/24] [libcxx] Implement the canonical function for windows
+
+Differential Revision: https://reviews.llvm.org/D91170
+
+(cherry picked from commit 83d705adb2e043e576c9cbaf9709795bc69fe5cf)
+---
+ libcxx/src/filesystem/operations.cpp | 14 +++++-----
+ libcxx/src/filesystem/posix_compat.h | 38 ++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 7 deletions(-)
+
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index 429a58501a49..fc18de9e5d80 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -636,20 +636,20 @@ path __canonical(path const& orig_p, error_code* ec) {
+   ErrorHandler<path> err("canonical", ec, &orig_p, &cwd);
+ 
+   path p = __do_absolute(orig_p, &cwd, ec);
+-#if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112
+-  std::unique_ptr<char, decltype(&::free)>
+-    hold(::realpath(p.c_str(), nullptr), &::free);
++#if (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112) || defined(_LIBCPP_WIN32API)
++  std::unique_ptr<path::value_type, decltype(&::free)>
++    hold(detail::realpath(p.c_str(), nullptr), &::free);
+   if (hold.get() == nullptr)
+     return err.report(capture_errno());
+   return {hold.get()};
+ #else
+   #if defined(__MVS__) && !defined(PATH_MAX)
+-    char buff[ _XOPEN_PATH_MAX + 1 ];
++    path::value_type buff[ _XOPEN_PATH_MAX + 1 ];
+   #else
+-    char buff[PATH_MAX + 1];
++    path::value_type buff[PATH_MAX + 1];
+   #endif
+-  char* ret;
+-  if ((ret = ::realpath(p.c_str(), buff)) == nullptr)
++  path::value_type* ret;
++  if ((ret = detail::realpath(p.c_str(), buff)) == nullptr)
+     return err.report(capture_errno());
+   return {ret};
+ #endif
+diff --git a/libcxx/src/filesystem/posix_compat.h b/libcxx/src/filesystem/posix_compat.h
+index 13753fdbb760..1adce3a779c2 100644
+--- a/libcxx/src/filesystem/posix_compat.h
++++ b/libcxx/src/filesystem/posix_compat.h
+@@ -312,6 +312,43 @@ int statvfs(const wchar_t *p, StatVFS *buf) {
+ }
+ 
+ wchar_t *getcwd(wchar_t *buff, size_t size) { return _wgetcwd(buff, size); }
++
++wchar_t *realpath(const wchar_t *path, wchar_t *resolved_name) {
++  // Only expected to be used with us allocating the buffer.
++  _LIBCPP_ASSERT(resolved_name == nullptr,
++                 "Windows realpath() assumes a null resolved_name");
++
++  WinHandle h(path, FILE_READ_ATTRIBUTES, 0);
++  if (!h) {
++    set_errno();
++    return nullptr;
++  }
++  size_t buff_size = MAX_PATH + 10;
++  std::unique_ptr<wchar_t, decltype(&::free)> buff(
++      static_cast<wchar_t *>(malloc(buff_size * sizeof(wchar_t))), &::free);
++  DWORD retval = GetFinalPathNameByHandleW(
++      h, buff.get(), buff_size, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
++  if (retval > buff_size) {
++    buff_size = retval;
++    buff.reset(static_cast<wchar_t *>(malloc(buff_size * sizeof(wchar_t))));
++    retval = GetFinalPathNameByHandleW(h, buff.get(), buff_size,
++                                       FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
++  }
++  if (!retval) {
++    set_errno();
++    return nullptr;
++  }
++  wchar_t *ptr = buff.get();
++  if (!wcsncmp(ptr, L"\\\\?\\", 4)) {
++    if (ptr[5] == ':') { // \\?\X: -> X:
++      memmove(&ptr[0], &ptr[4], (wcslen(&ptr[4]) + 1) * sizeof(wchar_t));
++    } else if (!wcsncmp(&ptr[4], L"UNC\\", 4)) { // \\?\UNC\server -> \\server
++      wcscpy(&ptr[0], L"\\\\");
++      memmove(&ptr[2], &ptr[8], (wcslen(&ptr[8]) + 1) * sizeof(wchar_t));
++    }
++  }
++  return buff.release();
++}
+ #else
+ int symlink_file(const char *oldname, const char *newname) {
+   return ::symlink(oldname, newname);
+@@ -328,6 +365,7 @@ using ::link;
+ using ::lstat;
+ using ::mkdir;
+ using ::open;
++using ::realpath;
+ using ::remove;
+ using ::rename;
+ using ::stat;
+-- 
+2.25.1
+

@@ -1,0 +1,33 @@
+From c8c08547b2d1e87391213846c7e17f5426a3dd48 Mon Sep 17 00:00:00 2001
+From: Zbigniew Sarbinowski <zibi@ca.ibm.com>
+Date: Thu, 18 Feb 2021 14:49:46 +0000
+Subject: [PATCH 17/24] [SystemZ][ZOS] Guard using declaration for ::fchmodat
+
+The use of fchmodat() is beeing guarded but its using declaration is not. Let's use the same guard in both places to avoid compiler errors on platforms where `fchmodat` does not exist.
+
+Reviewed By: #libc, ldionne
+
+Differential Revision: https://reviews.llvm.org/D96303
+
+(cherry picked from commit 25aa0d12445eed6e278489546d18fcb7a33cfaa6)
+---
+ libcxx/src/filesystem/posix_compat.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/libcxx/src/filesystem/posix_compat.h b/libcxx/src/filesystem/posix_compat.h
+index 8062bd65ce00..f5c8ec39df2b 100644
+--- a/libcxx/src/filesystem/posix_compat.h
++++ b/libcxx/src/filesystem/posix_compat.h
+@@ -487,7 +487,9 @@ int symlink_dir(const char *oldname, const char *newname) {
+ using ::chdir;
+ using ::close;
+ using ::fchmod;
++#if defined(AT_SYMLINK_NOFOLLOW) && defined(AT_FDCWD)
+ using ::fchmodat;
++#endif
+ using ::fstat;
+ using ::ftruncate;
+ using ::getcwd;
+-- 
+2.25.1
+

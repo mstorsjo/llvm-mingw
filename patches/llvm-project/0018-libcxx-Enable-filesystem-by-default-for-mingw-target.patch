@@ -1,0 +1,38 @@
+From ff2e16fe051405232fbd9a09c406767b229d27ec Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 5 Nov 2020 00:13:22 +0200
+Subject: [PATCH 18/24] [libcxx] Enable filesystem by default for mingw targets
+
+This feature can be built successfully for windows now. However,
+the helper functions for __int128_t aren't available in MSVC
+configurations, so don't enable it by default there yet. (See
+https://reviews.llvm.org/D91139 for discussion on how to proceed
+with things in MSVC environments.)
+
+Differential Revision: https://reviews.llvm.org/D97075
+
+(cherry picked from commit 99fc4a65847a7020ae328e42a67e80cc29c1e762)
+---
+ libcxx/CMakeLists.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/libcxx/CMakeLists.txt b/libcxx/CMakeLists.txt
+index 9bf1a02f0908..b8716a34a325 100644
+--- a/libcxx/CMakeLists.txt
++++ b/libcxx/CMakeLists.txt
+@@ -90,7 +90,11 @@ option(LIBCXX_ENABLE_SHARED "Build libc++ as a shared library." ON)
+ option(LIBCXX_ENABLE_STATIC "Build libc++ as a static library." ON)
+ option(LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY "Build libc++experimental.a" ON)
+ set(ENABLE_FILESYSTEM_DEFAULT ON)
+-if (WIN32)
++if (WIN32 AND NOT MINGW)
++  # Filesystem is buildable for windows, but it requires __int128 helper
++  # functions, that currently are provided by libgcc or compiler_rt builtins.
++  # These are available in MinGW environments, but not currently in MSVC
++  # environments.
+   set(ENABLE_FILESYSTEM_DEFAULT OFF)
+ endif()
+ option(LIBCXX_ENABLE_FILESYSTEM "Build filesystem as part of the main libc++ library"
+-- 
+2.25.1
+

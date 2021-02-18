@@ -26,6 +26,7 @@ ARG FULL_LLVM
 
 # Build LLVM
 COPY build-llvm.sh ./
+COPY patches/llvm-project/*.patch ./patches/llvm-project/
 RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 
 # Strip the LLVM install output immediately. (This doesn't reduce the

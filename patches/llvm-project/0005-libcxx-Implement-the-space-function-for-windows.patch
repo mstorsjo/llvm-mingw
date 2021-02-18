@@ -1,0 +1,90 @@
+From 51a0f3a5af65c8e8e1618dc5621705471aba2151 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Wed, 4 Nov 2020 23:32:13 +0200
+Subject: [PATCH 05/24] [libcxx] Implement the space function for windows
+
+Differential Revision: https://reviews.llvm.org/D91168
+
+(cherry picked from commit a3cc99658d52f79faad26beeea06691b3a50bc95)
+---
+ libcxx/src/filesystem/operations.cpp |  4 +--
+ libcxx/src/filesystem/posix_compat.h | 37 ++++++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+), 2 deletions(-)
+
+diff --git a/libcxx/src/filesystem/operations.cpp b/libcxx/src/filesystem/operations.cpp
+index ddb4d7588e54..fcb5c2def23c 100644
+--- a/libcxx/src/filesystem/operations.cpp
++++ b/libcxx/src/filesystem/operations.cpp
+@@ -1301,8 +1301,8 @@ void __resize_file(const path& p, uintmax_t size, error_code* ec) {
+ space_info __space(const path& p, error_code* ec) {
+   ErrorHandler<void> err("space", ec, &p);
+   space_info si;
+-  struct statvfs m_svfs = {};
+-  if (::statvfs(p.c_str(), &m_svfs) == -1) {
++  detail::StatVFS m_svfs = {};
++  if (detail::statvfs(p.c_str(), &m_svfs) == -1) {
+     err.report(capture_errno());
+     si.capacity = si.free = si.available = static_cast<uintmax_t>(-1);
+     return si;
+diff --git a/libcxx/src/filesystem/posix_compat.h b/libcxx/src/filesystem/posix_compat.h
+index 0dbae1235a00..5f868a090693 100644
+--- a/libcxx/src/filesystem/posix_compat.h
++++ b/libcxx/src/filesystem/posix_compat.h
+@@ -277,6 +277,40 @@ template <class... Args> int open(const wchar_t *filename, Args... args) {
+ }
+ int close(int fd) { return _close(fd); }
+ int chdir(const wchar_t *path) { return _wchdir(path); }
++
++struct StatVFS {
++  uint64_t f_frsize;
++  uint64_t f_blocks;
++  uint64_t f_bfree;
++  uint64_t f_bavail;
++};
++
++int statvfs(const wchar_t *p, StatVFS *buf) {
++  path dir = p;
++  while (true) {
++    error_code local_ec;
++    const file_status st = status(dir, local_ec);
++    if (!exists(st) || is_directory(st))
++      break;
++    path parent = dir.parent_path();
++    if (parent == dir) {
++      errno = ENOENT;
++      return -1;
++    }
++    dir = parent;
++  }
++  ULARGE_INTEGER free_bytes_available_to_caller, total_number_of_bytes,
++      total_number_of_free_bytes;
++  if (!GetDiskFreeSpaceExW(dir.c_str(), &free_bytes_available_to_caller,
++                           &total_number_of_bytes, &total_number_of_free_bytes))
++    return set_errno();
++  buf->f_frsize = 1;
++  buf->f_blocks = total_number_of_bytes.QuadPart;
++  buf->f_bfree = total_number_of_free_bytes.QuadPart;
++  buf->f_bavail = free_bytes_available_to_caller.QuadPart;
++  return 0;
++}
++
+ #else
+ int symlink_file(const char *oldname, const char *newname) {
+   return ::symlink(oldname, newname);
+@@ -295,10 +329,13 @@ using ::open;
+ using ::remove;
+ using ::rename;
+ using ::stat;
++using ::statvfs;
+ using ::truncate;
+ 
+ #define O_BINARY 0
+ 
++using StatVFS = struct statvfs;
++
+ #endif
+ 
+ } // namespace
+-- 
+2.25.1
+

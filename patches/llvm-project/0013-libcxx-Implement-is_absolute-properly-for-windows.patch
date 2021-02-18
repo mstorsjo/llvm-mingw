@@ -1,0 +1,48 @@
+From bd50990c64deae4ce6027767659c75a22822e2f5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sun, 1 Nov 2020 23:39:03 +0200
+Subject: [PATCH 13/24] [libcxx] Implement is_absolute properly for windows
+
+Differential Revision: https://reviews.llvm.org/D91177
+
+(cherry picked from commit 8a783e68452f646360d9902d2c2bc0e115d7bfa9)
+---
+ libcxx/include/filesystem | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/libcxx/include/filesystem b/libcxx/include/filesystem
+index 92e37e183def..eecf416e851c 100644
+--- a/libcxx/include/filesystem
++++ b/libcxx/include/filesystem
+@@ -1341,7 +1341,28 @@ public:
+   }
+ 
+   _LIBCPP_INLINE_VISIBILITY bool is_absolute() const {
++#if defined(_LIBCPP_WIN32API)
++    __string_view __root_name_str = __root_name();
++    __string_view __root_dir = __root_directory();
++    if (__root_name_str.size() == 2 && __root_name_str[1] == ':') {
++      // A drive letter with no root directory is relative, e.g. x:example.
++      return !__root_dir.empty();
++    }
++    // If no root name, it's relative, e.g. \example is relative to the current drive
++    if (__root_name_str.empty())
++      return false;
++    if (__root_name_str.size() < 3)
++      return false;
++    // A server root name, like \\server, is always absolute
++    if (__root_name_str[0] != '/' && __root_name_str[0] != '\\')
++      return false;
++    if (__root_name_str[1] != '/' && __root_name_str[1] != '\\')
++      return false;
++    // Seems to be a server root name
++    return true;
++#else
+     return has_root_directory();
++#endif
+   }
+   _LIBCPP_INLINE_VISIBILITY bool is_relative() const { return !is_absolute(); }
+ 
+-- 
+2.25.1
+
