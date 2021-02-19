@@ -91,8 +91,11 @@ RUN cd test && \
         for test in hello-exception; do \
             $arch-w64-mingw32-clang++ $test.cpp -static -o $arch/$test-static.exe || exit 1; \
         done; \
-        for test in tlstest-lib; do \
-            $arch-w64-mingw32-clang++ $test.cpp -shared -o $arch/$test.dll || exit 1; \
+        for test in tlstest-lib throwcatch-lib; do \
+            $arch-w64-mingw32-clang++ $test.cpp -shared -o $arch/$test.dll -Wl,--out-implib,$arch/lib$test.dll.a || exit 1; \
+        done; \
+        for test in throwcatch-main; do \
+            $arch-w64-mingw32-clang++ $test.cpp -o $arch/$test.exe -L$arch -l${test%-main}-lib || exit 1; \
         done; \
     done
 

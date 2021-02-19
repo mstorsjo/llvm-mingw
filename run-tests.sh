@@ -67,7 +67,8 @@ TESTS_CPP="hello-cpp global-terminate"
 TESTS_CPP_LOAD_DLL="tlstest-main"
 TESTS_CPP_EXCEPTIONS="hello-exception exception-locale exception-reduced"
 TESTS_CPP_STATIC="hello-exception"
-TESTS_CPP_DLL="tlstest-lib"
+TESTS_CPP_DLL="tlstest-lib throwcatch-lib"
+TESTS_CPP_LINK_DLL="throwcatch-main"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
 TESTS_UBSAN="ubsan"
@@ -96,6 +97,9 @@ for arch in $ARCHS; do
 
     TEST_DIR="$arch"
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
+    # A leftover libc++.dll from a previous round will cause the linker to find it (and error out) instead of
+    # locating libc++.dll.a in a later include directory.
+    rm -f $TEST_DIR/libc++.dll
     mkdir -p $TEST_DIR
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe
@@ -144,7 +148,10 @@ for arch in $ARCHS; do
         TESTS_EXTRA="$TESTS_EXTRA $test"
     done
     for test in $TESTS_CPP_DLL; do
-        $arch-w64-mingw32-clang++ $test.cpp -shared -o $TEST_DIR/$test.dll
+        $arch-w64-mingw32-clang++ $test.cpp -shared -o $TEST_DIR/$test.dll -Wl,--out-implib,$TEST_DIR/lib$test.dll.a
+    done
+    for test in $TESTS_CPP_LINK_DLL; do
+        $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe -L$TEST_DIR -l${test%-main}-lib
     done
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
@@ -223,7 +230,7 @@ for arch in $ARCHS; do
             DLL="$DLL $i"
         fi
     done
-    RUN_TESTS="$TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_EXTRA $TESTS_SSP"
+    RUN_TESTS="$TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_CPP_LINK_DLL $TESTS_EXTRA $TESTS_SSP"
     cd $TEST_DIR
     if [ -n "$COPY" ]; then
         COPYFILES=""
