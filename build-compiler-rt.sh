@@ -100,7 +100,22 @@ for arch in $ARCHS; do
     $BUILDCMD ${CORES+-j$CORES}
     $BUILDCMD install
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
-    if [ -n "$SANITIZERS" ]; then
+    if [ -z "$SANITIZERS" ]; then
+        # Building builtins only. If libunwind isn't built yet, linking of any
+        # executable will still fail as we're using -unwindlib=libunwind.
+        # Therefore, create a dummy libunwind.a (unless there's a real
+        # libunwind installed already) to let linking succeed.
+        #
+        # This is a workaround to avoid needing to specify -unwindlib=none
+        # for all linking until libunwind has been built. This avoids
+        # needing to build libunwind right away (allowing building plain C
+        # executables already now) and avoids needing to pass -unwindlib=none
+        # when configuring the libunwind build.
+        if [ ! -f $PREFIX/$arch-w64-mingw32/lib/libunwind.a ] && [ ! -f $PREFIX/$arch-w64-mingw32/lib/libunwind.dll.a ]; then
+            # Create an archive, don't add any members.
+            llvm-ar rcs $PREFIX/$arch-w64-mingw32/lib/libunwind.a
+        fi
+    else
         mv "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     cd ..

@@ -84,6 +84,7 @@ esac
 
 FLAGS="$FLAGS -target $TARGET"
 FLAGS="$FLAGS -rtlib=compiler-rt"
+FLAGS="$FLAGS -unwindlib=libunwind"
 FLAGS="$FLAGS -stdlib=libc++"
 FLAGS="$FLAGS -fuse-ld=lld"
 FLAGS="$FLAGS -Qunused-arguments"
