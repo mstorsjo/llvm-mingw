@@ -80,8 +80,6 @@ fi
 cd llvm-project/compiler-rt
 
 for arch in $ARCHS; do
-    buildarchname=$arch
-    libarchname=$arch
     if [ -n "$SANITIZERS" ]; then
         case $arch in
         i686|x86_64)
@@ -92,15 +90,6 @@ for arch in $ARCHS; do
             ;;
         esac
     fi
-    case $arch in
-    armv7)
-        libarchname=arm
-        ;;
-    i686)
-        buildarchname=i386
-        libarchname=i386
-        ;;
-    esac
 
     [ -z "$CLEAN" ] || rm -rf build-$arch$BUILD_SUFFIX
     mkdir -p build-$arch$BUILD_SUFFIX
@@ -108,7 +97,7 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
+        -DCMAKE_INSTALL_PREFIX="$PREFIX/lib/clang/$CLANG_VERSION" \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
         -DCMAKE_SYSTEM_NAME=Windows \
@@ -116,24 +105,16 @@ for arch in $ARCHS; do
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
         -DCMAKE_C_COMPILER_WORKS=1 \
         -DCMAKE_CXX_COMPILER_WORKS=1 \
-        -DCMAKE_C_COMPILER_TARGET=$buildarchname-windows-gnu \
+        -DCMAKE_C_COMPILER_TARGET=$arch-windows-gnu \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
         -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
         -DSANITIZER_CXX_ABI=libc++ \
         $SRC_DIR
     $BUILDCMD ${CORES+-j$CORES}
-    mkdir -p "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows"
+    $BUILDCMD install
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
-    for i in lib/windows/libclang_rt.*.a; do
-        cp $i "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows/$(basename $i | sed s/$buildarchname/$libarchname/)"
-    done
-    for i in lib/windows/libclang_rt.*.dll; do
-        if [ -f $i ]; then
-            cp $i "$PREFIX/$arch-w64-mingw32/bin"
-        fi
-    done
     if [ -n "$SANITIZERS" ]; then
-        $BUILDCMD install-compiler-rt-headers
+        mv "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     cd ..
 done
