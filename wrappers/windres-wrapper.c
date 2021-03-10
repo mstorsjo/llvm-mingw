@@ -31,6 +31,7 @@
 
 #include <sys/wait.h>
 #include <errno.h>
+#include <limits.h>
 
 #define _P_WAIT 0
 static int _spawnvp(int mode, const char *filename, const char * const *argv) {
@@ -67,6 +68,57 @@ static const TCHAR *unescape_cpp(const TCHAR *str) {
         out[outpos++] = str[i++];
     out[outpos++] = '\0';
     return out;
+}
+
+static int split_args(const TCHAR *str, const TCHAR **args, int *num_args, int max_args) {
+    int len = _tcslen(str);
+    TCHAR *out = _tcsdup(str);
+    int i, outpos = 0;
+    int arg = num_args ? *num_args : 0;
+    int inquote = 0;
+    if (!args)
+        max_args = INT_MAX;
+    for (i = 0; i < len; i++) {
+        if (str[i] == '\\') {
+            if (i + 1 < len)
+                out[outpos++] = str[++i];
+            else
+                fprintf(stderr, "Unterminated escape\n");
+            continue;
+        }
+        if (str[i] == '"') {
+            inquote = !inquote;
+            continue;
+        }
+        if (str[i] == ' ' && !inquote) {
+            out[outpos++] = '\0';
+            if (arg < max_args) {
+                if (args)
+                    args[arg] = _tcsdup(out);
+                arg++;
+            } else
+                fprintf(stderr, "Too many options split\n");
+            outpos = 0;
+            continue;
+        }
+        out[outpos++] = str[i];
+    }
+    if (inquote)
+        fprintf(stderr, "Unterminated quote\n");
+    if (outpos > 0) {
+        out[outpos++] = '\0';
+        if (arg < max_args) {
+            if (args)
+                args[arg] = _tcsdup(out);
+            arg++;
+        } else
+            fprintf(stderr, "Too many options split\n");
+    }
+    if (num_args) {
+        *num_args = arg;
+        arg -= *num_args;
+    }
+    return arg;
 }
 
 static void print_version(void) {
@@ -156,6 +208,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     int nb_includes = 0;
     const TCHAR *codepage = _T("1252");
     const TCHAR *language = NULL;
+    const TCHAR *preprocessor = NULL;
     const TCHAR **cpp_options = malloc(argc * sizeof(*cpp_options));
     int nb_cpp_options = 0;
     int verbose = 0;
@@ -207,7 +260,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         } else OPTION("-c", "--codepage", codepage)
         else OPTION("-l", "--language", language)
         else if (!_tcscmp(argv[i], _T("--preprocessor"))) {
-            error(basename, _T("ENOSYS"));
+            SEPARATE_ARG(preprocessor);
         } else if (_tcsstart(argv[i], _T("--preprocessor-arg="))) {
             cpp_options[nb_cpp_options++] = _tcschr(argv[i], '=') + 1;
         } else if (!_tcscmp(argv[i], _T("--preprocessor-arg"))) {
@@ -292,16 +345,22 @@ int _tmain(int argc, TCHAR* argv[]) {
 
 
     int max_arg = 2 * argc + 20;
+    if (preprocessor)
+        max_arg += split_args(preprocessor, NULL, NULL, 0);
     const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
 
     if (!_tcsicmp(input_format, _T("rc"))) {
-        exec_argv[arg++] = concat(dir, CC);
-        exec_argv[arg++] = _T("-E");
+        if (preprocessor) {
+            split_args(preprocessor, exec_argv, &arg, max_arg);
+        } else {
+            exec_argv[arg++] = concat(dir, CC);
+            exec_argv[arg++] = _T("-E");
+            exec_argv[arg++] = _T("-xc");
+            exec_argv[arg++] = _T("-DRC_INVOKED=1");
+        }
         for (int i = 0; i < nb_cpp_options; i++)
             exec_argv[arg++] = cpp_options[i];
-        exec_argv[arg++] = _T("-xc");
-        exec_argv[arg++] = _T("-DRC_INVOKED=1");
         exec_argv[arg++] = input;
         exec_argv[arg++] = _T("-o");
         exec_argv[arg++] = preproc_rc;
