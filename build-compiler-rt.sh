@@ -124,10 +124,10 @@ for arch in $ARCHS; do
     $BUILDCMD ${CORES+-j$CORES}
     mkdir -p "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
-    for i in lib/windows/libclang_rt.*-$buildarchname*.a; do
+    for i in lib/windows/libclang_rt.*.a; do
         cp $i "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows/$(basename $i | sed s/$buildarchname/$libarchname/)"
     done
-    for i in lib/windows/libclang_rt.*-$buildarchname*.dll; do
+    for i in lib/windows/libclang_rt.*.dll; do
         if [ -f $i ]; then
             cp $i "$PREFIX/$arch-w64-mingw32/bin"
         fi
