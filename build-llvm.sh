@@ -18,18 +18,31 @@ set -e
 
 : ${LLVM_VERSION:=llvmorg-11.0.0}
 ASSERTS=OFF
-BUILDDIR=build
 unset HOST
+BUILDDIR="build"
+ASSERTSSUFFIX=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
     --disable-asserts)
         ASSERTS=OFF
-        BUILDDIR=build
+        ASSERTSSUFFIX=""
         ;;
     --enable-asserts)
         ASSERTS=ON
-        BUILDDIR=build-asserts
+        ASSERTSSUFFIX="-asserts"
+        ;;
+    --stage2)
+        STAGE2=1
+        BUILDDIR="$BUILDDIR-stage2"
+        ;;
+    --thinlto)
+        LTO="thin"
+        BUILDDIR="$BUILDDIR-thinlto"
+        ;;
+    --lto)
+        LTO="full"
+        BUILDDIR="$BUILDDIR-lto"
         ;;
     --full-llvm)
         FULL_LLVM=1
@@ -43,9 +56,10 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--full-llvm] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--full-llvm] [--host=triple] dest
         exit 1
     fi
 
@@ -131,6 +145,19 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_CXX_STDLIB=libc++"
     CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_LINKER=lld"
     BUILDDIR=$BUILDDIR-$HOST
+elif [ -n "$STAGE2" ]; then
+    # Build using an earlier built and installed clang in the target directory
+    export PATH="$PREFIX/bin:$PATH"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=clang"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=clang++"
+    if [ "$(uname)" != "Darwin" ]; then
+        # Current lld isn't yet properly usable on macOS
+        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=lld"
+    fi
+fi
+
+if [ -n "$LTO" ]; then
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_ENABLE_LTO=$LTO"
 fi
 
 TOOLCHAIN_ONLY=ON
