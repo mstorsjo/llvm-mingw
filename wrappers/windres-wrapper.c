@@ -407,10 +407,10 @@ int _tmain(int argc, TCHAR* argv[]) {
             _tperror(exec_argv[0]);
             return 1;
         }
+        if (!verbose)
+            _tunlink(preproc_rc);
         if (ret != 0) {
             error(basename, _T("llvm-rc failed"));
-            if (!verbose)
-                _tunlink(preproc_rc);
             return ret;
         }
 
@@ -432,10 +432,8 @@ int _tmain(int argc, TCHAR* argv[]) {
                 _tperror(exec_argv[0]);
                 return 1;
             }
-            if (!verbose) {
-                _tunlink(preproc_rc);
+            if (!verbose)
                 _tunlink(res);
-            }
             return ret;
         } else {
             error(basename, _T("invalid output format: `"TS"'"), output_format);
