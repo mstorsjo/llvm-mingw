@@ -17,17 +17,26 @@
 set -ex
 
 if [ $# -lt 1 ]; then
-    echo $0 tag
+    echo $0 tag [nativeonly]
     exit 1
 fi
 
 TAG=$1
 
+if [ "$2" = "nativeonly" ]; then
+    NATIVEONLY=1
+fi
+
 time docker build -f Dockerfile . -t mstorsjo/llvm-mingw:latest -t mstorsjo/llvm-mingw:$TAG
-time docker build -f Dockerfile.dev . -t mstorsjo/llvm-mingw:dev -t mstorsjo/llvm-mingw:dev-$TAG
 
 DISTRO=ubuntu-18.04
 docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
+
+if [ -n "$NATIVEONLY" ]; then
+    exit 0
+fi
+
+time docker build -f Dockerfile.dev . -t mstorsjo/llvm-mingw:dev -t mstorsjo/llvm-mingw:dev-$TAG
 
 cleanup() {
     for i in $temp_images; do
