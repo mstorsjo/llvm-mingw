@@ -48,7 +48,7 @@ if [ -z "$CHECKOUT_ONLY" ]; then
 fi
 
 if [ ! -d mingw-w64 ]; then
-    git clone https://github.com/mirror/mingw-w64
+    git clone https://github.com/mingw-w64/mingw-w64
     CHECKOUT=1
 fi
 
