@@ -8,7 +8,7 @@ RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 RUN cd /opt && \
-    wget https://github.com/Kitware/CMake/releases/download/v3.16.2/cmake-3.16.2-Linux-x86_64.tar.gz && \
+    wget https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-Linux-$(uname -m).tar.gz && \
     tar -zxvf cmake-*.tar.gz && \
     rm cmake-*.tar.gz && \
     mv cmake-* cmake
