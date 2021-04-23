@@ -18,23 +18,44 @@ Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
 binutils with LLVM based tools.
 
-Installation
-------------
+Releases
+--------
 
-Prebuilt docker linux images containing llvm-mingw are available from
-[Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/), and
-prebuilt toolchains (both for use as cross compiler from linux, and
-for use on windows) are available for download on GitHub. The toolchains
-for windows come in 4 versions, one for each of the 4 supported
-architectures, but each one of them can target all 4 architectures.
+The [GitHub Releases](https://github.com/mstorsjo/llvm-mingw/releases)
+page contains prebuilt toolchains that can be downloaded and installed
+by just unpacking them.
+
+They come primarily in two different forms; packages named
+`llvm-mingw-<version>-<crt>-ubuntu-<distro_version>-<arch>.tar.xz`
+are cross compilers, that can be run on Linux, compiling binaries
+for any of the 4 target Windows architectures. Packages named
+`llvm-mingw-<version>-<crt>-<arch>.zip` are native toolchains that
+run on Windows (with binaries in the specified architecture), but
+which all can compile binaries for any of the 4 architectures.
+
+The cross compilers come in versions running on either x86_64 or
+aarch64. (They're built on Ubuntu, but hopefully do run on other
+contempory distributions as well.)
+
+There are packages with two different choices of CRT (C runtime) - the
+primary target is UCRT (the Universal C Runtime). The UCRT
+is available preinstalled since Windows 10, but can be installed
+on top of Vista or newer. The other legacy alternative is `msvcrt`,
+which produces binaries for (and uses) msvcrt.dll, which is a
+built-in component in all versions of Windows. This allows running
+directly out of the box on older versions of Windows too, without
+ensuring that the UCRT is installed, but msvcrt.dll is generally
+less featureful.
+
+In addition to the downloadable toolchain packges, there are also
+prebuilt docker linux images containing the llvm-mingw toolchain,
+available from [Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/).
 
 Building from source
 --------------------
 
-The toolchain can be reproducibly built into a Docker image, or be
-built and installed in the host environment.
-
-To build and install all components, just do:
+The toolchain can be compiled for installation in the current Unix
+environment, fetching sources as needed:
 
     ./build-all.sh <target-dir>
 
@@ -43,7 +64,7 @@ aren't necessary after building, run:
 
     ./strip-llvm.sh <target-dir>
 
-To build a Docker image with the toolchain, run:
+It can also be built, reproducibly, into a Docker image:
 
     docker build .
 
