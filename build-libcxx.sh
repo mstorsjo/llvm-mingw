@@ -202,7 +202,6 @@ build_all() {
             llvm-ar qcsL \
                 "$PREFIX/$arch-w64-mingw32/lib/libc++.dll.a" \
                 "$PREFIX/$arch-w64-mingw32/lib/libunwind.dll.a"
-            cp lib/libc++.dll "$PREFIX/$arch-w64-mingw32/bin"
         else
             llvm-ar qcsL \
                 "$PREFIX/$arch-w64-mingw32/lib/libc++.a" \
