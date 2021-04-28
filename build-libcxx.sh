@@ -108,10 +108,6 @@ build_all() {
             ..
         $BUILDCMD ${CORES+-j$CORES}
         $BUILDCMD install
-        if [ "$type" = "shared" ]; then
-            mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
-            cp lib/libunwind.dll "$PREFIX/$arch-w64-mingw32/bin"
-        fi
         cd ..
     done
     cd ..
