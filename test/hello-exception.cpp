@@ -19,6 +19,8 @@
 #include <exception>
 #include <stdio.h>
 #include <string.h>
+#include <thread>
+#include <chrono>
 
 class RecurseClass {
 public:
@@ -36,18 +38,26 @@ private:
 
 bool crash = false;
 bool breakpoint = false;
+bool noop = false;
+bool wait = false;
+
+void done() {
+}
 
 void recurse(int val) {
     RecurseClass obj(val);
     if (val == 0) {
         if (crash)
             *(volatile int*)NULL = 0x42;
+#ifdef _WIN32
         else if (breakpoint)
             __debugbreak();
+#endif
+        else if (noop)
+            done();
         else
             throw std::exception();
-    }
-    if (val == 5) {
+    } else if (val == 5) {
         try {
             recurse(val - 1);
         } catch (std::exception& e) {
@@ -68,10 +78,26 @@ int main(int argc, char* argv[]) {
             crash = true;
             fprintf(stderr, "Crashing instead of throwing an exception\n");
         } else if (!strcmp(argv[i], "-breakpoint")) {
+#ifdef _WIN32
             breakpoint = true;
             fprintf(stderr, "Triggering breakpoint instead of throwing an exception\n");
+#else
+            fprintf(stderr, "Programmatic breakpoints not supported\n");
+#endif
+        } else if (!strcmp(argv[i], "-noop")) {
+            noop = true;
+            fprintf(stderr, "Calling the function 'done' when recursion stops\n");
+        } else if (!strcmp(argv[i], "-wait")) {
+            wait = true;
+            fprintf(stderr, "Waiting before exiting\n");
         }
     }
     recurse(10);
+    if (wait) {
+        fprintf(stderr, "Waiting\n");
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(10s);
+        fprintf(stderr, "Exiting\n");
+    }
     return 0;
 }
