@@ -47,17 +47,6 @@ if [ ! -d llvm-project/compiler-rt ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
 fi
 
-# Add a symlink for i386 -> i686; we normally name the toolchain
-# i686-w64-mingw32, but due to the compiler-rt cmake peculiarities, we
-# need to refer to it as i386 at this stage.
-if [ ! -e "$PREFIX/i386-w64-mingw32" ]; then
-    case $ARCHS in
-    *i686*)
-        ln -sfn i686-w64-mingw32 "$PREFIX/i386-w64-mingw32" || true
-        ;;
-    esac
-fi
-
 if [ -n "$(which ninja)" ]; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
