@@ -1,7 +1,7 @@
 From 4655075efa11ee17c28493d13760d51e360f7ddd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Wed, 4 Nov 2020 16:59:07 +0200
-Subject: [PATCH 01/24] [libcxx] Implement the stat function family on top of
+Subject: [PATCH 01/25] [libcxx] Implement the stat function family on top of
  native windows APIs
 
 While the windows CRTs (the modern UCRT, and the legacy msvcrt.dll

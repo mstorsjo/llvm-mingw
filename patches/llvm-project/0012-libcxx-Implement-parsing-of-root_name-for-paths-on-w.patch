@@ -1,7 +1,7 @@
 From 3f12aeb4ae3fd43d98f0c698952713d9fef7bef3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Tue, 3 Nov 2020 23:52:32 +0200
-Subject: [PATCH 12/24] [libcxx] Implement parsing of root_name for paths on
+Subject: [PATCH 12/25] [libcxx] Implement parsing of root_name for paths on
  windows
 
 Differential Revision: https://reviews.llvm.org/D91176

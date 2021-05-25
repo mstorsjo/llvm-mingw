@@ -1,7 +1,7 @@
 From 6131abb23fc2990f9a869ef3d9c63bb0fd5ff464 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Thu, 5 Nov 2020 23:09:15 +0200
-Subject: [PATCH 15/24] [libcxx] Have lexically_normal return the path with
+Subject: [PATCH 15/25] [libcxx] Have lexically_normal return the path with
  preferred separators
 
 Differential Revision: https://reviews.llvm.org/D91179

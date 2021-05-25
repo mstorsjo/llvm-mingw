@@ -1,7 +1,7 @@
 From 69856f3e59b210249020504329e016c691f138e9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Fri, 18 Dec 2020 13:34:35 +0200
-Subject: [PATCH 19/24] [libcxx] Explicitly return the expected error code in
+Subject: [PATCH 19/25] [libcxx] Explicitly return the expected error code in
  create_directories if the parent isn't a directory
 
 On windows, going ahead and actually trying to create the directory

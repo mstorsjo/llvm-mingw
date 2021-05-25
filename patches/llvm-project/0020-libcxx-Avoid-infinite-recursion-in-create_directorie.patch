@@ -1,7 +1,7 @@
 From 6c968da9f1e9281055d31f66c292f81de204924d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Sat, 27 Feb 2021 19:12:25 +0200
-Subject: [PATCH 20/24] [libcxx] Avoid infinite recursion in
+Subject: [PATCH 20/25] [libcxx] Avoid infinite recursion in
  create_directories, if the root directory doesn't exist
 
 Differential Revision: https://reviews.llvm.org/D97618

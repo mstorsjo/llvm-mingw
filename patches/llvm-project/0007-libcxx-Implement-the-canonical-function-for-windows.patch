@@ -1,7 +1,7 @@
 From b6ef948856bfde6326ebc2d1fddc24890b4182f9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Wed, 4 Nov 2020 23:51:12 +0200
-Subject: [PATCH 07/24] [libcxx] Implement the canonical function for windows
+Subject: [PATCH 07/25] [libcxx] Implement the canonical function for windows
 
 Differential Revision: https://reviews.llvm.org/D91170
 

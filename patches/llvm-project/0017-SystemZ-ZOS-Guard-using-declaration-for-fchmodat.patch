@@ -1,7 +1,7 @@
 From c8c08547b2d1e87391213846c7e17f5426a3dd48 Mon Sep 17 00:00:00 2001
 From: Zbigniew Sarbinowski <zibi@ca.ibm.com>
 Date: Thu, 18 Feb 2021 14:49:46 +0000
-Subject: [PATCH 17/24] [SystemZ][ZOS] Guard using declaration for ::fchmodat
+Subject: [PATCH 17/25] [SystemZ][ZOS] Guard using declaration for ::fchmodat
 
 The use of fchmodat() is beeing guarded but its using declaration is not. Let's use the same guard in both places to avoid compiler errors on platforms where `fchmodat` does not exist.
 

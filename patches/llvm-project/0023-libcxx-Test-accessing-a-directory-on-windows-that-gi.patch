@@ -1,7 +1,7 @@
 From 9a1bb266e38b31c78de03abc2d41cdd3245595d0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Mon, 8 Mar 2021 12:03:30 +0200
-Subject: [PATCH 23/24] [libcxx] Test accessing a directory on windows that
+Subject: [PATCH 23/25] [libcxx] Test accessing a directory on windows that
  gives "access denied" errors
 
 Fix handling of skip_permission_denied on windows; after converting

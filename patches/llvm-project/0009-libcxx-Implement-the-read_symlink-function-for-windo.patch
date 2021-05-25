@@ -1,7 +1,7 @@
 From f28542330202fae54a6fee1bf02a311feef3f60a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Wed, 4 Nov 2020 23:51:18 +0200
-Subject: [PATCH 09/24] [libcxx] Implement the read_symlink function for
+Subject: [PATCH 09/25] [libcxx] Implement the read_symlink function for
  windows
 
 Differential Revision: https://reviews.llvm.org/D91172

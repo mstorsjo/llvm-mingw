@@ -1,7 +1,7 @@
 From 96748da73f57e6b080643d03e41e8a690ee571a9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Wed, 4 Nov 2020 23:55:10 +0200
-Subject: [PATCH 08/24] [libcxx] Implement the permissions function for windows
+Subject: [PATCH 08/25] [libcxx] Implement the permissions function for windows
 
 Differential Revision: https://reviews.llvm.org/D91171
 

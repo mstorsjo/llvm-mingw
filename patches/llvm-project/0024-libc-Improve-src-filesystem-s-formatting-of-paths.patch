@@ -1,7 +1,7 @@
 From 7a94808f488301270f4a55ff7a17a8ebff3d388c Mon Sep 17 00:00:00 2001
 From: Arthur O'Dwyer <arthur.j.odwyer@gmail.com>
 Date: Fri, 5 Mar 2021 20:13:35 -0500
-Subject: [PATCH 24/24] [libc++] Improve src/filesystem's formatting of paths.
+Subject: [PATCH 24/25] [libc++] Improve src/filesystem's formatting of paths.
 
 This is my attempt to merge D98077 (bugfix the format strings for
 Windows paths, which use wchar_t not char)

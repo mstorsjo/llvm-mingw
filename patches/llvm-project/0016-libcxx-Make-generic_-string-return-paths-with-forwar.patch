@@ -1,7 +1,7 @@
 From 415ea201cb19775f253dfb0cf8dc561891cff02d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Mon, 9 Nov 2020 11:45:13 +0200
-Subject: [PATCH 16/24] [libcxx] Make generic_*string return paths with forward
+Subject: [PATCH 16/25] [libcxx] Make generic_*string return paths with forward
  slashes on windows
 
 This matches what MS STL returns; in std::filesystem, forward slashes

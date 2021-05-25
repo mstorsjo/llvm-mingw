@@ -1,7 +1,7 @@
 From 21ffff20ef2e05f8c99bd120d7b1212d75f14dcd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Mon, 9 Nov 2020 15:20:18 +0200
-Subject: [PATCH 04/24] [libcxx] Sanitize paths before creating symlinks on
+Subject: [PATCH 04/25] [libcxx] Sanitize paths before creating symlinks on
  windows
 
 The MS STL does even more cleanup (corresponding to lexically_normal

@@ -1,7 +1,7 @@
 From 497842a9ebb0ca1a6f871a07c0f4b4f1c700a798 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Thu, 11 Mar 2021 13:06:08 +0200
-Subject: [PATCH 22/24] [libcxx] Avoid intermediate string objects for
+Subject: [PATCH 22/25] [libcxx] Avoid intermediate string objects for
  substrings in windows operator/=
 
 Check that appends with a path object doesn't do allocations, even

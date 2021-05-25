@@ -1,7 +1,7 @@
 From 6f225c9fca50bda8911a4909b3cbf0eb28733384 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Fri, 30 Oct 2020 22:24:25 +0200
-Subject: [PATCH 10/24] [libcxx] Use the posix code for
+Subject: [PATCH 10/25] [libcxx] Use the posix code for
  directory_entry::__do_refresh
 
 This works just fine for windows, as all the functions it calls

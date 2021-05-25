@@ -1,7 +1,7 @@
 From bd884f520faaa41618d6e901e1631ff02fab3044 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Wed, 4 Nov 2020 15:59:56 +0200
-Subject: [PATCH 14/24] [libcxx] Implement append and operator/ properly for
+Subject: [PATCH 14/25] [libcxx] Implement append and operator/ properly for
  windows
 
 The root_path function has to be changed to return the parsed bit

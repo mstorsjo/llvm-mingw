@@ -1,7 +1,7 @@
 From 13bc151ad49587f94a123cdb3e2ba770c1513d9d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Fri, 6 Nov 2020 11:16:30 +0200
-Subject: [PATCH 03/24] [libcxx] Hook up a number of operation functions to
+Subject: [PATCH 03/25] [libcxx] Hook up a number of operation functions to
  their windows counterparts
 
 Use the corresponding wchar functions, named "_wfunc" instead of "func",

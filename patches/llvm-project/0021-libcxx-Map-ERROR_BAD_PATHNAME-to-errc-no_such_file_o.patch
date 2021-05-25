@@ -1,7 +1,7 @@
 From cd87c3f6b36fd6cd991b8e3a3ac85dc208d55ea1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Sat, 27 Feb 2021 16:09:49 +0200
-Subject: [PATCH 21/24] [libcxx] Map ERROR_BAD_PATHNAME to
+Subject: [PATCH 21/25] [libcxx] Map ERROR_BAD_PATHNAME to
  errc::no_such_file_or_directory on windows
 
 Opening a path like \\server (without a trailing share name and

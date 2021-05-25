@@ -1,7 +1,7 @@
 From 3474a416fef709f218ff5897842819d379495cad Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Thu, 29 Oct 2020 12:10:26 +0200
-Subject: [PATCH 11/24] [libcxx] Implement temp_directory_path using
+Subject: [PATCH 11/25] [libcxx] Implement temp_directory_path using
  GetTempPath on windows
 
 This does roughly the same as the manual implementation, but checks
