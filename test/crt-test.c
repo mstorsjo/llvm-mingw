@@ -168,6 +168,18 @@ int main(int argc, char* argv[]) {
 #endif
     snprintf(buf, sizeof(buf), "%"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64, myconst + 0, myconst + 1, myconst + 2, myconst + 3, myconst + 4, myconst + 5, myconst + 6, myconst + 7, myconst + 8, myconst + 9);
     TEST_STR(buf, "baadf00dcafe baadf00dcaff baadf00dcb00 baadf00dcb01 baadf00dcb02 baadf00dcb03 baadf00dcb04 baadf00dcb05 baadf00dcb06 baadf00dcb07");
+    char fmt[10] = { '%', '+', '0', '5', 'd', '\0' };
+    snprintf(buf, sizeof(buf), fmt, 42);
+    TEST_STR(buf, "+0042");
+    fmt[4] = 'u';
+    snprintf(buf, sizeof(buf), fmt, 42);
+    TEST_STR(buf, "00042");
+    fmt[4] = 'o';
+    snprintf(buf, sizeof(buf), fmt, 42);
+    TEST_STR(buf, "00052");
+    fmt[4] = 'x';
+    snprintf(buf, sizeof(buf), fmt, 42);
+    TEST_STR(buf, "0002a");
 
     uint64_t val0, val1, val2, val3, val4, val5, val6, val7, val8, val9;
     if (sscanf("baadf00dcafe baadf00dcaff baadf00dcb00 baadf00dcb01 baadf00dcb02 baadf00dcb03 baadf00dcb04 baadf00dcb05 baadf00dcb06 baadf00dcb07", "%"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64" %"SCNx64, &val0, &val1, &val2, &val3, &val4, &val5, &val6, &val7, &val8, &val9) != 10) {
