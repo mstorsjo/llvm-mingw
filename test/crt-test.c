@@ -159,6 +159,12 @@ int main(int argc, char* argv[]) {
 
     snprintf(buf, sizeof(buf), "%f", 3.141592654);
     TEST_STR(buf, "3.141593");
+#if !defined(__MINGW32__) || (!defined(__i386__) && !defined(__x86_64__)) || (defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO)
+    // On mingw, long double formatting on x86 only works if __USE_MINGW_ANSI_STDIO is defined.
+    long double print_val_ld = 42.0L;
+    snprintf(buf, sizeof(buf), "%Lf", print_val_ld);
+    TEST_STR(buf, "42.000000");
+#endif
     snprintf(buf, sizeof(buf), "%"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64, myconst + 0, myconst + 1, myconst + 2, myconst + 3, myconst + 4, myconst + 5, myconst + 6, myconst + 7, myconst + 8, myconst + 9);
     TEST_STR(buf, "baadf00dcafe baadf00dcaff baadf00dcb00 baadf00dcb01 baadf00dcb02 baadf00dcb03 baadf00dcb04 baadf00dcb05 baadf00dcb06 baadf00dcb07");
 
