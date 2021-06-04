@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <float.h>
+#include <wchar.h>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -255,6 +256,73 @@ int main(int argc, char* argv[]) {
     errno = 0;
     TEST_INT(strtol("foo", NULL, 100), 0);
     TEST_INT(errno, EINVAL);
+
+#define TEST_STRTOD(strtod, type, prefix) do { \
+        const type *curstr = prefix ## "1.e5z"; \
+        type *end; \
+        errno = 0; \
+        TEST_FLT(strtod(curstr, &end), 1.e5); \
+        TEST_INT(errno, 0); \
+        TEST_INT((int)(end - curstr), 4); \
+        curstr = prefix ## "0x125p-1z"; \
+        errno = 0; \
+        TEST_FLT(strtod(curstr, &end), 146.5); \
+        TEST_INT(errno, 0); \
+        TEST_INT((int)(end - curstr), 8); \
+    } while (0)
+
+    TEST_STRTOD(strtod, char, );
+    TEST_STRTOD(strtof, char, );
+    TEST_STRTOD(strtold, char, );
+    TEST_STRTOD(wcstod, wchar_t, L);
+    TEST_STRTOD(wcstof, wchar_t, L);
+    TEST_STRTOD(wcstold, wchar_t, L);
+
+#define TEST_STRTOD_VALUE(strtod, prefix, val, expect) \
+    errno = 0; \
+    TEST_FLT_SIGN(strtod(prefix ## #val, NULL), expect); \
+    TEST_INT(errno, 0)
+
+#define TEST_STRTOD_RANGE_EXPECT(strtod, prefix, val, expect) \
+    errno = 0; \
+    TEST_FLT_SIGN(strtod(prefix ## #val, NULL), expect); \
+    TEST_INT(errno, ERANGE)
+
+#define TEST_STRTOD_STRTOF_RANGE_EXPECT(strtod, strtof, prefix, val, expect) \
+    TEST_STRTOD_VALUE(strtod, prefix, val, val); \
+    TEST_STRTOD_RANGE_EXPECT(strtof, prefix, val, expect)
+
+#define TEST_STRTOF_32B_RANGE(strtod, strtof, prefix) \
+    TEST_STRTOD_STRTOF_RANGE_EXPECT(strtod, strtof, prefix, 1.e40, HUGE_VALF); \
+    TEST_STRTOD_STRTOF_RANGE_EXPECT(strtod, strtof, prefix, -1.e40, -HUGE_VALF); \
+    TEST_STRTOD_STRTOF_RANGE_EXPECT(strtod, strtof, prefix, 1.e-60, 0.0); \
+    TEST_STRTOD_STRTOF_RANGE_EXPECT(strtod, strtof, prefix, -1.e-60, -0.0)
+
+    TEST_STRTOF_32B_RANGE(strtod, strtof, );
+    TEST_STRTOF_32B_RANGE(wcstod, wcstof, L);
+
+#define TEST_STRTOD_64B_RANGE(strtod, prefix) \
+    TEST_STRTOD_RANGE_EXPECT(strtod, prefix, 1.e310, HUGE_VAL); \
+    TEST_STRTOD_RANGE_EXPECT(strtod, prefix, -1.e310, -HUGE_VAL); \
+    TEST_STRTOD_RANGE_EXPECT(strtod, prefix, 1.e-400, 0.0); \
+    TEST_STRTOD_RANGE_EXPECT(strtod, prefix, -1.e-400, -0.0)
+
+    TEST_STRTOD_64B_RANGE(strtod, );
+    TEST_STRTOD_64B_RANGE(wcstod, L);
+
+#if !defined(_WIN32) || (defined(__MINGW32__) && (defined(__i386__) || defined(__x86_64__)))
+#define TEST_STRTOLD_80B_RANGE(strtold, prefix) \
+    TEST_STRTOD_VALUE(strtold, prefix, 1.e310, 1e310L); \
+    TEST_STRTOD_VALUE(strtold, prefix, -1.e310, -1e310L); \
+    TEST_STRTOD_VALUE(strtold, prefix, 1.e-310, 1e-310L); \
+    TEST_STRTOD_VALUE(strtold, prefix, -1.e-310, -1e-310L)
+
+    TEST_STRTOLD_80B_RANGE(strtold, );
+    TEST_STRTOLD_80B_RANGE(wcstold, L);
+#else
+    TEST_STRTOD_64B_RANGE(strtold, );
+    TEST_STRTOD_64B_RANGE(wcstold, L);
+#endif
 
     int env_ok = 0;
     putenv("CRT_TEST_VAR=1");
