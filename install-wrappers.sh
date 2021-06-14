@@ -69,6 +69,7 @@ if [ -n "$HOST" ]; then
     done
 fi
 $CC wrappers/clang-target-wrapper.c -o "$PREFIX/bin/clang-target-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/dlltool-wrapper.c -o "$PREFIX/bin/dlltool-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
 $CC wrappers/windres-wrapper.c -o "$PREFIX/bin/windres-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
 $CC wrappers/llvm-wrapper.c -o "$PREFIX/bin/llvm-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
 if [ -n "$EXEEXT" ]; then
@@ -100,7 +101,8 @@ for arch in $ARCHS; do
         else
             ln -sf windres-wrapper$EXEEXT $arch-w64-$target_os-windres$EXEEXT
         fi
-        for exec in ld objdump dlltool; do
+        ln -sf dlltool-wrapper$EXEEXT $arch-w64-$target_os-dlltool$EXEEXT
+        for exec in ld objdump; do
             ln -sf $exec-wrapper.sh $arch-w64-$target_os-$exec
         done
     done
@@ -117,10 +119,10 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ cc c99 c11 c++ addr2line ar ranlib nm objcopy strings strip windres; do
+        for exec in clang clang++ gcc g++ cc c99 c11 c++ addr2line ar dlltool ranlib nm objcopy strings strip windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
-        for exec in ld objdump dlltool; do
+        for exec in ld objdump; do
             ln -sf $HOST-$exec $exec
         done
         ;;
