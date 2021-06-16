@@ -87,10 +87,6 @@ build_all() {
         [ -z "$CLEAN" ] || rm -rf build-$arch-$type
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        # CXX_SUPPORTS_CXX11 is not strictly necessary here. But if building
-        # with a stripped llvm install, and the system happens to have an older
-        # llvm-config in /usr/bin, it can end up including older cmake files,
-        # and then CXX_SUPPORTS_CXX11 needs to be set.
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
@@ -102,11 +98,8 @@ build_all() {
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
             -DLLVM_PATH="$LLVM_PATH" \
-            -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
-            -DCXX_SUPPORTS_CXX11=TRUE \
-            -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DLIBUNWIND_USE_COMPILER_RT=TRUE \
             -DLIBUNWIND_ENABLE_THREADS=TRUE \
             -DLIBUNWIND_ENABLE_SHARED=$SHARED \
@@ -142,7 +135,6 @@ build_all() {
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-            -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLLVM_PATH="$LLVM_PATH" \
@@ -185,7 +177,6 @@ build_all() {
             -DCMAKE_C_COMPILER_WORKS=TRUE \
             -DCMAKE_CXX_COMPILER_WORKS=TRUE \
             -DLLVM_PATH="$LLVM_PATH" \
-            -DLLVM_COMPILER_CHECKED=TRUE \
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
@@ -196,7 +187,6 @@ build_all() {
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/build-$arch-$type/include/c++/v1 \
             -DLIBCXXABI_LIBDIR_SUFFIX="" \
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=ON \
-            -DCXX_SUPPORTS_CXX_STD=TRUE \
             -DLIBCXX_ENABLE_SHARED=$SHARED \
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
             ..
