@@ -135,7 +135,7 @@ build_all() {
         if [ "$type" = "shared" ]; then
             LIBCXX_VISIBILITY_FLAGS="-D_LIBCXXABI_BUILDING_LIBRARY"
         else
-            LIBCXX_VISIBILITY_FLAGS="-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
+            LIBCXX_VISIBILITY_FLAGS=""
         fi
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
@@ -181,14 +181,7 @@ build_all() {
         mkdir -p build-$arch-$type
         cd build-$arch-$type
         if [ "$type" = "shared" ]; then
-            # Define _LIBCPP_BUILDING_LIBRARY, to an empty string to match
-            # cases in source files that also do
-            # "#define _LIBCPP_BUILDING_LIBRARY". Since Nov 3 2020, libcxxabi
-            # itself also defines this, but with a plain
-            # -D_LIBCPP_BUILDING_LIBRARY, which defines it to 1. Therefore,
-            # first undefine any potential existing define from the command
-            # line, to avoid conflicts.
-            LIBCXXABI_VISIBILITY_FLAGS="-U_LIBCPP_BUILDING_LIBRARY -D_LIBCPP_BUILDING_LIBRARY= -U_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
+            LIBCXXABI_VISIBILITY_FLAGS="-U_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
         else
             LIBCXXABI_VISIBILITY_FLAGS=""
         fi
