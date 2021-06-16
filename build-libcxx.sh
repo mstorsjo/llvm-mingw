@@ -147,7 +147,6 @@ build_all() {
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
             -DLIBCXX_LIBDIR_SUFFIX="" \
             -DLIBCXX_INCLUDE_TESTS=FALSE \
-            -DCMAKE_SHARED_LINKER_FLAGS="-lunwind" \
             -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=FALSE \
             ..
         $BUILDCMD ${CORES+-j$CORES} generate-cxx-headers
