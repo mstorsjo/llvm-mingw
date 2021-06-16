@@ -132,11 +132,6 @@ build_all() {
         [ -z "$CLEAN" ] || rm -rf build-$arch-$type
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        if [ "$type" = "shared" ]; then
-            LIBCXX_VISIBILITY_FLAGS="-D_LIBCXXABI_BUILDING_LIBRARY"
-        else
-            LIBCXX_VISIBILITY_FLAGS=""
-        fi
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
@@ -166,7 +161,6 @@ build_all() {
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
             -DLIBCXX_LIBDIR_SUFFIX="" \
             -DLIBCXX_INCLUDE_TESTS=FALSE \
-            -DCMAKE_CXX_FLAGS="$LIBCXX_VISIBILITY_FLAGS" \
             -DCMAKE_SHARED_LINKER_FLAGS="-lunwind" \
             -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=FALSE \
             ..
