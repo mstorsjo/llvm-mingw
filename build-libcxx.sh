@@ -105,8 +105,6 @@ build_all() {
             -DLIBUNWIND_ENABLE_SHARED=$SHARED \
             -DLIBUNWIND_ENABLE_STATIC=$STATIC \
             -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
-            -DCMAKE_CXX_FLAGS="-Wno-dll-attribute-on-redeclaration" \
-            -DCMAKE_C_FLAGS="-Wno-dll-attribute-on-redeclaration" \
             ..
         $BUILDCMD ${CORES+-j$CORES}
         $BUILDCMD install
