@@ -174,11 +174,6 @@ build_all() {
         [ -z "$CLEAN" ] || rm -rf build-$arch-$type
         mkdir -p build-$arch-$type
         cd build-$arch-$type
-        if [ "$type" = "shared" ]; then
-            LIBCXXABI_VISIBILITY_FLAGS="-U_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
-        else
-            LIBCXXABI_VISIBILITY_FLAGS=""
-        fi
         cmake \
             ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE=Release \
@@ -202,7 +197,8 @@ build_all() {
             -DLIBCXXABI_LIBDIR_SUFFIX="" \
             -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=ON \
             -DCXX_SUPPORTS_CXX_STD=TRUE \
-            -DCMAKE_CXX_FLAGS="$LIBCXXABI_VISIBILITY_FLAGS" \
+            -DLIBCXX_ENABLE_SHARED=$SHARED \
+            -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
             ..
         $BUILDCMD ${CORES+-j$CORES}
         cd ..
