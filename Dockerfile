@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
+RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
     automake yasm gettext autopoint vim-tiny python3 python3-distutils \
     ninja-build ca-certificates curl less zip && \
