@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     git wget bzip2 file unzip libtool pkg-config cmake build-essential \
