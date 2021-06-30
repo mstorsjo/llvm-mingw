@@ -20,6 +20,7 @@ set -e
 ASSERTS=OFF
 unset HOST
 BUILDDIR="build"
+LINK_DYLIB=ON
 ASSERTSSUFFIX=""
 
 while [ $# -gt 0 ]; do
@@ -44,6 +45,9 @@ while [ $# -gt 0 ]; do
         LTO="full"
         BUILDDIR="$BUILDDIR-lto"
         ;;
+    --disable-dylib)
+        LINK_DYLIB=OFF
+        ;;
     --full-llvm)
         FULL_LLVM=1
         ;;
@@ -59,7 +63,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--full-llvm] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--host=triple] dest
         exit 1
     fi
 
@@ -208,6 +212,7 @@ cmake \
     ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="clang;lld;lldb"} \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
+    -DLLVM_LINK_LLVM_DYLIB=$LINK_DYLIB \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip;llvm-cov;llvm-profdata;llvm-addr2line;llvm-symbolizer;llvm-windres" \
     ${HOST+-DLLVM_HOST_TRIPLE=$HOST} \
     -DLLDB_INCLUDE_TESTS=OFF \

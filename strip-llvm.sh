@@ -120,7 +120,7 @@ cd ..
 cd lib
 for i in lib*.a *.so* *.dylib* cmake; do
     case $i in
-    liblldb*)
+    liblldb*|libclang-cpp*|libLLVM*)
         ;;
     *)
         rm -rf $i
