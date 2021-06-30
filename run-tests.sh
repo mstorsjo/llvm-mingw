@@ -46,8 +46,8 @@ fi
 if [ -z "$RUN_X86" ]; then
     case $(uname) in
     MINGW*|MSYS*)
-        # A non-empty string to trigger running, even if no wrapper is needed.
         NATIVE_X86=1
+        # A non-empty string to trigger running, even if no wrapper is needed.
         RUN_X86=" "
         export PATH=.:$PATH
         ;;
