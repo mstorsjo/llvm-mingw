@@ -52,7 +52,11 @@ if [ -z "$RUN_X86" ]; then
         export PATH=.:$PATH
         ;;
     *)
-        RUN_X86=wine
+        case $(uname -m) in
+        x86_64)
+            RUN_X86=wine
+            ;;
+        esac
         ;;
     esac
 fi
@@ -80,7 +84,7 @@ for arch in $ARCHS; do
     case $arch in
     i686|x86_64)
         RUN="$RUN_X86"
-        COPY=
+        COPY="$COPY_X86"
         NATIVE="$NATIVE_X86"
         ;;
     armv7)
