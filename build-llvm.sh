@@ -72,15 +72,23 @@ if [ -z "$CHECKOUT_ONLY" ]; then
 fi
 
 if [ ! -d llvm-project ]; then
-    # When cloning master and checking out a pinned old hash, we can't use --depth=1.
-    git clone https://github.com/llvm/llvm-project.git
+    mkdir llvm-project
+    cd llvm-project
+    git init
+    git remote add origin https://github.com/llvm/llvm-project.git
+    git fetch --depth 1 origin "$LLVM_VERSION"
+    git checkout FETCH_HEAD
+    cd ..
     CHECKOUT=1
+    unset SYNC
 fi
 
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     cd llvm-project
-    [ -z "$SYNC" ] || git fetch
-    git checkout $LLVM_VERSION
+    if [ -n "$SYNC" ]; then 
+        git fetch --depth 1 origin "$LLVM_VERSION"
+        git checkout FETCH_HEAD
+    fi
     if [ "$LLVM_VERSION" = "llvmorg-12.0.0" ]; then
         # The bundled patches for std::filesystem apply on the 12.0.0 release,
         # but don't try to apply them if a different version was requested.
