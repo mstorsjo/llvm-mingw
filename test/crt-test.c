@@ -160,11 +160,74 @@ int main(int argc, char* argv[]) {
 
     snprintf(buf, sizeof(buf), "%f", 3.141592654);
     TEST_STR(buf, "3.141593");
+    snprintf(buf, sizeof(buf), "%e", 42.0);
+    TEST_STR(buf, "4.200000e+01");
+    snprintf(buf, sizeof(buf), "%a", 42.0);
+    // Different implementations of printf differ in formatting of %a
+    // (with differing number of trailing zeros). Additionally, with
+    // __USE_MINGW_ANSI_STDIO, this produces 0xa.8p+2 instead of 0x1.5p+5,
+    // but it at least gets parsed back to the right value.
+    TEST_FLT(strtod(buf, NULL), 42.0);
+    snprintf(buf, sizeof(buf), "%g", 42.0);
+    TEST_STR(buf, "42");
+    snprintf(buf, sizeof(buf), "%g", 0.000061035156250);
+    TEST_STR(buf, "6.10352e-05");
+    const char formats[] = "feagFEAG";
+    for (int i = 0; formats[i]; i++) {
+        char formatbuf[3] = { '%', formats[i], '\0' };
+        snprintf(buf, sizeof(buf), formatbuf, INFINITY);
+        if (formats[i] >= 'A' && formats[i] <= 'Z')
+            TEST_STR(buf, "INF");
+        else
+            TEST_STR(buf, "inf");
+        snprintf(buf, sizeof(buf), formatbuf, -INFINITY);
+        if (formats[i] >= 'A' && formats[i] <= 'Z')
+            TEST_STR(buf, "-INF");
+        else
+            TEST_STR(buf, "-inf");
+#ifndef _MSC_VER
+        // MSVC prints these differently by default, printing e.g. "-nan(ind)"
+        snprintf(buf, sizeof(buf), formatbuf, NAN);
+        if (formats[i] >= 'A' && formats[i] <= 'Z')
+            TEST_STR(buf, "NAN");
+        else
+            TEST_STR(buf, "nan");
+#endif
+    }
 #if !defined(__MINGW32__) || (!defined(__i386__) && !defined(__x86_64__)) || (defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO)
     // On mingw, long double formatting on x86 only works if __USE_MINGW_ANSI_STDIO is defined.
     long double print_val_ld = 42.0L;
     snprintf(buf, sizeof(buf), "%Lf", print_val_ld);
     TEST_STR(buf, "42.000000");
+    snprintf(buf, sizeof(buf), "%Le", print_val_ld);
+    TEST_STR(buf, "4.200000e+01");
+    snprintf(buf, sizeof(buf), "%La", print_val_ld);
+    TEST_FLT(strtod(buf, NULL), 42.0);
+    snprintf(buf, sizeof(buf), "%Lg", print_val_ld);
+    TEST_STR(buf, "42");
+    for (int i = 0; formats[i]; i++) {
+        long double inf = INFINITY;
+        long double nan = NAN;
+        char formatbuf[4] = { '%', 'L', formats[i], '\0' };
+        snprintf(buf, sizeof(buf), formatbuf, inf);
+        if (formats[i] >= 'A' && formats[i] <= 'Z')
+            TEST_STR(buf, "INF");
+        else
+            TEST_STR(buf, "inf");
+        snprintf(buf, sizeof(buf), formatbuf, -inf);
+        if (formats[i] >= 'A' && formats[i] <= 'Z')
+            TEST_STR(buf, "-INF");
+        else
+            TEST_STR(buf, "-inf");
+#ifndef _MSC_VER
+        // MSVC prints these differently by default, printing e.g. "-nan(ind)"
+        snprintf(buf, sizeof(buf), formatbuf, nan);
+        if (formats[i] >= 'A' && formats[i] <= 'Z')
+            TEST_STR(buf, "NAN");
+        else
+            TEST_STR(buf, "nan");
+#endif
+    }
 #endif
     snprintf(buf, sizeof(buf), "%"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64, myconst + 0, myconst + 1, myconst + 2, myconst + 3, myconst + 4, myconst + 5, myconst + 6, myconst + 7, myconst + 8, myconst + 9);
     TEST_STR(buf, "baadf00dcafe baadf00dcaff baadf00dcb00 baadf00dcb01 baadf00dcb02 baadf00dcb03 baadf00dcb04 baadf00dcb05 baadf00dcb06 baadf00dcb07");
