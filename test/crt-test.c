@@ -1812,6 +1812,17 @@ int main(int argc, char* argv[]) {
     TEST_FUNC(_interlockedbittestandreset(&value, 0), value, 0, 1);
     TEST_FUNC(_InterlockedIncrement(&value), value, 1, 1);
     TEST_FUNC(_InterlockedDecrement(&value), value, 0, 0);
+
+    TEST_FUNC(_bittestandset(&value, 0), value, 1, 0);
+    TEST_FUNC(_bittestandset(&value, 2), value, 5, 0);
+    TEST_FUNC(_bittestandset(&value, 2), value, 5, 1);
+    TEST_INT(_bittest(&value, 0), 1);
+    TEST_INT(_bittest(&value, 1), 0);
+    TEST_FUNC(_bittestandreset(&value, 2), value, 1, 1);
+    TEST_FUNC(_bittestandreset(&value, 2), value, 1, 0);
+    TEST_FUNC(_bittestandreset(&value, 0), value, 0, 1);
+    TEST_FUNC(_bittestandcomplement(&value, 2), value, 4, 0);
+    TEST_FUNC(_bittestandcomplement(&value, 2), value, 0, 1);
 #ifdef _WIN64
     TEST_FUNC(_interlockedbittestandset64(&value64, 0), value64, 1, 0);
     TEST_FUNC(_interlockedbittestandset64(&value64, 2), value64, 5, 0);
@@ -1825,6 +1836,25 @@ int main(int argc, char* argv[]) {
     TEST_FUNC(_InterlockedIncrement64(&value64), value64, 0x20000000001, 0x20000000001);
     TEST_FUNC(_InterlockedDecrement64(&value64), value64, 0x20000000000, 0x20000000000);
     TEST_FUNC(_interlockedbittestandreset64(&value64, 41), value64, 0, 1);
+
+    TEST_FUNC(_bittestandset64(&value64, 0), value64, 1, 0);
+    TEST_FUNC(_bittestandset64(&value64, 2), value64, 5, 0);
+    TEST_FUNC(_bittestandset64(&value64, 2), value64, 5, 1);
+    TEST_FUNC(_bittestandset64(&value64, 40), value64, 0x10000000005, 0);
+    TEST_FUNC(_bittestandset64(&value64, 41), value64, 0x30000000005, 0);
+    TEST_INT(_bittest64(&value64, 0), 1);
+    TEST_INT(_bittest64(&value64, 1), 0);
+    TEST_INT(_bittest64(&value64, 41), 1);
+    TEST_INT(_bittest64(&value64, 42), 0);
+    TEST_FUNC(_bittestandreset64(&value64, 40), value64, 0x20000000005, 1);
+    TEST_FUNC(_bittestandreset64(&value64, 2), value64, 0x20000000001, 1);
+    TEST_FUNC(_bittestandreset64(&value64, 2), value64, 0x20000000001, 0);
+    TEST_FUNC(_bittestandreset64(&value64, 0), value64, 0x20000000000, 1);
+    TEST_FUNC(_bittestandcomplement64(&value64, 2), value64, 0x20000000004, 0);
+    TEST_FUNC(_bittestandcomplement64(&value64, 2), value64, 0x20000000000, 1);
+    TEST_FUNC(_bittestandcomplement64(&value64, 40), value64, 0x30000000000, 0);
+    TEST_FUNC(_bittestandcomplement64(&value64, 40), value64, 0x20000000000, 1);
+    TEST_FUNC(_bittestandreset64(&value64, 41), value64, 0, 1);
 #endif
     TEST_FUNC(_InterlockedExchangeAdd(&value, 1), value, 1, 0);
     TEST_FUNC(_InterlockedExchange(&value, 2), value, 2, 1);
