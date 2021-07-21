@@ -158,15 +158,6 @@ RUN cd test && \
         done; \
     done
 
-# Build UASM, for building openmp. In the future, llvm-ml should be able
-# to handle it, but it doesn't yet.
-RUN git clone https://github.com/Terraspace/UASM && \
-    cd UASM && \
-    git checkout 16a853bd6de807fe2c42569f8375a029684c0f22 && \
-    make -f gccLinux64.mak -j$(nproc) && \
-    mkdir -p $TOOLCHAIN_PREFIX/bin && \
-    cp GccUnixR/uasm $TOOLCHAIN_PREFIX/bin
-COPY wrappers/uasm-wrapper.sh $TOOLCHAIN_PREFIX/bin
 # Build OpenMP
 COPY build-openmp.sh ./
 RUN ./build-openmp.sh $TOOLCHAIN_PREFIX

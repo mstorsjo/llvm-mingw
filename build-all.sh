@@ -38,3 +38,4 @@ done
 ./build-libcxx.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX --build-sanitizers
 ./build-libssp.sh $PREFIX
+./build-openmp.sh $PREFIX
