@@ -16,7 +16,7 @@
 
 set -e
 
-: ${LLVM_VERSION:=llvmorg-12.0.0}
+: ${LLVM_VERSION:=llvmorg-13.0.0-rc1}
 ASSERTS=OFF
 unset HOST
 BUILDDIR="build"
@@ -88,11 +88,6 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     if [ -n "$SYNC" ]; then 
         git fetch --depth 1 origin "$LLVM_VERSION"
         git checkout FETCH_HEAD
-    fi
-    if [ "$LLVM_VERSION" = "llvmorg-12.0.0" ]; then
-        # The bundled patches for std::filesystem apply on the 12.0.0 release,
-        # but don't try to apply them if a different version was requested.
-        git am -3 --keep-non-patch ../patches/llvm-project/*.patch
     fi
     cd ..
 fi
