@@ -671,11 +671,7 @@ int main(int argc, char* argv[]) {
     TEST_LOG2(log2f, HUGE_VALF);
     TEST_LOG2(log2l, HUGE_VALL);
 
-#if !defined(__MINGW32__) || !defined(__arm__)
-    // In Wine on arm, the strtod() in the F() macro returns 0 instead of
-    // the actual denormal value.
     TEST_FLT_ACCURACY(log2(F(9.8813e-324)), -1073, 0.001);
-#endif
     TEST_FLT_ACCURACY(log2f(F(7.1746e-43)), -140, 0.001);
     TEST_FLT_ACCURACY(log2l(F(7.1746e-43)), -140, 0.001);
 
