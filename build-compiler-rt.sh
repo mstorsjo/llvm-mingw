@@ -121,12 +121,13 @@ for arch in $ARCHS; do
         -DSANITIZER_CXX_ABI=libc++ \
         -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
+        -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=TRUE \
         $SRC_DIR
     cmake --build . ${CORES:+-j${CORES}}
     cmake --install .
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then
-        mv "$CLANG_RESOURCE_DIR/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        mv "$CLANG_RESOURCE_DIR/lib/$arch-w64-windows-gnu/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     cd ..
 done
