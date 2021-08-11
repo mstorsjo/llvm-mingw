@@ -82,10 +82,14 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
+        -DCMAKE_INSTALL_PREFIX="$PREFIX" \
+        -DLIBUNWIND_INSTALL_RUNTIME_DIR="$PREFIX/$arch-w64-mingw32/bin" \
+        -DLIBCXX_INSTALL_RUNTIME_DIR="$PREFIX/$arch-w64-mingw32/bin" \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
         -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-windows-gnu \
+        -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=TRUE \
+        -DLLVM_DEFAULT_TARGET_TRIPLE=$arch-w64-windows-gnu \
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_C_COMPILER_WORKS=TRUE \
         -DCMAKE_CXX_COMPILER_WORKS=TRUE \
