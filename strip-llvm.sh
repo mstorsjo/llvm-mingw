@@ -118,6 +118,7 @@ cd include
 rm -rf clang clang-c lld llvm llvm-c lldb
 cd ..
 cd lib
+rm -f *.dll.a
 for i in lib*.a *.so* *.dylib* cmake; do
     case $i in
     liblldb*|libclang-cpp*|libLLVM*)
