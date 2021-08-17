@@ -120,6 +120,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_PYTHON" ]; then
     cd cpython-mingw
     [ -z "$SYNC" ] || git fetch
+    git reset --hard
     git checkout $PYTHON_VERSION_MINGW
     cat ../patches/python/*.patch | patch -Nup1
     autoreconf -vfi
