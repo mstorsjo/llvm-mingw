@@ -45,7 +45,7 @@ which produces binaries for (and uses) msvcrt.dll, which is a
 built-in component in all versions of Windows. This allows running
 directly out of the box on older versions of Windows too, without
 ensuring that the UCRT is installed, but msvcrt.dll is generally
-less featureful.
+less featureful. Address Sanitizer only works properly with UCRT.
 
 In addition to the downloadable toolchain packges, there are also
 prebuilt docker linux images containing the llvm-mingw toolchain,
