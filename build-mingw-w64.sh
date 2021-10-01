@@ -18,7 +18,7 @@ set -e
 
 : ${DEFAULT_WIN32_WINNT:=0x601}
 : ${DEFAULT_MSVCRT:=ucrt}
-: ${MINGW_W64_VERSION:=4613211c6bfcb220dec9a116a76c5c9aff1939a3}
+: ${MINGW_W64_VERSION:=586baa17bb41dd78addd8cbb6415cfd24d24e925}
 
 while [ $# -gt 0 ]; do
     case "$1" in
