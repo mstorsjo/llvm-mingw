@@ -1715,6 +1715,43 @@ int main(int argc, char* argv[]) {
     TEST_FLT((float)ULL(17293822569102704640), 17293822569102704640.0);
     TEST_FLT((long double)ULL(17293822569102704640), 17293822569102704640.0);
 
+#ifdef __SIZEOF_INT128__
+    TEST_INT((__uint128_t)F(4.2), 4);
+    TEST_INT((__int128_t)F(4.2), 4);
+    TEST_INT((__uint128_t)F(123456789012345678), 123456789012345680ULL);
+    TEST_INT((__int128_t)F(123456789012345678), 123456789012345680ULL);
+    TEST_INT((__int128_t)F(-123456789012345), -123456789012345LL);
+
+    TEST_INT((__uint128_t)(float)F(4.2), 4);
+    TEST_INT((__int128_t)(float)F(4.2), 4);
+    TEST_INT((__uint128_t)(float)F(274877906944), 274877906944ULL);
+    TEST_INT((__int128_t)(float)F(274877906944), 274877906944ULL);
+    TEST_INT((__int128_t)(float)F(-274877906944), -274877906944LL);
+
+    TEST_INT((__uint128_t)(long double)F(4.2), 4);
+    TEST_INT((__int128_t)(long double)F(4.2), 4);
+    TEST_INT((__uint128_t)(long double)F(274877906944), 274877906944ULL);
+    TEST_INT((__int128_t)(long double)F(274877906944), 274877906944ULL);
+    TEST_INT((__int128_t)(long double)F(-274877906944), -274877906944LL);
+
+    TEST_FLT((double)(__int128_t)LL(4), 4.0);
+    TEST_FLT((float)(__int128_t)LL(4), 4.0);
+    TEST_FLT((long double)(__int128_t)LL(4), 4.0);
+    TEST_FLT((double)(__int128_t)LL(123456789012345), 123456789012345.0);
+    TEST_FLT((double)(__int128_t)LL(-123456789012345), -123456789012345.0);
+    TEST_FLT((float)(__int128_t)LL(274877906944), 274877906944.0);
+    TEST_FLT((float)(__int128_t)LL(-274877906944), -274877906944.0);
+    TEST_FLT((long double)(__int128_t)LL(274877906944), 274877906944.0);
+    TEST_FLT((long double)(__int128_t)LL(-274877906944), -274877906944.0);
+
+    TEST_FLT((double)(__uint128_t)ULL(4), 4.0);
+    TEST_FLT((float)(__uint128_t)ULL(4), 4.0);
+    TEST_FLT((long double)(__uint128_t)ULL(4), 4.0);
+    TEST_FLT((double)(__uint128_t)ULL(17293822569102704640), 17293822569102704640.0);
+    TEST_FLT((float)(__uint128_t)ULL(17293822569102704640), 17293822569102704640.0);
+    TEST_FLT((long double)(__uint128_t)ULL(17293822569102704640), 17293822569102704640.0);
+#endif
+
 #ifdef _WIN32
     long value = 0;
     __int64 ret;
