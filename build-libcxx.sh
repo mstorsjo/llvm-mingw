@@ -133,7 +133,6 @@ build_all() {
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLLVM_PATH="$LLVM_PATH" \
             -DLIBCXX_USE_COMPILER_RT=ON \
-            -DLIBCXX_HAS_WIN32_THREAD_API=ON \
             -DLIBCXX_ENABLE_SHARED=$SHARED \
             -DLIBCXX_ENABLE_STATIC=$STATIC \
             -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
