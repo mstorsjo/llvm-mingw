@@ -101,10 +101,8 @@ build_all() {
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLIBUNWIND_USE_COMPILER_RT=TRUE \
-            -DLIBUNWIND_ENABLE_THREADS=TRUE \
             -DLIBUNWIND_ENABLE_SHARED=$SHARED \
             -DLIBUNWIND_ENABLE_STATIC=$STATIC \
-            -DLIBUNWIND_ENABLE_CROSS_UNWINDING=FALSE \
             ..
         $BUILDCMD ${CORES+-j$CORES}
         $BUILDCMD install
@@ -133,15 +131,11 @@ build_all() {
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLLVM_PATH="$LLVM_PATH" \
             -DLIBCXX_USE_COMPILER_RT=ON \
-            -DLIBCXX_INSTALL_HEADERS=ON \
-            -DLIBCXX_ENABLE_EXCEPTIONS=ON \
-            -DLIBCXX_ENABLE_THREADS=ON \
             -DLIBCXX_HAS_WIN32_THREAD_API=ON \
             -DLIBCXX_ENABLE_SHARED=$SHARED \
             -DLIBCXX_ENABLE_STATIC=$STATIC \
             -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF \
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
-            -DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
             -DLIBCXX_CXX_ABI=libcxxabi \
             -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi/include \
             -DLIBCXX_CXX_ABI_LIBRARY_PATH=../../libcxxabi/build-$arch-$type/lib \
@@ -173,12 +167,9 @@ build_all() {
             -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
             -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
             -DLIBCXXABI_USE_COMPILER_RT=ON \
-            -DLIBCXXABI_ENABLE_EXCEPTIONS=ON \
-            -DLIBCXXABI_ENABLE_THREADS=ON \
             -DLIBCXXABI_ENABLE_SHARED=OFF \
             -DLIBCXXABI_LIBCXX_INCLUDES=../../libcxx/build-$arch-$type/include/c++/v1 \
             -DLIBCXXABI_LIBDIR_SUFFIX="" \
-            -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=ON \
             -DLIBCXX_ENABLE_SHARED=$SHARED \
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
             ..
