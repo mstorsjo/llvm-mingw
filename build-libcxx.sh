@@ -93,6 +93,7 @@ build_all() {
             -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
+            -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-windows-gnu \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
@@ -123,6 +124,7 @@ build_all() {
             -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
+            -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-windows-gnu \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
@@ -159,6 +161,7 @@ build_all() {
             -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
+            -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-windows-gnu \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
