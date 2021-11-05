@@ -194,13 +194,3 @@ build_all() {
 # work when linking against the DLL, but not vice versa.
 [ -z "$BUILD_SHARED" ] || build_all shared
 [ -z "$BUILD_STATIC" ] || build_all static
-
-# Remove dummy placeholder libunwind.a. If we've built a static version, it
-# already was overwritten with a proper one, but if only building a shared
-# version, remove the dummy one to avoid surprises.
-for arch in $ARCHS; do
-    # Only remove the file if it contains no members.
-    if [ -f $PREFIX/$arch-w64-mingw32/lib/libunwind.a ] && [ "$(llvm-ar t $PREFIX/$arch-w64-mingw32/lib/libunwind.a)" = "" ]; then
-        rm $PREFIX/$arch-w64-mingw32/lib/libunwind.a
-    fi
-done
