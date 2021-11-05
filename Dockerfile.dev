@@ -78,6 +78,10 @@ RUN ./build-mingw-w64-tools.sh $TOOLCHAIN_PREFIX
 COPY build-compiler-rt.sh ./
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX
 
+# Build libunwind/libcxxabi/libcxx
+COPY build-libcxx.sh ./
+RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
+
 # Build mingw-w64's extra libraries
 COPY build-mingw-w64-libraries.sh ./
 RUN ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX
@@ -104,10 +108,6 @@ RUN cd test && \
             $arch-w64-mingw32-clang $test.c -I$arch -o $arch/$test.exe -lole32 || exit 1; \
         done; \
     done
-
-# Build libunwind/libcxxabi/libcxx
-COPY build-libcxx.sh ./
-RUN ./build-libcxx.sh $TOOLCHAIN_PREFIX
 
 # Build C++ test applications
 COPY test/*.cpp ./test/
