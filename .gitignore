@@ -3,3 +3,6 @@
 /libssp
 /lldb-mi
 /make-*
+/libffi
+/cpython*
+/python-native

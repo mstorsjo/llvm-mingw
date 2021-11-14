@@ -17,7 +17,6 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 COPY build-python.sh .
-COPY patches/python/ ./patches/python/
 
 ARG WITH_PYTHON
 
