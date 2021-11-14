@@ -19,9 +19,9 @@ set -e
 : ${LIBFFI_VERSION:=v3.4.2}
 : ${PYTHON_MAJOR:=3}
 : ${PYTHON_MINOR:=9}
-: ${PYTHON_PATCH:=6}
+: ${PYTHON_PATCH:=7}
 : ${PYTHON_VERSION:=v${PYTHON_MAJOR}.${PYTHON_MINOR}.${PYTHON_PATCH}}
-: ${PYTHON_VERSION_MINGW:=61c5a4a14932539b31878de0b60bc98bcba791b9}
+: ${PYTHON_VERSION_MINGW:=mingw-${PYTHON_VERSION}}
 
 unset HOST
 
@@ -120,9 +120,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_PYTHON" ]; then
     cd cpython-mingw
     [ -z "$SYNC" ] || git fetch
-    git reset --hard
     git checkout $PYTHON_VERSION_MINGW
-    cat ../patches/python/*.patch | patch -Nup1
     autoreconf -vfi
     cd ..
 fi
@@ -144,7 +142,6 @@ mkdir -p $BUILDDIR
 cd $BUILDDIR
 BUILD=$(../config.guess) # Python configure requires build triplet for cross compilation
 
-# Avoid gcc workarounds in distutils
 export CC=$HOST-clang
 export CXX=$HOST-clang++
 

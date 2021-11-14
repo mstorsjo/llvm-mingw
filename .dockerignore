@@ -4,6 +4,8 @@ mingw-w64
 libssp
 lldb-mi
 make-*
+libffi
+*python*
 **/*.exe
 **/*.dll
 **/*.lib

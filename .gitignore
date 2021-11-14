@@ -3,3 +3,5 @@
 /libssp
 /lldb-mi
 /make-*
+/libffi
+/*python*
