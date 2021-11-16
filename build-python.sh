@@ -64,6 +64,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_LIBFFI" ]; then
     cd libffi
     [ -z "$SYNC" ] || git fetch
+    git reset --hard
     git checkout $LIBFFI_VERSION
     autoreconf -vfi
     cd ..
@@ -117,6 +118,7 @@ fi
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT_PYTHON" ]; then
     cd cpython-mingw
     [ -z "$SYNC" ] || git fetch
+    git reset --hard
     git checkout $PYTHON_VERSION_MINGW
     autoreconf -vfi
     cd ..
