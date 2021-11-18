@@ -165,14 +165,10 @@ if [ -n "$HOST" ]; then
     if [ -n "$WITH_PYTHON" ]; then
         PYTHON_VER="3.9"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_ENABLE_PYTHON=ON"
-        [ -z "$PYTHON_EXEC" ] && command -v python$PYTHON_VER && PYTHON_EXEC=python$PYTHON_VER
-        [ -z "$PYTHON_EXEC" ] && command -v python3           && PYTHON_EXEC=python3
-        [ -z "$PYTHON_EXEC" ] && command -v python            && PYTHON_EXEC=python
         CMAKEFLAGS="$CMAKEFLAGS -DPYTHON_HOME=$PREFIX/python"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_HOME=../python"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_RELATIVE_PATH=python/lib/python$PYTHON_VER/site-packages"
 
-        CMAKEFLAGS="$CMAKEFLAGS -DPython3_EXECUTABLE=$PYTHON_EXEC"
         CMAKEFLAGS="$CMAKEFLAGS -DPython3_INCLUDE_DIRS=$PREFIX/python/include/python$PYTHON_VER"
         CMAKEFLAGS="$CMAKEFLAGS -DPython3_LIBRARIES=$PREFIX/python/lib/libpython$PYTHON_VER.dll.a"
     fi
