@@ -164,10 +164,17 @@ if [ -n "$HOST" ]; then
 
     if [ -n "$WITH_PYTHON" ]; then
         PYTHON_VER="3.9"
+        # The python3-config script requires executing with bash. It outputs
+        # an extra trailing space, which the extra 'echo' layer gets rid of.
+        EXT_SUFFIX="$(echo $(bash $PREFIX/python/bin/python3-config --extension-suffix))"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_ENABLE_PYTHON=ON"
         CMAKEFLAGS="$CMAKEFLAGS -DPYTHON_HOME=$PREFIX/python"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_HOME=../python"
+        # Relative to the lldb install root
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_RELATIVE_PATH=python/lib/python$PYTHON_VER/site-packages"
+        # Relative to LLDB_PYTHON_HOME
+        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_EXE_RELATIVE_PATH=bin/python3.exe"
+        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_EXT_SUFFIX=$EXT_SUFFIX"
 
         CMAKEFLAGS="$CMAKEFLAGS -DPython3_INCLUDE_DIRS=$PREFIX/python/include/python$PYTHON_VER"
         CMAKEFLAGS="$CMAKEFLAGS -DPython3_LIBRARIES=$PREFIX/python/lib/libpython$PYTHON_VER.dll.a"
