@@ -39,7 +39,7 @@ private:
 bool crash = false;
 bool breakpoint = false;
 bool noop = false;
-bool wait = false;
+bool do_wait = false;
 
 void done() {
 }
@@ -88,12 +88,12 @@ int main(int argc, char* argv[]) {
             noop = true;
             fprintf(stderr, "Calling the function 'done' when recursion stops\n");
         } else if (!strcmp(argv[i], "-wait")) {
-            wait = true;
+            do_wait = true;
             fprintf(stderr, "Waiting before exiting\n");
         }
     }
     recurse(10);
-    if (wait) {
+    if (do_wait) {
         fprintf(stderr, "Waiting\n");
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(10s);
