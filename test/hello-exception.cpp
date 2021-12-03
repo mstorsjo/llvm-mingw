@@ -95,8 +95,7 @@ int main(int argc, char* argv[]) {
     recurse(10);
     if (do_wait) {
         fprintf(stderr, "Waiting\n");
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(10s);
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         fprintf(stderr, "Exiting\n");
     }
     return 0;
