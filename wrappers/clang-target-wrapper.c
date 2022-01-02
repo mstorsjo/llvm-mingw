@@ -56,6 +56,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");
     exec_argv[arg++] = concat(dir, _T(CLANG));
+    exec_argv[arg++] = _T("--start-no-unused-arguments");
 
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.
     if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++")))
@@ -94,7 +95,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     exec_argv[arg++] = _T("-unwindlib=libunwind");
     exec_argv[arg++] = _T("-stdlib=libc++");
     exec_argv[arg++] = _T("-fuse-ld=lld");
-    exec_argv[arg++] = _T("-Qunused-arguments");
+    exec_argv[arg++] = _T("--end-no-unused-arguments");
 
     for (int i = 1; i < argc; i++)
         exec_argv[arg++] = argv[i];
