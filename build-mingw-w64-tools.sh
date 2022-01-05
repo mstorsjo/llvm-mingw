@@ -72,6 +72,12 @@ else
         ;;
     esac
 fi
+if [ -n "$MACOS_REDIST" ]; then
+    if [ -z "$CFLAGS" ]; then
+        export CFLAGS="-g -O2"
+    fi
+    export CFLAGS="$CFLAGS -arch arm64 -arch x86_64 -mmacosx-version-min=10.9"
+fi
 if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
     INCLUDEDIR="$PREFIX/include"
 else

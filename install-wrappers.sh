@@ -54,6 +54,10 @@ if [ -n "$HOST" ]; then
     EXEEXT=.exe
 fi
 
+if [ -n "$MACOS_REDIST" ]; then
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -arch arm64 -arch x86_64 -mmacosx-version-min=10.9"
+fi
+
 if [ -n "$EXEEXT" ]; then
     CLANG_MAJOR=$(basename $(echo $PREFIX/lib/clang/* | awk '{print $NF}') | cut -f 1 -d .)
     WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
