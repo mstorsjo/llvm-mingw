@@ -101,7 +101,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = argv[i];
 
     exec_argv[arg] = NULL;
-    if (arg > max_arg) {
+    if (arg >= max_arg) {
         fprintf(stderr, "Too many options added\n");
         abort();
     }
