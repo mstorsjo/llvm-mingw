@@ -88,7 +88,6 @@ FLAGS="$FLAGS -rtlib=compiler-rt"
 FLAGS="$FLAGS -unwindlib=libunwind"
 FLAGS="$FLAGS -stdlib=libc++"
 FLAGS="$FLAGS -fuse-ld=lld"
-FLAGS="$FLAGS -fdebug-default-version=4"
 FLAGS="$FLAGS --end-no-unused-arguments"
 
 $CCACHE "$CLANG" $FLAGS "$@"
