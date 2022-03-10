@@ -97,8 +97,6 @@ build_all() {
             -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
             -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
             -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-windows-gnu \
-            -DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections" \
-            -DCMAKE_CXX_FLAGS="-ffunction-sections -fdata-sections" \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER_WORKS=TRUE \
