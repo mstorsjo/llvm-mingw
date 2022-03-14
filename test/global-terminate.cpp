@@ -26,12 +26,6 @@ void whoa() {
 }
 
 int main(int argc, char *argv[]) {
-#if defined(__aarch64__) && defined(__clang__) && __clang_major__ < 12
-    // This test succeeds with latest clang (since 20f7773bb4bb458, Sept 2020,
-    // on the clang 12.0 branch), but fails before that.
-    return 0;
-#else
     ::std::set_terminate(whoa);
     throw 42;
-#endif
 }
