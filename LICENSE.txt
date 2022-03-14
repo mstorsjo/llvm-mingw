@@ -2,7 +2,7 @@ The llvm-mingw project (the scripts for building and assembling a
 toolchain, wrappers for executing tools and testcases) is licensed under
 the ISC license.
 
-These licenses only cover the components provided by llvm-mingw directly.
+This license only covers the components provided by llvm-mingw directly.
 The final built toolchain is covered by the licenses of the individual
 external projects, primarily LLVM's Apache 2 license with LLVM exceptions.
 
