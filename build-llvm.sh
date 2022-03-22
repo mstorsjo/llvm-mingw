@@ -79,18 +79,35 @@ if [ ! -d llvm-project ]; then
     cd llvm-project
     git init
     git remote add origin https://github.com/llvm/llvm-project.git
-    git fetch --depth 1 origin "$LLVM_VERSION"
-    git checkout FETCH_HEAD
     cd ..
     CHECKOUT=1
-    unset SYNC
 fi
 
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     cd llvm-project
-    if [ -n "$SYNC" ]; then 
-        git fetch --depth 1 origin "$LLVM_VERSION"
-        git checkout FETCH_HEAD
+    # Check if the intended commit or tag exists in the local repo. If it
+    # exists, just check it out instead of trying to fetch it.
+    # (Redoing a shallow fetch will refetch the data even if the commit
+    # already exists locally, unless fetching a tag with the "tag"
+    # argument.)
+    if git cat-file -e "$LLVM_VERSION" 2> /dev/null; then
+        # Exists; just check it out
+        git checkout "$LLVM_VERSION"
+    else
+        case "$LLVM_VERSION" in
+        llvmorg-*)
+            # If $LLVM_VERSION looks like a tag, fetch it with the
+            # "tag" keyword. This makes sure that the local repo
+            # gets the tag too, not only the commit itself. This allows
+            # later fetches to realize that the tag already exists locally.
+            git fetch --depth 1 origin tag "$LLVM_VERSION"
+            git checkout "$LLVM_VERSION"
+            ;;
+        *)
+            git fetch --depth 1 origin "$LLVM_VERSION"
+            git checkout FETCH_HEAD
+            ;;
+        esac
     fi
     cd ..
 fi
