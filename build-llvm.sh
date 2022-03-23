@@ -22,6 +22,7 @@ unset HOST
 BUILDDIR="build"
 LINK_DYLIB=ON
 ASSERTSSUFFIX=""
+LLDB=ON
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -60,6 +61,9 @@ while [ $# -gt 0 ]; do
     --symlink-projects)
         SYMLINK_PROJECTS=1
         ;;
+    --disable-lldb)
+        unset LLDB
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -69,7 +73,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--host=triple] dest
         exit 1
     fi
 
@@ -234,6 +238,9 @@ if [ -n "$SYMLINK_PROJECTS" ]; then
     # checkouts.
     cd tools
     for p in clang lld lldb; do
+        if [ "$p" = "lldb" ] && [ -z "$LLDB" ]; then
+            continue
+        fi
         if [ ! -e $p ]; then
             ln -s ../../$p .
         fi
@@ -241,6 +248,10 @@ if [ -n "$SYMLINK_PROJECTS" ]; then
     cd ..
 else
     EXPLICIT_PROJECTS=1
+    PROJECTS="clang;lld"
+    if [ -n "$LLDB" ]; then
+        PROJECTS="$PROJECTS;lldb"
+    fi
 fi
 
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
@@ -253,7 +264,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
-    ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="clang;lld;lldb"} \
+    ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="$PROJECTS"} \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
     -DLLVM_LINK_LLVM_DYLIB=$LINK_DYLIB \
