@@ -57,6 +57,9 @@ while [ $# -gt 0 ]; do
     --with-python)
         WITH_PYTHON=1
         ;;
+    --symlink-projects)
+        SYMLINK_PROJECTS=1
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -66,7 +69,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--host=triple] dest
         exit 1
     fi
 
@@ -220,19 +223,15 @@ fi
 
 cd llvm-project/llvm
 
-case $(uname) in
-MINGW*)
-    EXPLICIT_PROJECTS=1
-    ;;
-*)
-    # If we have working symlinks, hook up other tools by symlinking them
-    # into tools, instead of using LLVM_ENABLE_PROJECTS. This way, all
-    # source code is under the directory tree of the toplevel cmake file
-    # (llvm-project/llvm), which makes cmake use relative paths to all source
-    # files. Using relative paths makes for identical compiler output from
-    # different source trees in different locations (for cases where e.g.
-    # path names are included, in assert messages), allowing ccache to speed
-    # up compilation.
+if [ -n "$SYMLINK_PROJECTS" ]; then
+    # If requested, hook up other tools by symlinking them into tools,
+    # instead of using LLVM_ENABLE_PROJECTS. This way, all source code is
+    # under the directory tree of the toplevel cmake file (llvm-project/llvm),
+    # which makes cmake use relative paths to all source files. Using relative
+    # paths makes for identical compiler output from different source trees in
+    # different locations (for cases where e.g. path names are included, in
+    # assert messages), allowing ccache to share caches across multiple
+    # checkouts.
     cd tools
     for p in clang lld lldb; do
         if [ ! -e $p ]; then
@@ -240,8 +239,9 @@ MINGW*)
         fi
     done
     cd ..
-    ;;
-esac
+else
+    EXPLICIT_PROJECTS=1
+fi
 
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
