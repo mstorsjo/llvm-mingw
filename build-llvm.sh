@@ -184,10 +184,7 @@ elif [ -n "$STAGE2" ]; then
     export PATH="$PREFIX/bin:$PATH"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=clang"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=clang++"
-    if [ "$(uname)" != "Darwin" ]; then
-        # Current lld isn't yet properly usable on macOS
-        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=lld"
-    fi
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=lld"
 fi
 
 if [ -n "$LTO" ]; then
