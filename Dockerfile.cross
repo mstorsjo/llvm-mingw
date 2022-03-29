@@ -49,20 +49,8 @@ RUN ./build-lldb-mi.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 COPY strip-llvm.sh .
 RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
-ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
-
-COPY build-mingw-w64.sh build-mingw-w64-tools.sh ./
-RUN ./build-mingw-w64-tools.sh $CROSS_TOOLCHAIN_PREFIX --skip-include-triplet-prefix --host=$HOST
-
-COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
-COPY install-wrappers.sh .
-RUN ./install-wrappers.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
-
 COPY prepare-cross-toolchain.sh .
 RUN ./prepare-cross-toolchain.sh $TOOLCHAIN_PREFIX $CROSS_TOOLCHAIN_PREFIX $CROSS_ARCH
-
-COPY build-make.sh .
-RUN ./build-make.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
 ARG TAG
 RUN ln -s $CROSS_TOOLCHAIN_PREFIX llvm-mingw-$TAG$CROSS_ARCH && \
