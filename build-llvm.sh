@@ -165,6 +165,7 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE="
     ARCH="${HOST%%-*}"
     CMAKEFLAGS="$CMAKEFLAGS -DLLVM_DEFAULT_TARGET_TRIPLE=$ARCH-pc-windows-msvc"
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_WINDOWS_PREFER_FORWARD_SLASH=OFF"
 
     native=$(find_native_tools)
     if [ -n "$native" ]; then
