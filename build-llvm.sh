@@ -163,6 +163,8 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_RC_COMPILER=$HOST-windres"
     CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE="
+    ARCH="${HOST%%-*}"
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_DEFAULT_TARGET_TRIPLE=$ARCH-pc-windows-msvc"
 
     native=$(find_native_tools)
     if [ -n "$native" ]; then
