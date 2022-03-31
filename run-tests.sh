@@ -40,6 +40,7 @@ if ! $ANY_ARCH-w64-mingw32-gcc -E is-ucrt.c > /dev/null 2>&1; then
     # If the default CRT isn't UCRT, we can't build for mingw32uwp.
     DEFAULT_OSES="mingw32"
 fi
+rm -f is-ucrt.c
 
 : ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
 
