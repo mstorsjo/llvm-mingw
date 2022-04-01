@@ -150,8 +150,6 @@ if [ -n "$HOST" ]; then
             echo $(pwd)/llvm-project/llvm/build/bin
         elif [ -d llvm-project/llvm/build-asserts/bin ]; then
             echo $(pwd)/llvm-project/llvm/build-asserts/bin
-        elif [ -d llvm-project/llvm/build-noasserts/bin ]; then
-            echo $(pwd)/llvm-project/llvm/build-noasserts/bin
         elif [ -n "$(which llvm-tblgen)" ]; then
             echo $(dirname $(which llvm-tblgen))
         fi
