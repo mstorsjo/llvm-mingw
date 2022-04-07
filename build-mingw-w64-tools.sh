@@ -92,6 +92,7 @@ cd build${CROSS_NAME}
 ../configure --prefix="$PREFIX" $CONFIGFLAGS
 $MAKE -j$CORES
 $MAKE install-strip
+install -Dm644 ../COPYING "$PREFIX/share/gendef/COPYING"
 cd ../../widl
 [ -z "$CLEAN" ] || rm -rf build${CROSS_NAME}
 mkdir -p build${CROSS_NAME}
@@ -99,6 +100,7 @@ cd build${CROSS_NAME}
 ../configure --prefix="$PREFIX" --target=$ANY_ARCH-w64-mingw32 --with-widl-includedir="$INCLUDEDIR" $CONFIGFLAGS
 $MAKE -j$CORES
 $MAKE install-strip
+install -Dm644 ../../../COPYING "$PREFIX/share/widl/COPYING"
 cd ..
 cd "$PREFIX/bin"
 # The build above produced $ANY_ARCH-w64-mingw32-widl, add symlinks to it

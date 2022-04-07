@@ -42,10 +42,12 @@ for lib in winpthreads winstorecompat; do
         [ -z "$CLEAN" ] || rm -rf build-$arch
         mkdir -p build-$arch
         cd build-$arch
-        ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" --libdir="$PREFIX/$arch-w64-mingw32/lib"
+        arch_prefix="$PREFIX/$arch-w64-mingw32"
+        ../configure --host=$arch-w64-mingw32 --prefix="$arch_prefix" --libdir="$arch_prefix/lib"
         make -j$CORES
         make install
         cd ..
+        install -Dm644 COPYING "$arch_prefix/share/mingw32/COPYING.${lib}.txt"
     done
     cd ..
 done
