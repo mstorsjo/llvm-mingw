@@ -124,3 +124,9 @@ for arch in $ARCHS; do
     cd ..
 done
 cd ..
+
+for arch in $ARCHS; do
+    for file in COPYING COPYING.MinGW-w64/COPYING.MinGW-w64.txt COPYING.MinGW-w64-runtime/COPYING.MinGW-w64-runtime.txt; do
+        install -Dm644 "$file" "$PREFIX/$arch-w64-mingw32/share/mingw32/$(basename "$file")"
+    done
+done
