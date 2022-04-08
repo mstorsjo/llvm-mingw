@@ -47,7 +47,8 @@ for lib in winpthreads winstorecompat; do
         make -j$CORES
         make install
         cd ..
-        install -Dm644 COPYING "$arch_prefix/share/mingw32/COPYING.${lib}.txt"
+        mkdir -p "$arch_prefix/share/mingw32"
+        install -m644 COPYING "$arch_prefix/share/mingw32/COPYING.${lib}.txt"
     done
     cd ..
 done
