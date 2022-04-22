@@ -50,6 +50,12 @@ case $EXE in
 clang++|g++|c++)
     FLAGS="$FLAGS --driver-mode=g++"
     ;;
+c99)
+    FLAGS="$FLAGS -std=c99"
+    ;;
+c11)
+    FLAGS="$FLAGS -std=c11"
+    ;;
 esac
 case $ARCH in
 i686)

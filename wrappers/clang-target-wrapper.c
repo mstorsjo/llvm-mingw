@@ -61,6 +61,10 @@ int _tmain(int argc, TCHAR* argv[]) {
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.
     if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++")))
         exec_argv[arg++] = _T("--driver-mode=g++");
+    else if (!_tcscmp(exe, _T("c99")))
+        exec_argv[arg++] = _T("-std=c99");
+    else if (!_tcscmp(exe, _T("c11")))
+        exec_argv[arg++] = _T("-std=c11");
 
     if (!_tcscmp(arch, _T("i686"))) {
         // Dwarf is the default for i686.
