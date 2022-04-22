@@ -85,7 +85,7 @@ fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
     for target_os in $TARGET_OSES; do
-        for exec in clang clang++ gcc g++ cc c99 c11 c++ as; do
+        for exec in clang clang++ gcc g++ c++ as; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
         for exec in addr2line ar ranlib nm objcopy readelf strings strip; do
@@ -117,8 +117,11 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ cc c99 c11 c++ addr2line ar dlltool ranlib nm objcopy readelf strings strip windres; do
+        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf strings strip windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
+        done
+        for exec in cc c99 c11; do
+            ln -sf clang$EXEEXT $exec$EXEEXT
         done
         for exec in ld objdump; do
             ln -sf $HOST-$exec $exec
