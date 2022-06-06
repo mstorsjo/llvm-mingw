@@ -145,16 +145,6 @@ else
 fi
 
 if [ -n "$HOST" ]; then
-    find_native_tools() {
-        if [ -d llvm-project/llvm/build/bin ]; then
-            echo $(pwd)/llvm-project/llvm/build/bin
-        elif [ -d llvm-project/llvm/build-asserts/bin ]; then
-            echo $(pwd)/llvm-project/llvm/build-asserts/bin
-        elif [ -n "$(which llvm-tblgen)" ]; then
-            echo $(dirname $(which llvm-tblgen))
-        fi
-    }
-
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_NAME=Windows"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CROSSCOMPILING=TRUE"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
@@ -162,16 +152,40 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_RC_COMPILER=$HOST-windres"
     CMAKEFLAGS="$CMAKEFLAGS -DCROSS_TOOLCHAIN_FLAGS_NATIVE="
 
-    native=$(find_native_tools)
-    if [ -n "$native" ]; then
+    native=""
+    for dir in llvm-project/llvm/build/bin llvm-project/llvm/build-asserts/bin; do
+        if [ -x "$dir/llvm-tblgen.exe" ]; then
+            native="$(pwd)/$dir"
+            suffix=".exe"
+            break
+        elif [ -x "$dir/llvm-tblgen" ]; then
+            native="$(pwd)/$dir"
+            suffix=""
+            break
+        fi
+    done
+    if [ -z "$native" ] && [ -n "$(which llvm-tblgen)" ]; then
+        native="$(dirname $(which llvm-tblgen))"
         suffix=""
-        if [ -f $native/llvm-tblgen.exe ]; then
+        if [ -x "$native/llvm-tblgen.exe" ]; then
             suffix=".exe"
         fi
-        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_TABLEGEN=$native/llvm-tblgen$suffix"
-        CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TABLEGEN=$native/clang-tblgen$suffix"
-        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_TABLEGEN=$native/lldb-tblgen$suffix"
-        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config$suffix"
+    fi
+
+
+    if [ -n "$native" ]; then
+        if [ -x "$native/llvm-tblgen$suffix" ]; then
+            CMAKEFLAGS="$CMAKEFLAGS -DLLVM_TABLEGEN=$native/llvm-tblgen$suffix"
+        fi
+        if [ -x "$native/clang-tblgen$suffix" ]; then
+            CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TABLEGEN=$native/clang-tblgen$suffix"
+        fi
+        if [ -x "$native/lldb-tblgen$suffix" ]; then
+            CMAKEFLAGS="$CMAKEFLAGS -DLLDB_TABLEGEN=$native/lldb-tblgen$suffix"
+        fi
+        if [ -x "$native/llvm-config$suffix" ]; then
+            CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config$suffix"
+        fi
     fi
     CROSS_ROOT=$(cd $(dirname $(which $HOST-gcc))/../$HOST && pwd)
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$CROSS_ROOT"
