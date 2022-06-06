@@ -65,7 +65,7 @@ x86_64)
     # SEH is the default for x86_64.
     ;;
 armv7)
-    # Dwarf is the default for armv7.
+    # SEH is the default for armv7.
     ;;
 aarch64)
     # SEH is the default for aarch64.

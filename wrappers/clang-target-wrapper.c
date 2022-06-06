@@ -71,7 +71,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     } else if (!_tcscmp(arch, _T("x86_64"))) {
         // SEH is the default for x86_64.
     } else if (!_tcscmp(arch, _T("armv7"))) {
-        // Dwarf is the default for armv7.
+        // SEH is the default for armv7.
     } else if (!_tcscmp(arch, _T("aarch64"))) {
         // SEH is the default for aarch64.
     }
