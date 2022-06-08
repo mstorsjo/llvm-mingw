@@ -188,6 +188,9 @@ if [ -n "$HOST" ]; then
         if [ -x "$native/llvm-config$suffix" ]; then
             CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config$suffix"
         fi
+        if [ -x "$native/clang-pseudo-gen$suffix" ]; then
+            CMAKEFLAGS="$CMAKEFLAGS -DCLANG_PSEUDO_GEN=$native/clang-pseudo-gen$suffix"
+        fi
     fi
     CROSS_ROOT=$(cd $(dirname $(which $HOST-gcc))/../$HOST && pwd)
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$CROSS_ROOT"
