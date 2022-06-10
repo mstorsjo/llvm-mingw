@@ -41,7 +41,7 @@ export PATH="$PREFIX/bin:$PATH"
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
-CLANG_VERSION=$(basename "$(dirname "$(dirname "$(dirname "$("$PREFIX/bin/$ANY_ARCH-w64-mingw32-clang" --print-libgcc-file-name -rtlib=compiler-rt)")")")")
+CLANG_RESOURCE_DIR="$("$PREFIX/bin/$ANY_ARCH-w64-mingw32-clang" --print-resource-dir)"
 
 if [ ! -d llvm-project/compiler-rt ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
@@ -86,7 +86,7 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$PREFIX/lib/clang/$CLANG_VERSION" \
+        -DCMAKE_INSTALL_PREFIX="$CLANG_RESOURCE_DIR" \
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
         -DCMAKE_SYSTEM_NAME=Windows \
@@ -101,7 +101,7 @@ for arch in $ARCHS; do
     $BUILDCMD install
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then
-        mv "$PREFIX/lib/clang/$CLANG_VERSION/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        mv "$CLANG_RESOURCE_DIR/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     cd ..
 done
