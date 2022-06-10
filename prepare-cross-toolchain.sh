@@ -26,7 +26,8 @@ CROSS_ARCH="$3"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
-CLANG_VERSION=$(basename $(dirname $(dirname $(dirname $($SRC/bin/clang --print-libgcc-file-name -rtlib=compiler-rt)))))
+CLANG_RESOURCE_DIR="$("$SRC/bin/clang" --print-resource-dir)"
+CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
 
 # If linked to a shared libc++/libunwind, we need to bundle those DLLs
 # in the bin directory.
@@ -36,7 +37,7 @@ for i in libc++ libunwind; do
     fi
 done
 
-cp -a $SRC/lib/clang/$CLANG_VERSION/lib $DEST/lib/clang/$CLANG_VERSION
+cp -a $CLANG_RESOURCE_DIR/lib $DEST/lib/clang/$CLANG_VERSION
 rm -rf $DEST/include
 cp -a $SRC/generic-w64-mingw32/include $DEST/include
 for arch in $ARCHS; do
