@@ -59,11 +59,6 @@ environment, fetching sources as needed:
 
     ./build-all.sh <target-dir>
 
-To reduce the size of the installation, removing some files that
-aren't necessary after building, run:
-
-    ./strip-llvm.sh <target-dir>
-
 It can also be built, reproducibly, into a Docker image:
 
     docker build .

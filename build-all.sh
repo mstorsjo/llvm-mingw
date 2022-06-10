@@ -31,6 +31,7 @@ done
 
 ./build-llvm.sh $PREFIX
 ./build-lldb-mi.sh $PREFIX
+./strip-llvm.sh $PREFIX
 ./install-wrappers.sh $PREFIX
 ./build-mingw-w64.sh $PREFIX
 ./build-mingw-w64-tools.sh $PREFIX
