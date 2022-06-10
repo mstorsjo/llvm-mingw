@@ -16,11 +16,48 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
-    echo $0 dest
+LLVM_ARGS=""
+MINGW_ARGS=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --enable-asserts)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
+    --full-llvm)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        FULL_LLVM=1
+        ;;
+    --disable-dylib)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
+    --disable-lldb)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        NO_LLDB=1
+        ;;
+    --disable-clang-tools-extra)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
+    --with-default-msvcrt=*)
+        MINGW_ARGS="$MINGW_ARGS $1"
+        ;;
+    --with-default-win32-winnt=*)
+        MINGW_ARGS="$MINGW_ARGS $1"
+        ;;
+    *)
+        if [ -n "$PREFIX" ]; then
+            echo Unrecognized parameter $1
+            exit 1
+        fi
+        PREFIX="$1"
+        ;;
+    esac
+    shift
+done
+if [ -z "$PREFIX" ]; then
+    echo $0 [--enable-asserts] able-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] dest
     exit 1
 fi
-PREFIX="$1"
 
 for dep in git curl cmake; do
     if ! hash $dep 2>/dev/null; then
@@ -29,11 +66,15 @@ for dep in git curl cmake; do
     fi
 done
 
-./build-llvm.sh $PREFIX
-./build-lldb-mi.sh $PREFIX
-./strip-llvm.sh $PREFIX
+./build-llvm.sh $PREFIX $LLVM_ARGS
+if [ -z "$NO_LLDB" ]; then
+    ./build-lldb-mi.sh $PREFIX
+fi
+if [ -z "$FULL_LLVM" ]; then
+    ./strip-llvm.sh $PREFIX
+fi
 ./install-wrappers.sh $PREFIX
-./build-mingw-w64.sh $PREFIX
+./build-mingw-w64.sh $PREFIX $MINGW_ARGS
 ./build-mingw-w64-tools.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX
 ./build-libcxx.sh $PREFIX
