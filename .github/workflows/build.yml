@@ -33,12 +33,6 @@ jobs:
           retention-days: 7
 
   # Build a cross compiler for Linux, targeting Windows.
-  #
-  # The scheduled builds are made with the latest git version of llvm-project
-  # and mingw-w64. When using random git snapshot builds of llvm, there's
-  # always a risk for bugs - thus build such versions with assertions enabled,
-  # to better catch such bugs early. This makes the first-stage toolchain built
-  # here in scheduled builds somewhat slower.
   linux:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [get-versions]
@@ -55,18 +49,55 @@ jobs:
           . versions
           echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION, with assertions enabled
           cat versions >> $GITHUB_ENV
-          echo ASSERT_PARAMS=--enable-asserts >> $GITHUB_ENV
           mkdir -p install/llvm-mingw
           cp versions install/llvm-mingw
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $ASSERT_PARAMS
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v2
         with:
           name: linux-toolchain
+          path: |
+            llvm-mingw-linux.tar.xz
+          retention-days: 7
+
+  # Build a cross compiler for Linux, targeting Windows, with assertions enabled.
+  #
+  # The scheduled builds are made with the latest git version of llvm-project
+  # and mingw-w64. When using random git snapshot builds of llvm, there's
+  # always a risk for bugs - thus build such versions with assertions enabled,
+  # to better catch such bugs early. This makes the first-stage toolchain built
+  # here in scheduled builds somewhat slower.
+  linux-asserts:
+    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [get-versions]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        if: github.event_name == 'schedule'
+        with:
+          name: versions
+      - name: Set build env vars
+        if: github.event_name == 'schedule'
+        run: |
+          . versions
+          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION, with assertions enabled
+          cat versions >> $GITHUB_ENV
+          mkdir -p install/llvm-mingw
+          cp versions install/llvm-mingw
+      - name: Build
+        run: |
+          sudo apt-get update && sudo apt-get install ninja-build
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
+          cd install
+          tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
+      - uses: actions/upload-artifact@v2
+        with:
+          name: linux-asserts-toolchain
           path: |
             llvm-mingw-linux.tar.xz
           retention-days: 7
@@ -153,11 +184,6 @@ jobs:
   # Use the Linux cross compilers built in the first step to cross compile
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
-  #
-  # For scheduled builds, the first stage compiler was built with assertions
-  # enabled, but this stage is built without assertions - so the end packaged
-  # build should be as fast as normal releases (with the intent that the first
-  # stage compiler should build enough code to find many regressions).
   linux-cross:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux]
@@ -231,11 +257,12 @@ jobs:
           ./run-tests.sh /llvm-mingw
 
   # Test cross-building ffmpeg for all 4 targeted architectures from linux.
-  # This is done only on scheduled builds, to give them a bit more testing,
-  # to find potential code generation regressions that trigger failed asserts.
+  # This is done only on scheduled builds, with a toolchain with assertions
+  # enabled, to catch code generation bugs that might trigger asserts, to
+  # find such regressions early.
   linux-test-cross-build-ffmpeg:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux]
+    needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -248,7 +275,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: linux-toolchain
+          name: linux-asserts-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-linux.tar.xz
