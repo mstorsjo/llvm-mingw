@@ -267,7 +267,7 @@ jobs:
 
   # Test building ffmpeg for natively on x86_64 Windows and run its tests,
   # to find cases of compiler bugs don't show up as failed asserts in the
-  # compiler itslef, but that only show up at runtime. This is only done
+  # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
