@@ -40,6 +40,7 @@ RUN if [ -n "$WITH_PYTHON" ]; then \
 ARG FULL_LLVM
 
 COPY build-llvm.sh .
+COPY patches/llvm-project/*.patch ./patches/llvm-project/
 RUN if [ -n "$WITH_PYTHON" ]; then ARG="--with-python"; fi && \
     ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST $ARG
 
