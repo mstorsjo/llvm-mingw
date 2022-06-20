@@ -44,6 +44,7 @@ ARG FULL_LLVM
 
 # Build LLVM
 COPY build-llvm.sh ./
+COPY patches/llvm-project/*.patch ./patches/llvm-project/
 RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
 
 # Build LLDB-MI

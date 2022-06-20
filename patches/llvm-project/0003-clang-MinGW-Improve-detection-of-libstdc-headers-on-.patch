@@ -1,0 +1,127 @@
+From f18d1ebd266cb3419d4b6a1257aa8c70494f40ef Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 22 Nov 2022 14:39:39 +0200
+Subject: [PATCH 3/4] [clang] [MinGW] Improve detection of libstdc++ headers on
+ Fedora
+
+There's some variation in where different toolchain distributions
+(and linux distributions) package the mingw sysroots - this is
+so far handled by adding specific known subdirectory paths
+to the include and lib directory lists.
+
+There are multiple degrees of combinatorics involved here though;
+the distros may use different locations such as /usr/x86_64-w64-mingw32
+or /usr/x86_64-w64-mingw32/sys-root/mingw/include.
+
+So far, this setup has been treated as base=/usr, subdir=x86_64-w64-mingw32,
+and the driver tries to add further subdirectories such as
+<base>/<subdir>/include, <base>/<subdir>/sys-root/mingw/include.
+
+When it comes to libstdc++ (and libc++), each of these come with
+a large number of potential subdirectories. Instead of further
+exploding the combinatorics another step by adding all combinations
+of all paths, check whether <base>/<subdir>/sys-root/mingw/include
+exists, and if it does, append that subpath into the subdir variable.
+
+This allows finding libstdc++ headers in e.g.
+/usr/x86_64-w64-mingw32/sys-root/mingw/include/c++/x86_64-w64-mingw32
+on Fedora.
+
+The same logic (where everything belonging to this target fits
+under one expanded <subdir> path, with just /include and /lib
+under it) doesn't seem to apply on Gentoo, where the includes
+are found in <base>/<subdir>/usr/include while the libraries
+are in <base>/<subdir>/mingw/lib (see
+8e218026f8d5eabfdef9141ae5e26aa91d1933e6). But apparently
+the libstdc++ headers aren't installed under
+<base>/<subdir>/usr/include, so that path hierarchy quirk doesn't
+need to be taken into account in AddClangCXXStdlibIncludeArgs.
+---
+ clang/lib/Driver/ToolChains/MinGW.cpp | 17 ++++++++---------
+ clang/lib/Driver/ToolChains/MinGW.h   |  1 +
+ clang/test/Driver/mingw.cpp           |  5 ++++-
+ 3 files changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/clang/lib/Driver/ToolChains/MinGW.cpp b/clang/lib/Driver/ToolChains/MinGW.cpp
+index ad023801140b..a984e2c45a5e 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.cpp
++++ b/clang/lib/Driver/ToolChains/MinGW.cpp
+@@ -470,9 +470,16 @@ toolchains::MinGW::MinGW(const Driver &D, const llvm::Triple &Triple,
+ 
+   Base += llvm::sys::path::get_separator();
+   findGccLibDir(LiteralTriple);
++  TripleDirName = SubdirName;
+   // GccLibDir must precede Base/lib so that the
+   // correct crtbegin.o ,cetend.o would be found.
+   getFilePaths().push_back(GccLibDir);
++
++  // openSUSE/Fedora
++  std::string CandidateSubdir = SubdirName + "/sys-root/mingw";
++  if (getDriver().getVFS().exists(Base + CandidateSubdir))
++    SubdirName = CandidateSubdir;
++
+   getFilePaths().push_back(
+       (Base + SubdirName + llvm::sys::path::get_separator() + "lib").str());
+ 
+@@ -481,8 +488,6 @@ toolchains::MinGW::MinGW(const Driver &D, const llvm::Triple &Triple,
+       (Base + SubdirName + llvm::sys::path::get_separator() + "mingw/lib").str());
+ 
+   getFilePaths().push_back(Base + "lib");
+-  // openSUSE
+-  getFilePaths().push_back(Base + SubdirName + "/sys-root/mingw/lib");
+ 
+   NativeLLVMSupport =
+       Args.getLastArgValue(options::OPT_fuse_ld_EQ, CLANG_DEFAULT_LINKER)
+@@ -636,12 +641,6 @@ void toolchains::MinGW::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+   if (DriverArgs.hasArg(options::OPT_nostdlibinc))
+     return;
+ 
+-  if (GetRuntimeLibType(DriverArgs) == ToolChain::RLT_Libgcc) {
+-    // openSUSE
+-    addSystemInclude(DriverArgs, CC1Args,
+-                     Base + SubdirName + "/sys-root/mingw/include");
+-  }
+-
+   addSystemInclude(DriverArgs, CC1Args,
+                    Base + SubdirName + llvm::sys::path::get_separator() +
+                        "include");
+@@ -719,7 +718,7 @@ void toolchains::MinGW::AddClangCXXStdlibIncludeArgs(
+     for (auto &CppIncludeBase : CppIncludeBases) {
+       addSystemInclude(DriverArgs, CC1Args, CppIncludeBase);
+       CppIncludeBase += Slash;
+-      addSystemInclude(DriverArgs, CC1Args, CppIncludeBase + SubdirName);
++      addSystemInclude(DriverArgs, CC1Args, CppIncludeBase + TripleDirName);
+       addSystemInclude(DriverArgs, CC1Args, CppIncludeBase + "backward");
+     }
+     break;
+diff --git a/clang/lib/Driver/ToolChains/MinGW.h b/clang/lib/Driver/ToolChains/MinGW.h
+index 88dc15ff13f2..ddb54fb82978 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.h
++++ b/clang/lib/Driver/ToolChains/MinGW.h
+@@ -110,6 +110,7 @@ private:
+   clang::driver::toolchains::Generic_GCC::GCCVersion GccVer;
+   std::string Ver;
+   std::string SubdirName;
++  std::string TripleDirName;
+   mutable std::unique_ptr<tools::gcc::Preprocessor> Preprocessor;
+   mutable std::unique_ptr<tools::gcc::Compiler> Compiler;
+   void findGccLibDir(const llvm::Triple &LiteralTriple);
+diff --git a/clang/test/Driver/mingw.cpp b/clang/test/Driver/mingw.cpp
+index bde952fb3565..46ea55b9500d 100644
+--- a/clang/test/Driver/mingw.cpp
++++ b/clang/test/Driver/mingw.cpp
+@@ -40,7 +40,10 @@
+ 
+ 
+ // RUN: %clang -target x86_64-pc-windows-gnu -rtlib=platform -stdlib=libstdc++ -c -### --sysroot=%S/Inputs/mingw_fedora_tree/usr %s 2>&1 | FileCheck -check-prefix=CHECK_MINGW_FEDORA_TREE %s
+-// CHECK_MINGW_FEDORA_TREE: "[[BASE:[^"]+]]/Inputs/mingw_fedora_tree/usr{{/|\\\\}}x86_64-w64-mingw32ucrt/sys-root/mingw/include"
++// CHECK_MINGW_FEDORA_TREE: "[[BASE:[^"]+]]/Inputs/mingw_fedora_tree/usr{{/|\\\\}}x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++"
++// CHECK_MINGW_FEDORA_TREE: "[[BASE]]/Inputs/mingw_fedora_tree/usr{{/|\\\\}}x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/x86_64-w64-mingw32ucrt"
++// CHECK_MINGW_FEDORA_TREE: "[[BASE]]/Inputs/mingw_fedora_tree/usr{{/|\\\\}}x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/backward"
++// CHECK_MINGW_FEDORA_TREE: "[[BASE]]/Inputs/mingw_fedora_tree/usr{{/|\\\\}}x86_64-w64-mingw32ucrt/sys-root/mingw/include"
+ 
+ 
+ // RUN: %clang -target i686-pc-windows-gnu -rtlib=platform -stdlib=libstdc++ -c -### --sysroot=%S/Inputs/mingw_arch_tree/usr %s 2>&1 | FileCheck -check-prefix=CHECK_MINGW_ARCH_TREE %s
+-- 
+2.25.1
+

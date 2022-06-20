@@ -1,0 +1,275 @@
+From e57443974ab7f70dfc62504cf1dfacf71ec4d59c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 22 Nov 2022 14:38:54 +0200
+Subject: [PATCH 2/4] [clang] [MinGW] Improve/extend the gcc/sysroot detection
+ logic
+
+There are three functions that try to detect the right implicit
+sysroot and libgcc directory setup to use
+- One which looks for mingw sysroots located in
+  <clangbin>/../<sysrootname>
+- One which looks for a mingw-targeting gcc executables in the PATH
+- One which looks in the <gccroot>/lib/gcc directory to find the
+  right one to use, and the right specific triple used for arch
+  specific directories in the gcc/libstdc++ install
+
+These have mostly tried to look for executables named
+"<arch>-w64-mingw32-gcc" or "mingw32-gcc" or subdirectories
+named "<arch>-w64-mingw32" or "mingw32".
+
+In the case of findClangRelativeSysroot, it also has looked
+for directories with the name of the actual triple. This
+was added in deff7536278d355977171726124f83aa4bb95419,
+with the intent of looking for a directory matching exactly
+the user provided literal triple - however the triple here
+is the normalized one, not the one provided by the user on
+the command line.
+
+Improve and unify this logic somewhat:
+- Always first look for things based on the literal triple
+  provided by the user.
+- Secondly look for things based on the normalized triple
+  (which usually ends up as e.g. x86_64-w64-windows-gnu),
+  accessed via the Triple which is passed to the constructor
+- Then look for the common triple form <arch>-w64-mingw32
+
+The literal triple provided by the user is available via
+Driver::getTargetTriple(), but computeTargetTriple() may
+change e.g. the architecture of it, so we need to
+reapply the effective architecture on the literal triple
+spelling from Driver::getTargetTriple().
+
+Do this consistently for all of findGcc, findClangRelativeSysroot
+and findGccLibDir (while keeping the existing plain "mingw32"
+cases in findGcc and findGccLibDir too).
+
+Fedora 37 started shipping mingw sysroots targeting UCRT,
+in addition to the traditional msvcrt.dll, and these use
+triples in the form <arch>-w64-mingw32ucrt - see
+https://fedoraproject.org/wiki/Changes/F37MingwUCRT.
+
+Thus, in addition to the existing default tested triples,
+try looking for triples in the form <arch>-w64-mingw32ucrt,
+to automatically find the UCRT sysroots on Fedora 37.
+By explicitly setting a specific target on the Clang command
+line, the user can be more explicit with which flavour is
+to be preferred.
+---
+ clang/lib/Driver/ToolChains/MinGW.cpp         | 68 ++++++++++++++-----
+ clang/lib/Driver/ToolChains/MinGW.h           |  2 +-
+ .../12.2.1/include-fixed/.keep                |  0
+ .../sys-root/mingw/include/.keep              |  0
+ .../sys-root/mingw/include/c++/backward/.keep |  0
+ .../include/c++/x86_64-w64-mingw32ucrt/.keep  |  0
+ clang/test/Driver/mingw-sysroot.cpp           | 13 ++++
+ clang/test/Driver/mingw.cpp                   |  4 ++
+ 8 files changed, 68 insertions(+), 19 deletions(-)
+ create mode 100644 clang/test/Driver/Inputs/mingw_fedora_tree/usr/lib/gcc/x86_64-w64-mingw32ucrt/12.2.1/include-fixed/.keep
+ create mode 100644 clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/.keep
+ create mode 100644 clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/backward/.keep
+ create mode 100644 clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/x86_64-w64-mingw32ucrt/.keep
+
+diff --git a/clang/lib/Driver/ToolChains/MinGW.cpp b/clang/lib/Driver/ToolChains/MinGW.cpp
+index ef2cf83f3b4a..ad023801140b 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.cpp
++++ b/clang/lib/Driver/ToolChains/MinGW.cpp
+@@ -370,13 +370,26 @@ static bool findGccVersion(StringRef LibDir, std::string &GccLibDir,
+   return Ver.size();
+ }
+ 
+-void toolchains::MinGW::findGccLibDir() {
+-  llvm::SmallVector<llvm::SmallString<32>, 2> SubdirNames;
++static llvm::Triple getLiteralTriple(const Driver &D, const llvm::Triple &T) {
++  llvm::Triple LiteralTriple(D.getTargetTriple());
++  // The arch portion of the triple may be overridden by -m32/-m64.
++  LiteralTriple.setArchName(T.getArchName());
++  return LiteralTriple;
++}
++
++void toolchains::MinGW::findGccLibDir(const llvm::Triple &LiteralTriple) {
++  llvm::SmallVector<llvm::SmallString<32>, 5> SubdirNames;
++  SubdirNames.emplace_back(LiteralTriple.str());
++  SubdirNames.emplace_back(getTriple().str());
+   SubdirNames.emplace_back(getTriple().getArchName());
+-  SubdirNames[0] += "-w64-mingw32";
++  SubdirNames.back() += "-w64-mingw32";
++  SubdirNames.emplace_back(getTriple().getArchName());
++  SubdirNames.back() += "-w64-mingw32ucrt";
+   SubdirNames.emplace_back("mingw32");
+-  if (SubdirName.empty())
+-    SubdirName = std::string(SubdirNames[0].str());
++  if (SubdirName.empty()) {
++    SubdirName = getTriple().getArchName();
++    SubdirName += "-w64-mingw32";
++  }
+   // lib: Arch Linux, Ubuntu, Windows
+   // lib64: openSUSE Linux
+   for (StringRef CandidateLib : {"lib", "lib64"}) {
+@@ -391,10 +404,17 @@ void toolchains::MinGW::findGccLibDir() {
+   }
+ }
+ 
+-static llvm::ErrorOr<std::string> findGcc(const llvm::Triple &T) {
+-  llvm::SmallVector<llvm::SmallString<32>, 2> Gccs;
++static llvm::ErrorOr<std::string> findGcc(const llvm::Triple &LiteralTriple,
++                                          const llvm::Triple &T) {
++  llvm::SmallVector<llvm::SmallString<32>, 5> Gccs;
++  Gccs.emplace_back(LiteralTriple.str());
++  Gccs.back() += "-gcc";
++  Gccs.emplace_back(T.str());
++  Gccs.back() += "-gcc";
+   Gccs.emplace_back(T.getArchName());
+-  Gccs[0] += "-w64-mingw32-gcc";
++  Gccs.back() += "-w64-mingw32-gcc";
++  Gccs.emplace_back(T.getArchName());
++  Gccs.back() += "-w64-mingw32ucrt-gcc";
+   Gccs.emplace_back("mingw32-gcc");
+   // Please do not add "gcc" here
+   for (StringRef CandidateGcc : Gccs)
+@@ -404,12 +424,15 @@ static llvm::ErrorOr<std::string> findGcc(const llvm::Triple &T) {
+ }
+ 
+ static llvm::ErrorOr<std::string>
+-findClangRelativeSysroot(const Driver &D, const llvm::Triple &T,
+-                         std::string &SubdirName) {
+-  llvm::SmallVector<llvm::SmallString<32>, 2> Subdirs;
++findClangRelativeSysroot(const Driver &D, const llvm::Triple &LiteralTriple,
++                         const llvm::Triple &T, std::string &SubdirName) {
++  llvm::SmallVector<llvm::SmallString<32>, 4> Subdirs;
++  Subdirs.emplace_back(LiteralTriple.str());
+   Subdirs.emplace_back(T.str());
+   Subdirs.emplace_back(T.getArchName());
+-  Subdirs[1] += "-w64-mingw32";
++  Subdirs.back() += "-w64-mingw32";
++  Subdirs.emplace_back(T.getArchName());
++  Subdirs.back() += "-w64-mingw32ucrt";
+   StringRef ClangRoot = llvm::sys::path::parent_path(D.getInstalledDir());
+   StringRef Sep = llvm::sys::path::get_separator();
+   for (StringRef CandidateSubdir : Subdirs) {
+@@ -429,14 +452,16 @@ toolchains::MinGW::MinGW(const Driver &D, const llvm::Triple &Triple,
+ 
+   // The sequence for detecting a sysroot here should be kept in sync with
+   // the testTriple function below.
++  llvm::Triple LiteralTriple = getLiteralTriple(D, getTriple());
+   if (getDriver().SysRoot.size())
+     Base = getDriver().SysRoot;
+   // Look for <clang-bin>/../<triplet>; if found, use <clang-bin>/.. as the
+   // base as it could still be a base for a gcc setup with libgcc.
+-  else if (llvm::ErrorOr<std::string> TargetSubdir =
+-               findClangRelativeSysroot(getDriver(), getTriple(), SubdirName))
++  else if (llvm::ErrorOr<std::string> TargetSubdir = findClangRelativeSysroot(
++               getDriver(), LiteralTriple, getTriple(), SubdirName))
+     Base = std::string(llvm::sys::path::parent_path(TargetSubdir.get()));
+-  else if (llvm::ErrorOr<std::string> GPPName = findGcc(getTriple()))
++  else if (llvm::ErrorOr<std::string> GPPName =
++               findGcc(LiteralTriple, getTriple()))
+     Base = std::string(llvm::sys::path::parent_path(
+         llvm::sys::path::parent_path(GPPName.get())));
+   else
+@@ -444,7 +469,7 @@ toolchains::MinGW::MinGW(const Driver &D, const llvm::Triple &Triple,
+         llvm::sys::path::parent_path(getDriver().getInstalledDir()));
+ 
+   Base += llvm::sys::path::get_separator();
+-  findGccLibDir();
++  findGccLibDir(LiteralTriple);
+   // GccLibDir must precede Base/lib so that the
+   // correct crtbegin.o ,cetend.o would be found.
+   getFilePaths().push_back(GccLibDir);
+@@ -591,6 +616,12 @@ void toolchains::MinGW::printVerboseInfo(raw_ostream &OS) const {
+ // /usr/include/c++/4.8/backward
+ // /usr/x86_64-w64-mingw32/include
+ 
++// Fedora
++// /usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/x86_64-w64-mingw32ucrt
++// /usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/backward
++// /usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include
++// /usr/lib/gcc/x86_64-w64-mingw32ucrt/12.2.1/include-fixed
++
+ void toolchains::MinGW::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+                                                   ArgStringList &CC1Args) const {
+   if (DriverArgs.hasArg(options::OPT_nostdinc))
+@@ -701,10 +732,11 @@ static bool testTriple(const Driver &D, const llvm::Triple &Triple) {
+   std::string SubdirName;
+   if (D.SysRoot.size())
+     return true;
++  llvm::Triple LiteralTriple = getLiteralTriple(D, Triple);
+   if (llvm::ErrorOr<std::string> TargetSubdir =
+-          findClangRelativeSysroot(D, Triple, SubdirName))
++          findClangRelativeSysroot(D, LiteralTriple, Triple, SubdirName))
+     return true;
+-  if (llvm::ErrorOr<std::string> GPPName = findGcc(Triple))
++  if (llvm::ErrorOr<std::string> GPPName = findGcc(LiteralTriple, Triple))
+     return true;
+   // If we neither found a colocated sysroot or a matching gcc executable,
+   // conclude that we can't know if this is the correct spelling of the triple.
+diff --git a/clang/lib/Driver/ToolChains/MinGW.h b/clang/lib/Driver/ToolChains/MinGW.h
+index 6a67e41a02fb..88dc15ff13f2 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.h
++++ b/clang/lib/Driver/ToolChains/MinGW.h
+@@ -112,7 +112,7 @@ private:
+   std::string SubdirName;
+   mutable std::unique_ptr<tools::gcc::Preprocessor> Preprocessor;
+   mutable std::unique_ptr<tools::gcc::Compiler> Compiler;
+-  void findGccLibDir();
++  void findGccLibDir(const llvm::Triple &LiteralTriple);
+ 
+   bool NativeLLVMSupport;
+ };
+diff --git a/clang/test/Driver/Inputs/mingw_fedora_tree/usr/lib/gcc/x86_64-w64-mingw32ucrt/12.2.1/include-fixed/.keep b/clang/test/Driver/Inputs/mingw_fedora_tree/usr/lib/gcc/x86_64-w64-mingw32ucrt/12.2.1/include-fixed/.keep
+new file mode 100644
+index 000000000000..e69de29bb2d1
+diff --git a/clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/.keep b/clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/.keep
+new file mode 100644
+index 000000000000..e69de29bb2d1
+diff --git a/clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/backward/.keep b/clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/backward/.keep
+new file mode 100644
+index 000000000000..e69de29bb2d1
+diff --git a/clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/x86_64-w64-mingw32ucrt/.keep b/clang/test/Driver/Inputs/mingw_fedora_tree/usr/x86_64-w64-mingw32ucrt/sys-root/mingw/include/c++/x86_64-w64-mingw32ucrt/.keep
+new file mode 100644
+index 000000000000..e69de29bb2d1
+diff --git a/clang/test/Driver/mingw-sysroot.cpp b/clang/test/Driver/mingw-sysroot.cpp
+index 1cb51b3aea2d..985be9e5f2ac 100644
+--- a/clang/test/Driver/mingw-sysroot.cpp
++++ b/clang/test/Driver/mingw-sysroot.cpp
+@@ -14,6 +14,11 @@
+ // RUN: ln -s %S/Inputs/mingw_ubuntu_posix_tree/usr/x86_64-w64-mingw32 %T/testroot-clang/x86_64-w64-mingw32
+ // RUN: ln -s %S/Inputs/mingw_arch_tree/usr/i686-w64-mingw32 %T/testroot-clang/i686-w64-mingw32
+ 
++// RUN: rm -rf %T/testroot-custom-triple
++// RUN: mkdir -p %T/testroot-custom-triple/bin
++// RUN: ln -s %clang %T/testroot-custom-triple/bin/x86_64-w64-mingw32foo-clang
++// RUN: ln -s %clang %T/testroot-custom-triple/bin/clang
++// RUN: ln -s %S/Inputs/mingw_ubuntu_posix_tree/usr/x86_64-w64-mingw32 %T/testroot-custom-triple/x86_64-w64-mingw32foo
+ 
+ // If we find a gcc in the path with the right triplet prefix, pick that as
+ // sysroot:
+@@ -51,3 +56,11 @@
+ 
+ // RUN: env "PATH=%T/testroot-gcc/bin:%PATH%" %T/testroot-clang/bin/x86_64-w64-mingw32-clang --target=x86_64-w64-mingw32 -m32 -rtlib=compiler-rt -stdlib=libstdc++ --sysroot="" -c -### %s 2>&1 | FileCheck -check-prefix=CHECK_TESTROOT_CLANG_I686 %s
+ // CHECK_TESTROOT_CLANG_I686: "{{[^"]+}}/testroot-clang{{/|\\\\}}i686-w64-mingw32{{/|\\\\}}include"
++
++
++// If the user calls clang with a custom literal triple, make sure this maps
++// to sysroots with the matching spelling.
++
++// RUN: %T/testroot-custom-triple/bin/x86_64-w64-mingw32foo-clang -rtlib=compiler-rt -stdlib=libstdc++ --sysroot="" -c -### %s 2>&1 | FileCheck -check-prefix=CHECK_TESTROOT_CUSTOM_TRIPLE %s
++// RUN: %T/testroot-custom-triple/bin/clang --target=x86_64-w64-mingw32foo -rtlib=compiler-rt -stdlib=libstdc++ --sysroot="" -c -### %s 2>&1 | FileCheck -check-prefix=CHECK_TESTROOT_CUSTOM_TRIPLE %s
++// CHECK_TESTROOT_CUSTOM_TRIPLE: "{{[^"]+}}/testroot-custom-triple{{/|\\\\}}x86_64-w64-mingw32foo{{/|\\\\}}include"
+diff --git a/clang/test/Driver/mingw.cpp b/clang/test/Driver/mingw.cpp
+index b37503e475d8..bde952fb3565 100644
+--- a/clang/test/Driver/mingw.cpp
++++ b/clang/test/Driver/mingw.cpp
+@@ -39,6 +39,10 @@
+ // CHECK_MINGW_OPENSUSE_TREE: "[[BASE]]/Inputs/mingw_opensuse_tree/usr{{/|\\\\}}x86_64-w64-mingw32/sys-root/mingw/include"
+ 
+ 
++// RUN: %clang -target x86_64-pc-windows-gnu -rtlib=platform -stdlib=libstdc++ -c -### --sysroot=%S/Inputs/mingw_fedora_tree/usr %s 2>&1 | FileCheck -check-prefix=CHECK_MINGW_FEDORA_TREE %s
++// CHECK_MINGW_FEDORA_TREE: "[[BASE:[^"]+]]/Inputs/mingw_fedora_tree/usr{{/|\\\\}}x86_64-w64-mingw32ucrt/sys-root/mingw/include"
++
++
+ // RUN: %clang -target i686-pc-windows-gnu -rtlib=platform -stdlib=libstdc++ -c -### --sysroot=%S/Inputs/mingw_arch_tree/usr %s 2>&1 | FileCheck -check-prefix=CHECK_MINGW_ARCH_TREE %s
+ // CHECK_MINGW_ARCH_TREE: "[[BASE:[^"]+]]/Inputs/mingw_arch_tree/usr{{/|\\\\}}i686-w64-mingw32{{/|\\\\}}include{{/|\\\\}}c++{{/|\\\\}}5.1.0"
+ // CHECK_MINGW_ARCH_TREE: "[[BASE]]/Inputs/mingw_arch_tree/usr{{/|\\\\}}i686-w64-mingw32{{/|\\\\}}include{{/|\\\\}}c++{{/|\\\\}}5.1.0{{/|\\\\}}i686-w64-mingw32"
+-- 
+2.25.1
+

@@ -1,0 +1,90 @@
+From 34727819903a538bc73791e9deed2e6d737584c6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Wed, 23 Nov 2022 23:01:36 +0200
+Subject: [PATCH 1/4] [clang] [MinGW] Remove an unused parameter. NFC.
+
+---
+ clang/lib/Driver/Driver.cpp           |  2 +-
+ clang/lib/Driver/ToolChains/MinGW.cpp | 15 ++++++---------
+ clang/lib/Driver/ToolChains/MinGW.h   |  3 +--
+ 3 files changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/clang/lib/Driver/Driver.cpp b/clang/lib/Driver/Driver.cpp
+index 0be996275a22..ae51315b73be 100644
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -627,7 +627,7 @@ static llvm::Triple computeTargetTriple(const Driver &D,
+     if (AT != llvm::Triple::UnknownArch && AT != Target.getArch()) {
+       Target.setArch(AT);
+       if (Target.isWindowsGNUEnvironment())
+-        toolchains::MinGW::fixTripleArch(D, Target, Args);
++        toolchains::MinGW::fixTripleArch(D, Target);
+     }
+   }
+ 
+diff --git a/clang/lib/Driver/ToolChains/MinGW.cpp b/clang/lib/Driver/ToolChains/MinGW.cpp
+index 4c392d96befd..ef2cf83f3b4a 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.cpp
++++ b/clang/lib/Driver/ToolChains/MinGW.cpp
+@@ -695,8 +695,7 @@ void toolchains::MinGW::AddClangCXXStdlibIncludeArgs(
+   }
+ }
+ 
+-static bool testTriple(const Driver &D, const llvm::Triple &Triple,
+-                       const ArgList &Args) {
++static bool testTriple(const Driver &D, const llvm::Triple &Triple) {
+   // If an explicit sysroot is set, that will be used and we shouldn't try to
+   // detect anything else.
+   std::string SubdirName;
+@@ -712,11 +711,10 @@ static bool testTriple(const Driver &D, const llvm::Triple &Triple,
+   return false;
+ }
+ 
+-static llvm::Triple adjustTriple(const Driver &D, const llvm::Triple &Triple,
+-                                 const ArgList &Args) {
++static llvm::Triple adjustTriple(const Driver &D, const llvm::Triple &Triple) {
+   // First test if the original triple can find a sysroot with the triple
+   // name.
+-  if (testTriple(D, Triple, Args))
++  if (testTriple(D, Triple))
+     return Triple;
+   llvm::SmallVector<llvm::StringRef, 3> Archs;
+   // If not, test a couple other possible arch names that might be what was
+@@ -732,17 +730,16 @@ static llvm::Triple adjustTriple(const Driver &D, const llvm::Triple &Triple,
+   for (auto A : Archs) {
+     llvm::Triple TestTriple(Triple);
+     TestTriple.setArchName(A);
+-    if (testTriple(D, TestTriple, Args))
++    if (testTriple(D, TestTriple))
+       return TestTriple;
+   }
+   // If none was found, just proceed with the original value.
+   return Triple;
+ }
+ 
+-void toolchains::MinGW::fixTripleArch(const Driver &D, llvm::Triple &Triple,
+-                                      const ArgList &Args) {
++void toolchains::MinGW::fixTripleArch(const Driver &D, llvm::Triple &Triple) {
+   if (Triple.getArch() == llvm::Triple::x86 ||
+       Triple.getArch() == llvm::Triple::arm ||
+       Triple.getArch() == llvm::Triple::thumb)
+-    Triple = adjustTriple(D, Triple, Args);
++    Triple = adjustTriple(D, Triple);
+ }
+diff --git a/clang/lib/Driver/ToolChains/MinGW.h b/clang/lib/Driver/ToolChains/MinGW.h
+index bb2b7f6e8f61..6a67e41a02fb 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.h
++++ b/clang/lib/Driver/ToolChains/MinGW.h
+@@ -60,8 +60,7 @@ public:
+   MinGW(const Driver &D, const llvm::Triple &Triple,
+         const llvm::opt::ArgList &Args);
+ 
+-  static void fixTripleArch(const Driver &D, llvm::Triple &Triple,
+-                            const llvm::opt::ArgList &Args);
++  static void fixTripleArch(const Driver &D, llvm::Triple &Triple);
+ 
+   bool HasNativeLLVMSupport() const override;
+ 
+-- 
+2.25.1
+

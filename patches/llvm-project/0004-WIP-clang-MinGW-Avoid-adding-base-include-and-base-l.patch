@@ -1,0 +1,67 @@
+From ddd4095834ff720928a76e68516bcca4d5aa3570 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 22 Nov 2022 16:12:39 +0200
+Subject: [PATCH 4/4] WIP: [clang] [MinGW] Avoid adding <base>/include and
+ <base>/lib
+
+Only use this if not cross compiling or if the sysroot is set
+explicitly (where it can be expected that it points at the
+target specific subdirectory).
+
+This avoids adding /usr/include and /usr/lib to the include/lib
+paths when doing mingw cross compilation with a distro-provided
+sysroot in /usr/x86_64-w64-mingw32.
+---
+ clang/lib/Driver/ToolChains/MinGW.cpp | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/clang/lib/Driver/ToolChains/MinGW.cpp b/clang/lib/Driver/ToolChains/MinGW.cpp
+index a984e2c45a5e..19074d75a0f2 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.cpp
++++ b/clang/lib/Driver/ToolChains/MinGW.cpp
+@@ -348,6 +348,15 @@ void tools::MinGW::Linker::ConstructJob(Compilation &C, const JobAction &JA,
+                                          Exec, CmdArgs, Inputs, Output));
+ }
+ 
++static bool isCrossCompiling(const llvm::Triple &T, bool RequireArchMatch) {
++  llvm::Triple HostTriple(llvm::Triple::normalize(LLVM_HOST_TRIPLE));
++  if (HostTriple.getOS() != llvm::Triple::Win32)
++    return true;
++  if (RequireArchMatch && HostTriple.getArch() != T.getArch())
++    return true;
++  return false;
++}
++
+ // Simplified from Generic_GCC::GCCInstallationDetector::ScanLibDirForGCCTriple.
+ static bool findGccVersion(StringRef LibDir, std::string &GccLibDir,
+                            std::string &Ver,
+@@ -487,7 +496,11 @@ toolchains::MinGW::MinGW(const Driver &D, const llvm::Triple &Triple,
+   getFilePaths().push_back(
+       (Base + SubdirName + llvm::sys::path::get_separator() + "mingw/lib").str());
+ 
+-  getFilePaths().push_back(Base + "lib");
++  // Only include <base>/lib if we're not cross compiling (not even for windows->windows
++  // to a different arch), or if the sysroot has been set (where we presume the user
++  // has pointed it at an arch specific subdirectory).
++  if (!::isCrossCompiling(getTriple(), /*RequireArchMatch=*/true) || getDriver().SysRoot.size())
++    getFilePaths().push_back(Base + "lib");
+ 
+   NativeLLVMSupport =
+       Args.getLastArgValue(options::OPT_fuse_ld_EQ, CLANG_DEFAULT_LINKER)
+@@ -649,7 +662,12 @@ void toolchains::MinGW::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+   addSystemInclude(DriverArgs, CC1Args,
+                    Base + SubdirName + llvm::sys::path::get_separator() + "usr/include");
+ 
+-  addSystemInclude(DriverArgs, CC1Args, Base + "include");
++  // Only include <base>/include if we're not cross compiling (but do allow it
++  // if we're on Windows and building for Windows on another architecture),
++  // or if the sysroot has been set (where we presume the user has pointed it
++  // at an arch specific subdirectory).
++  if (!::isCrossCompiling(getTriple(), /*RequireArchMatch=*/false) || getDriver().SysRoot.size())
++    addSystemInclude(DriverArgs, CC1Args, Base + "include");
+ }
+ 
+ void toolchains::MinGW::addClangTargetOptions(
+-- 
+2.25.1
+
