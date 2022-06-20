@@ -80,6 +80,8 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
@@ -114,6 +116,8 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build g++-aarch64-linux-gnu
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - uses: actions/download-artifact@v4
@@ -170,6 +174,8 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
@@ -201,6 +207,8 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           brew install ninja
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           # Disable zstd and python. Both are available on the runners, but
           # installed with homebrew, and only available in the native (x86_64)
           # form. Therefore, autodetection will pick them up, but linking
@@ -262,6 +270,8 @@ jobs:
           if [ "${{matrix.sys}}" = "mingw64" ]; then
               ARGS="--disable-dylib"
           fi
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $ARGS
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
@@ -314,6 +324,8 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install libltdl-dev swig autoconf-archive ninja-build
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
@@ -405,6 +417,8 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build and test libcxx
         run: |
@@ -464,6 +478,8 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build test executables
         run: |
@@ -530,6 +546,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
           git config --global core.autocrlf false
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build test executables
         run: |
