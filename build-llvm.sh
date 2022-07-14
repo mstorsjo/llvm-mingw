@@ -68,6 +68,9 @@ while [ $# -gt 0 ]; do
     --disable-clang-tools-extra)
         unset CLANG_TOOLS_EXTRA
         ;;
+    --enable-flang)
+        FLANG=ON
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -77,7 +80,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-clang-tools-extra] [--enable-flang] [--host=triple] dest
         exit 1
     fi
 
@@ -137,6 +140,10 @@ else
     case $(uname) in
     MINGW*)
         CMAKE_GENERATOR="MSYS Makefiles"
+        if [ -n "$FLANG" ]; then
+            # Flang/MLIR can't be built as dylibs on windows yet
+            LINK_DYLIB=OFF
+        fi
         ;;
     *)
         ;;
@@ -147,6 +154,15 @@ fi
 CMAKEFLAGS="$LLVM_CMAKEFLAGS"
 
 if [ -n "$HOST" ]; then
+    if [ "$HOST" != "x86_64-w64-mingw32" ] && [ "$HOST" != "aarch64-w64-mingw32" ]; then
+        # Flang can't be built on 32 bit arches currently.
+        unset FLANG
+    fi
+    if [ -n "$FLANG" ]; then
+        # Flang/MLIR can't be built as dylibs on windows yet
+        LINK_DYLIB=OFF
+    fi
+
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_NAME=Windows"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
@@ -262,8 +278,14 @@ if [ -n "$SYMLINK_PROJECTS" ]; then
     # assert messages), allowing ccache to share caches across multiple
     # checkouts.
     cd tools
-    for p in clang lld lldb; do
+    for p in clang lld lldb mlir flang; do
         if [ "$p" = "lldb" ] && [ -z "$LLDB" ]; then
+            continue
+        fi
+        if [ "$p" = "mlir" ] && [ -z "$FLANG" ]; then
+            continue
+        fi
+        if [ "$p" = "flang" ] && [ -z "$FLANG" ]; then
             continue
         fi
         if [ ! -e $p ]; then
@@ -286,6 +308,9 @@ else
     fi
     if [ -n "$CLANG_TOOLS_EXTRA" ]; then
         PROJECTS="$PROJECTS;clang-tools-extra"
+    fi
+    if [ -n "$FLANG" ]; then
+        PROJECTS="$PROJECTS;mlir;flang"
     fi
 fi
 
