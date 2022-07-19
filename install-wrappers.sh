@@ -88,6 +88,9 @@ for arch in $ARCHS; do
         for exec in clang clang++ gcc g++ c++ as; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
+        if [ -f flang-new$EXEEXT ] && ([ "$arch" = "x86_64" ] || [ "$arch" = "aarch64" ]); then
+            ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-flang$CTW_LINK_SUFFIX
+        fi
         for exec in addr2line ar ranlib nm objcopy readelf strings strip; do
             if [ -n "$HOST" ]; then
                 link_target=llvm-wrapper
@@ -120,6 +123,9 @@ if [ -n "$EXEEXT" ]; then
         for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf strings strip windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
+        if [ -f $HOST-flang$EXEEXT ]; then
+            ln -sf $HOST-flang$EXEEXT flang$EXEEXT
+        fi
         for exec in cc c99 c11; do
             ln -sf clang$EXEEXT $exec$EXEEXT
         done

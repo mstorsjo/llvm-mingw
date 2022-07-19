@@ -55,7 +55,10 @@ int _tmain(int argc, TCHAR* argv[]) {
     int arg = 0;
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");
-    exec_argv[arg++] = concat(dir, _T(CLANG));
+    if (!_tcscmp(exe, _T("flang")))
+        exec_argv[arg++] = concat(dir, _T("flang-new"));
+    else
+        exec_argv[arg++] = concat(dir, _T(CLANG));
     exec_argv[arg++] = _T("--start-no-unused-arguments");
 
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.

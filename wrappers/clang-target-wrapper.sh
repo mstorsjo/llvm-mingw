@@ -43,7 +43,11 @@ if [ -n "$CCACHE" ]; then
 fi
 
 # If changing this wrapper, change clang-target-wrapper.c accordingly.
-CLANG="$DIR/clang"
+if [ "$EXE" = "flang" ]; then
+    CLANG="$DIR/flang-new"
+else
+    CLANG="$DIR/clang"
+fi
 FLAGS=""
 FLAGS="$FLAGS --start-no-unused-arguments"
 case $EXE in
