@@ -88,3 +88,4 @@ fi
 ./build-compiler-rt.sh $PREFIX --build-sanitizers
 ./build-libssp.sh $PREFIX
 ./build-openmp.sh $PREFIX
+./build-flang-runtime.sh $PREFIX

@@ -181,6 +181,10 @@ RUN cd test && \
         done; \
     done
 
+# Build the Flang runtime
+COPY build-flang-runtime.sh ./
+RUN ./build-flang-runtime.sh $TOOLCHAIN_PREFIX
+
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         cp $TOOLCHAIN_PREFIX/$arch-w64-mingw32/bin/*.dll $arch || exit 1; \
