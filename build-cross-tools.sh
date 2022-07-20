@@ -24,6 +24,9 @@ while [ $# -gt 0 ]; do
     --disable-lldb-mi)
         NO_LLDB_MI=1
         ;;
+    --enable-flang)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
     *)
         if [ -z "$NATIVE" ]; then
             NATIVE="$1"
@@ -40,7 +43,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python] [--disable-lldb-mi]
+    echo $0 native prefix arch [--with-python] [--disable-lldb-mi] [--enable-flang]
     exit 1
 fi
 
