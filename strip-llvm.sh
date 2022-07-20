@@ -123,7 +123,8 @@ rm -rf clang clang-c clang-tidy lld llvm llvm-c lldb
 cd ..
 cd lib
 rm -f *.dll.a
-for i in lib*.a *.so* *.dylib* cmake; do
+rm -f lib*.a
+for i in *.so* *.dylib* cmake; do
     case $i in
     liblldb*|libclang-cpp*|libLLVM*)
         ;;
