@@ -122,12 +122,12 @@ jobs:
       - name: Build
         run: |
           brew install ninja
-          # Building with MACOS_REDIST=1 (building universal binaries) without
-          # --disable-lldb fails in Github Actions, because python is available
-          # (and gets picked up), but only exists in native form.
-          # Disable use of zstd too - it's also available, but only in native
-          # form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
+          # Disable zstd and python. Both are available on the runners, but
+          # installed with homebrew, and only available in the native (x86_64)
+          # form. Therefore, autodetection will pick them up, but linking
+          # universal binaries fails as those libraries are unavailable in the
+          # other (arm64) architecture form.
+          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
           cd install
           tar -Jcf ../llvm-mingw-macos.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v2
