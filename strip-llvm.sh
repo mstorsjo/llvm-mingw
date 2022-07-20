@@ -52,7 +52,7 @@ MINGW*)
 esac
 
 cd bin
-for i in bbc bugpoint c-index-test clang-* clangd diagtool dsymutil f18-parse-demo find-all-symbols fir-opt flang-to-external-fc git-clang-format hmaptool ld64.lld* llc lldb-* lli llvm-* modularize obj2yaml opt pp-trace sancov sanstats scan-build scan-view split-file tco verify-uselistorder wasm-ld yaml2obj libclang.dll *LTO.dll *Remarks.dll *.bat; do
+for i in bbc bugpoint c-index-test clang-* clangd diagtool dsymutil f18-parse-demo find-all-symbols fir-opt flang-to-external-fc git-clang-format hmaptool ld64.lld* llc lldb-* lli llvm-* mlir-* modularize obj2yaml opt pp-trace sancov sanstats scan-build scan-view split-file tblgen-lsp-server tco verify-uselistorder wasm-ld yaml2obj libclang.dll *LTO.dll *Remarks.dll *.bat; do
     basename=$i
     if [ -n "$EXEEXT" ]; then
         # Some in the list are expanded globs, some are plain names we list.
@@ -119,10 +119,19 @@ fi
 cd ..
 rm -rf share libexec
 cd include
-rm -rf clang clang-c clang-tidy lld llvm llvm-c lldb
+rm -rf clang clang-c clang-tidy lld llvm llvm-c lldb mlir mlir-c
+if [ -d flang ] && [ "$(ls flang/*.mod 2>/dev/null)" != "" ]; then
+    mkdir flang-mod
+    mv flang/*.mod flang-mod
+    rm -rf flang
+    mv flang-mod flang
+else
+    rm -rf flang
+fi
 cd ..
 cd lib
 rm -f *.dll.a
+rm -rf objects-*
 rm -f lib*.a
 for i in *.so* *.dylib* cmake; do
     case $i in
