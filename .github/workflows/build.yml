@@ -94,7 +94,9 @@ jobs:
           # Building with MACOS_REDIST=1 (building universal binaries) without
           # --disable-lldb fails in Github Actions, because python is available
           # (and gets picked up), but only exists in native form.
-          MACOS_REDIST=1 ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
+          # Disable use of zstd too - it's also available, but only in native
+          # form.
+          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           cd install
           tar -Jcf ../llvm-mingw-macos.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v2
