@@ -16,18 +16,35 @@
 
 set -e
 
-if [ $# -lt 3 ]; then
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --with-python)
+        PYTHON=1
+        ;;
+    *)
+        if [ -z "$NATIVE" ]; then
+            NATIVE="$1"
+        elif [ -z "$PREFIX" ]; then
+            PREFIX="$1"
+        elif [ -z "$CROSS_ARCH" ]; then
+            CROSS_ARCH="$1"
+        else
+            echo Unrecognized parameter $1
+            exit 1
+        fi
+        ;;
+    esac
+    shift
+done
+if [ -z "$CROSS_ARCH" ]; then
     echo $0 native prefix arch [--with-python]
     exit 1
 fi
-NATIVE="$1"
-PREFIX="$2"
-CROSS_ARCH="$3"
 
 export PATH="$NATIVE/bin:$PATH"
 HOST=$CROSS_ARCH-w64-mingw32
 
-if [ "$4" = "--with-python" ]; then
+if [ -n "$PYTHON" ]; then
     PYTHON_NATIVE_PREFIX="$(cd "$(dirname "$0")" && pwd)/python-native"
     [ -d "$PYTHON_NATIVE_PREFIX" ] || rm -rf "$PYTHON_NATIVE_PREFIX"
     ./build-python.sh $PYTHON_NATIVE_PREFIX
