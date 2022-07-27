@@ -190,6 +190,9 @@ if [ -n "$HOST" ]; then
         if [ -x "$native/clang-pseudo-gen$suffix" ]; then
             CMAKEFLAGS="$CMAKEFLAGS -DCLANG_PSEUDO_GEN=$native/clang-pseudo-gen$suffix"
         fi
+        if [ -x "$native/clang-tidy-confusable-chars-gen$suffix" ]; then
+            CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TIDY_CONFUSABLE_CHARS_GEN=$native/clang-tidy-confusable-chars-gen$suffix"
+        fi
     fi
     CROSS_ROOT=$(cd $(dirname $(command -v $HOST-gcc))/../$HOST && pwd)
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$CROSS_ROOT"
