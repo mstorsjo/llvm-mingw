@@ -45,7 +45,7 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 download() {
-    if [ -n "$(which wget)" ]; then
+    if command -v wget >/dev/null; then
         wget "$1"
     else
         curl -LO "$1"

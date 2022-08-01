@@ -60,7 +60,7 @@ if [ -z "$PREFIX" ]; then
 fi
 
 for dep in git curl cmake; do
-    if ! hash $dep 2>/dev/null; then
+    if ! command -v $dep >/dev/null; then
         echo "$dep not installed. Please install it and retry" 1>&2
         exit 1
     fi

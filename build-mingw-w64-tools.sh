@@ -49,7 +49,7 @@ fi
 cd mingw-w64
 
 MAKE=make
-if [ -n "$(which gmake)" ]; then
+if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
 

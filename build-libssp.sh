@@ -22,7 +22,7 @@ if [ $# -lt 1 ]; then
 fi
 
 MAKE=make
-if [ -n "$(which gmake)" ]; then
+if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
 
@@ -37,7 +37,7 @@ export PATH="$PREFIX/bin:$PATH"
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 download() {
-    if [ -n "$(which wget)" ]; then
+    if command -v wget >/dev/null; then
         if [ -n "$2" ]; then
             wget -O "$2" "$1"
         else

@@ -47,7 +47,7 @@ if [ ! -d llvm-project/compiler-rt ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
 fi
 
-if [ -n "$(which ninja)" ]; then
+if command -v ninja >/dev/null; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
     BUILDCMD=ninja

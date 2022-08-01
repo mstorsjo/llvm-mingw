@@ -125,7 +125,7 @@ fi
 
 [ -z "$CHECKOUT_ONLY" ] || exit 0
 
-if [ -n "$(which ninja)" ]; then
+if command -v ninja >/dev/null; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
     BUILDCMD=ninja
@@ -165,8 +165,8 @@ if [ -n "$HOST" ]; then
             break
         fi
     done
-    if [ -z "$native" ] && [ -n "$(which llvm-tblgen)" ]; then
-        native="$(dirname $(which llvm-tblgen))"
+    if [ -z "$native" ] && command -v llvm-tblgen >/dev/null; then
+        native="$(dirname $(command -v llvm-tblgen))"
         suffix=""
         if [ -x "$native/llvm-tblgen.exe" ]; then
             suffix=".exe"
@@ -191,7 +191,7 @@ if [ -n "$HOST" ]; then
             CMAKEFLAGS="$CMAKEFLAGS -DCLANG_PSEUDO_GEN=$native/clang-pseudo-gen$suffix"
         fi
     fi
-    CROSS_ROOT=$(cd $(dirname $(which $HOST-gcc))/../$HOST && pwd)
+    CROSS_ROOT=$(cd $(dirname $(command -v $HOST-gcc))/../$HOST && pwd)
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$CROSS_ROOT"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
