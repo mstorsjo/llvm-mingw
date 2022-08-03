@@ -85,7 +85,6 @@ for arch in $ARCHS; do
         -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
         -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
         -DCMAKE_CXX_COMPILER_TARGET=$arch-w64-windows-gnu \
-        -DCMAKE_CROSSCOMPILING=TRUE \
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_C_COMPILER_WORKS=TRUE \
         -DCMAKE_CXX_COMPILER_WORKS=TRUE \
