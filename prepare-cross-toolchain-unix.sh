@@ -47,4 +47,16 @@ cp -a $CLANG_RESOURCE_DIR $DEST/lib/clang/$CLANG_VERSION
 # Copy all arch-specific subdirectories plus the "generic" one, as is.
 for arch in generic $ARCHS; do
     cp -a $SRC/$arch-w64-mingw32 $DEST/$arch-w64-mingw32
+    if [ -d $SRC/include/$arch-w64-windows-gnu ]; then
+        cp -a $SRC/include/$arch-w64-windows-gnu $DEST/include
+    fi
+    if [ -d $SRC/lib/$arch-w64-windows-gnu ]; then
+        cp -a $SRC/lib/$arch-w64-windows-gnu $DEST/lib
+    fi
 done
+# Copy the libc++ headers that are installed in the toplevel include directory
+if [ -d $SRC/include/c++ ]; then
+    cp -a $SRC/include/c++ $DEST/include
+fi
+# Copy libunwind headers too
+cp -a $SRC/include/*unwind* $SRC/include/mach-o $DEST/include

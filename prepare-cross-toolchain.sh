@@ -60,9 +60,21 @@ mkdir -p $DEST/include
 # in $DEST/include, and only keeping the bin and lib directories for the
 # individual architectures.
 cp -a $SRC/generic-w64-mingw32/include/. $DEST/include
+# Copy the libc++ headers that are installed in the toplevel include directory
+if [ -d $SRC/include/c++ ]; then
+    cp -a $SRC/include/c++ $DEST/include
+fi
+# Copy libunwind headers too
+cp -a $SRC/include/*unwind* $SRC/include/mach-o $DEST/include
 for arch in $ARCHS; do
     mkdir -p $DEST/$arch-w64-mingw32
     for subdir in bin lib share; do
         cp -a $SRC/$arch-w64-mingw32/$subdir $DEST/$arch-w64-mingw32
     done
+    if [ -d $SRC/include/$arch-w64-windows-gnu ]; then
+        cp -a $SRC/include/$arch-w64-windows-gnu $DEST/include
+    fi
+    if [ -d $SRC/lib/$arch-w64-windows-gnu ]; then
+        cp -a $SRC/lib/$arch-w64-windows-gnu $DEST/lib
+    fi
 done
