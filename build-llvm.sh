@@ -250,6 +250,10 @@ if [ -z "$HOST" ] && [ "$(uname)" = "Darwin" ]; then
         # Building LLDB for macOS fails unless building libc++ is enabled at the
         # same time, or unless the LLDB tests are disabled.
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_INCLUDE_TESTS=OFF"
+        # Don't build our own debugserver - use the system provided one.
+        # The newly built debugserver needs to be properly code signed to work.
+        # This silences a cmake warning.
+        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_USE_SYSTEM_DEBUGSERVER=ON"
     fi
 fi
 
