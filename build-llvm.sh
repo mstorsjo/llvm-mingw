@@ -245,6 +245,14 @@ if [ -n "$MACOS_REDIST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
 fi
 
+if [ -z "$HOST" ] && [ "$(uname)" = "Darwin" ]; then
+    if [ -n "$LLDB" ]; then
+        # Building LLDB for macOS fails unless building libc++ is enabled at the
+        # same time, or unless the LLDB tests are disabled.
+        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_INCLUDE_TESTS=OFF"
+    fi
+fi
+
 TOOLCHAIN_ONLY=ON
 if [ -n "$FULL_LLVM" ]; then
     TOOLCHAIN_ONLY=OFF
@@ -293,8 +301,6 @@ fi
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 [ -n "$NO_RECONF" ] || rm -rf CMake*
-# Building LLDB for macOS fails unless building libc++ is enabled at the
-# same time, or unless the LLDB tests are disabled.
 cmake \
     ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
@@ -306,7 +312,6 @@ cmake \
     -DLLVM_LINK_LLVM_DYLIB=$LINK_DYLIB \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip;llvm-cov;llvm-profdata;llvm-addr2line;llvm-symbolizer;llvm-windres;llvm-ml;llvm-readelf" \
     ${HOST+-DLLVM_HOST_TRIPLE=$HOST} \
-    -DLLDB_INCLUDE_TESTS=OFF \
     $CMAKEFLAGS \
     ..
 
