@@ -21,6 +21,9 @@ while [ $# -gt 0 ]; do
     --with-python)
         PYTHON=1
         ;;
+    --disable-lldb-mi)
+        NO_LLDB_MI=1
+        ;;
     *)
         if [ -z "$NATIVE" ]; then
             NATIVE="$1"
@@ -37,7 +40,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python]
+    echo $0 native prefix arch [--with-python] [--disable-lldb-mi]
     exit 1
 fi
 
@@ -56,7 +59,9 @@ if [ -n "$PYTHON" ]; then
 fi
 
 ./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
-./build-lldb-mi.sh $PREFIX --host=$HOST
+if [ -z "$NO_LLDB_MI" ]; then
+    ./build-lldb-mi.sh $PREFIX --host=$HOST
+fi
 ./strip-llvm.sh $PREFIX --host=$HOST
 ./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
 ./install-wrappers.sh $PREFIX --host=$HOST
