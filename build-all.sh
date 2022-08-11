@@ -35,6 +35,9 @@ while [ $# -gt 0 ]; do
         LLVM_ARGS="$LLVM_ARGS $1"
         NO_LLDB=1
         ;;
+    --disable-lldb-mi)
+        NO_LLDB_MI=1
+        ;;
     --disable-clang-tools-extra)
         LLVM_ARGS="$LLVM_ARGS $1"
         ;;
@@ -55,7 +58,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] dest
+    echo $0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] dest
     exit 1
 fi
 
@@ -67,7 +70,7 @@ for dep in git curl cmake; do
 done
 
 ./build-llvm.sh $PREFIX $LLVM_ARGS
-if [ -z "$NO_LLDB" ]; then
+if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
     ./build-lldb-mi.sh $PREFIX
 fi
 if [ -z "$FULL_LLVM" ]; then
