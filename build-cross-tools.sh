@@ -52,10 +52,10 @@ if [ -n "$PYTHON" ]; then
     ./build-python.sh $PREFIX/python --host=$HOST
     mkdir -p $PREFIX/bin
     cp $PREFIX/python/bin/*.dll $PREFIX/bin
-    LLVM_WITH_PYTHON="--with-python"
+    LLVM_ARGS="$LLVM_ARGS --with-python"
 fi
 
-./build-llvm.sh $PREFIX --host=$HOST $LLVM_WITH_PYTHON
+./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
 ./build-lldb-mi.sh $PREFIX --host=$HOST
 ./strip-llvm.sh $PREFIX --host=$HOST
 ./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
