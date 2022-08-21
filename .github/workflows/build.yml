@@ -265,7 +265,6 @@ jobs:
   test-libcxx:
     # Currently on run this for scheduled jobs; some tests fail on the 15.x
     # release branch.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross]
     runs-on: windows-latest
     steps:
