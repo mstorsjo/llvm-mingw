@@ -274,9 +274,7 @@ jobs:
   # for running the libcxx tests.)
   # This also forces testing the bundled python executables.
   test-libcxx:
-    # Currently on run this for scheduled jobs; some tests fail on the 15.x
-    # release branch.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross]
     runs-on: windows-latest
     steps:
