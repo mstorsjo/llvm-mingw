@@ -276,6 +276,75 @@ jobs:
           ./run-tests.sh /llvm-mingw
           ./run-lldb-tests.sh /llvm-mingw
 
+  # Run libcxx's tests with the cross-built i686/x86_64 toolchains from above.
+  # (This builds its own copy of libcxx, but it should be pretty much
+  # identical to the one shipped - and tests that the toolchain works
+  # for running the libcxx tests.)
+  # This also forces testing the bundled python executables.
+  test-libcxx:
+    # This test is kinda slow, and kinda redundant (libcxx does contain
+    # llvm-mingw configurations in its own CI, so the only difference with
+    # testing here is different runners with different OS setups, and
+    # testing with the latest compiler instead of an older release).
+    # Therefore, keep the test disabled by default; it's easy to enable
+    # temporarily on a branch for testing.
+    #
+    # Some tests fail here on the 15.x release branch, but it should pass
+    # with versions from git main.
+    if: false
+    needs: [linux-cross]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - i686
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-${{matrix.arch}}-toolchain
+      - name: Unpack toolchain
+        run: |
+          Expand-Archive llvm-mingw-*.zip -DestinationPath .
+          del llvm-mingw-*.zip
+          mv llvm-mingw-* c:\llvm-mingw
+          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Fetch version
+        if: github.event_name == 'schedule'
+        run: |
+          cat c:\llvm-mingw\versions | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - uses: actions/checkout@v3
+      - name: Checkout llvm-project
+        run: |
+          bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
+      - name: Build and test libcxx
+        run: |
+          cd llvm-project
+          mkdir build
+          cd build
+          cmake ../runtimes `
+            -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
+            -DLIBCXX_ENABLE_WERROR=YES `
+            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" `
+            -DLIBCXX_CXX_ABI=libcxxabi `
+            -DCMAKE_C_COMPILER=clang `
+            -DCMAKE_CXX_COMPILER=clang++ `
+            -DLIBCXX_TARGET_INFO="libcxx.test.target_info.MingwLocalTI" `
+            -DLIBCXXABI_ENABLE_SHARED=NO `
+            -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=YES `
+            -DLIBCXX_USE_COMPILER_RT=YES `
+            -DLIBCXXABI_USE_COMPILER_RT=YES `
+            -DLIBUNWIND_USE_COMPILER_RT=YES `
+            -DLIBCXXABI_USE_LLVM_UNWINDER=YES `
+            -DLIBCXX_EXTRA_SITE_DEFINES="__USE_MINGW_ANSI_STDIO=1;TEST_IS_EXECUTED_IN_A_SLOW_ENVIRONMENT"
+          ninja
+          ninja check-cxx
+
   # Test cross-building ffmpeg for all 4 targeted architectures from linux.
   # This is done only on scheduled builds, with a toolchain with assertions
   # enabled, to catch code generation bugs that might trigger asserts, to
