@@ -216,14 +216,16 @@ jobs:
           rm llvm-mingw-linux.tar.xz
           sudo mv llvm-mingw /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
+      - uses: actions/checkout@v3
       - name: Fetch version
         if: github.event_name == 'schedule'
         run: |
           . /opt/llvm-mingw/versions
           echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION cpython-mingw $PYTHON_VERSION_MINGW
           cat /opt/llvm-mingw/versions >> $GITHUB_ENV
+          mkdir -p install/llvm-mingw-${{matrix.arch}}
+          cp /opt/llvm-mingw/versions install/llvm-mingw-${{matrix.arch}}
           echo LLDB_MI_PARAMS=--disable-lldb-mi >> $GITHUB_ENV
-      - uses: actions/checkout@v3
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
