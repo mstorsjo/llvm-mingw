@@ -370,7 +370,7 @@ jobs:
     # temporarily on a branch for testing.
     # The libcxxabi and libunwind tests don't pass on the pinned 16.x branch,
     # only on git main.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
