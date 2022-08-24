@@ -107,7 +107,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [get-versions]
     runs-on: macos-latest
     steps:
@@ -145,7 +145,7 @@ jobs:
   # the host environment (libstdc++ or libc++). No artifacts are stored from
   # these builds, but llvm-mingw's tests are run.
   msys2:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [get-versions]
     runs-on: windows-latest
     defaults:
@@ -189,7 +189,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux]
     runs-on: ubuntu-latest
     strategy:
@@ -430,7 +430,7 @@ jobs:
   # enabled, to catch code generation bugs that might trigger asserts, to
   # find such regressions early.
   linux-test-cross-build-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
@@ -475,7 +475,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross]
     runs-on: windows-latest
     defaults:
