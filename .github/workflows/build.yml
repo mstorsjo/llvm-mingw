@@ -269,6 +269,31 @@ jobs:
           ./run-tests.sh /llvm-mingw
           ./run-lldb-tests.sh /llvm-mingw
 
+  # Run llvm-mingw's tests on x86_64 with wine, on Linux.
+  test-toolchain-wine:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install wine
+        run: |
+          # dpkg --add-architecture i386 to install 32 bit wine fails currently
+          sudo apt-get update && sudo apt-get install wine64-development
+          wine64 wineboot
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-toolchain
+      - name: Unpack cross toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          sudo mv llvm-mingw* /opt/llvm-mingw
+          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: |
+          RUN_I686=false RUN_X86_64=wine64 ./run-tests.sh /opt/llvm-mingw
+
   # Run libcxx's tests with the cross-built i686/x86_64 toolchains from above.
   # (This builds its own copy of libcxx, but it should be pretty much
   # identical to the one shipped - and tests that the toolchain works
