@@ -57,6 +57,7 @@ cd mingw-w64
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
     git checkout $MINGW_W64_VERSION
+    git am -3 ../patches/mingw-w64/*.patch
 fi
 
 [ -z "$CHECKOUT_ONLY" ] || exit 0

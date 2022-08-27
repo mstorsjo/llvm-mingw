@@ -1,0 +1,44 @@
+From cc6946fb3d5e09d61059ec3da72ec6b73782a824 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sun, 28 Aug 2022 00:01:12 +0300
+Subject: [PATCH] Revert "crt: Fix setting errno in the strtod based strtof
+ implementation"
+
+This reverts commit faa833310419c49cfaeeecb53f9d7366cdc1f120.
+---
+ mingw-w64-crt/stdio/strtof.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
+
+diff --git a/mingw-w64-crt/stdio/strtof.c b/mingw-w64-crt/stdio/strtof.c
+index c4e4eb918..5697eb4b5 100644
+--- a/mingw-w64-crt/stdio/strtof.c
++++ b/mingw-w64-crt/stdio/strtof.c
+@@ -4,24 +4,8 @@
+  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+  */
+ #include <stdlib.h>
+-#include <float.h>
+-#include <errno.h>
+-#include <math.h>
+ 
+ float strtof( const char *nptr, char **endptr)
+ {
+-  double ret = strtod(nptr, endptr);
+-  if (isfinite(ret)) {
+-    /* Check for cases that aren't out of range for doubles, but that are
+-     * for floats. */
+-    if (ret > FLT_MAX)
+-      errno = ERANGE;
+-    else if (ret < -FLT_MAX)
+-      errno = ERANGE;
+-    else if (ret > 0 && ret < FLT_MIN)
+-      errno = ERANGE;
+-    else if (ret < 0 && ret > -FLT_MIN)
+-      errno = ERANGE;
+-  }
+-  return ret;
++  return (strtod(nptr, endptr));
+ }
+-- 
+2.25.1
+

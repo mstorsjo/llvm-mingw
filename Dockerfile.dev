@@ -69,6 +69,7 @@ ARG DEFAULT_CRT=ucrt
 
 # Build MinGW-w64
 COPY build-mingw-w64.sh ./
+COPY patches/mingw-w64/*.patch ./patches/mingw-w64/
 RUN ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT
 
 COPY build-mingw-w64-tools.sh ./
