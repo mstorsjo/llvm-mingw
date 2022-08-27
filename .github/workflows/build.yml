@@ -56,6 +56,7 @@ jobs:
           sudo apt-get update && sudo apt-get install ninja-build
           git config --global user.name "LLVM MinGW"
           git config --global user.email root@localhost
+          CHECKOUT_ONLY=1 ./build-mingw-w64.sh
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
