@@ -1,7 +1,7 @@
 From cc6946fb3d5e09d61059ec3da72ec6b73782a824 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Sun, 28 Aug 2022 00:01:12 +0300
-Subject: [PATCH 1/2] Revert "crt: Fix setting errno in the strtod based strtof
+Subject: [PATCH 1/4] Revert "crt: Fix setting errno in the strtod based strtof
  implementation"
 
 This reverts commit faa833310419c49cfaeeecb53f9d7366cdc1f120.

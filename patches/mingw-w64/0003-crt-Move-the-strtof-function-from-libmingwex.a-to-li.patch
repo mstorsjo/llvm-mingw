@@ -1,0 +1,37 @@
+From b4934f4767ee3ec9bbc8a6531bcf6bae43f1c701 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sun, 28 Aug 2022 00:19:24 +0300
+Subject: [PATCH 3/4] crt: Move the strtof() function from libmingwex.a to
+ libmsvcr*.a
+
+This avoids using this function in UCRT builds, but ends up using
+UCRT's implementation instead - which should save some space by not
+statically linking in our implementation.
+---
+ mingw-w64-crt/Makefile.am | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index 802657117..23b1ab9f0 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -181,6 +181,7 @@ src_msvcrt_common=\
+   stdio/_putc_nolock.c \
+   stdio/_putwc_nolock.c \
+   stdio/acrt_iob_func.c \
++  stdio/strtof.c \
+   stdio/snprintf_alias.c \
+   stdio/vsnprintf_alias.c \
+   math/frexp.c
+@@ -576,7 +577,7 @@ src_libmingwex=\
+   stdio/mingw_snprintfw.c  stdio/mingw_sprintf.c     stdio/mingw_sprintfw.c   stdio/mingw_sscanf.c      stdio/mingw_swscanf.c   \
+   stdio/mingw_vfprintf.c   stdio/mingw_vfprintfw.c   stdio/mingw_vfscanf.c    stdio/mingw_vprintf.c     stdio/mingw_vprintfw.c  \
+   stdio/mingw_vsnprintf.c  stdio/mingw_vsnprintfw.c  stdio/mingw_vsprintf.c   stdio/mingw_vsprintfw.c   stdio/mingw_wscanf.c    \
+-  stdio/mingw_wvfscanf.c   stdio/snprintf.c          stdio/snwprintf.c        stdio/strtof.c            stdio/truncate.c        \
++  stdio/mingw_wvfscanf.c   stdio/snprintf.c          stdio/snwprintf.c        stdio/truncate.c        \
+   stdio/ulltoa.c           stdio/ulltow.c            stdio/vasprintf.c        stdio/vfscanf.c           stdio/vfwscanf.c        \
+   stdio/vscanf.c           stdio/vsnprintf.c         stdio/vsnwprintf.c        stdio/vsscanf.c         \
+   stdio/vswscanf.c         stdio/vwscanf.c           stdio/wtoll.c            stdio/mingw_asprintf.c    stdio/mingw_vasprintf.c
+-- 
+2.25.1
+

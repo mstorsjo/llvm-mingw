@@ -1,7 +1,7 @@
 From 3929f8e5b063270f171e0e7e76c3878ffec4a7e2 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Sun, 28 Aug 2022 00:11:28 +0300
-Subject: [PATCH 2/2] WIP: Make strtof() call __mingw_strtof()
+Subject: [PATCH 2/4] WIP: Make strtof() call __mingw_strtof()
 
 ---
  mingw-w64-crt/stdio/strtof.c | 2 +-
