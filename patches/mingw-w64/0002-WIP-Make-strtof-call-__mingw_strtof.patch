@@ -1,0 +1,23 @@
+From 3929f8e5b063270f171e0e7e76c3878ffec4a7e2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sun, 28 Aug 2022 00:11:28 +0300
+Subject: [PATCH 2/2] WIP: Make strtof() call __mingw_strtof()
+
+---
+ mingw-w64-crt/stdio/strtof.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/stdio/strtof.c b/mingw-w64-crt/stdio/strtof.c
+index 5697eb4b5..81f3c5fe1 100644
+--- a/mingw-w64-crt/stdio/strtof.c
++++ b/mingw-w64-crt/stdio/strtof.c
+@@ -7,5 +7,5 @@
+ 
+ float strtof( const char *nptr, char **endptr)
+ {
+-  return (strtod(nptr, endptr));
++  return __mingw_strtof(nptr, endptr);
+ }
+-- 
+2.25.1
+
