@@ -56,7 +56,7 @@ jobs:
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: ubuntu-20.04
     steps:
@@ -140,7 +140,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -167,7 +167,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: macos-latest
     steps:
@@ -252,7 +252,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux, prepare]
     runs-on: ubuntu-latest
     strategy:
@@ -298,7 +298,7 @@ jobs:
   # Run llvm-mingw's tests on x86_64 and i686 with the cross-built corresponding
   # toolchains from above.
   test-toolchain:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
@@ -404,7 +404,7 @@ jobs:
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
@@ -468,7 +468,7 @@ jobs:
   # above. This also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
@@ -546,7 +546,7 @@ jobs:
   # enabled, to catch code generation bugs that might trigger asserts, to
   # find such regressions early.
   linux-test-cross-build-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
@@ -591,7 +591,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
@@ -638,7 +638,7 @@ jobs:
           make -j$(nproc) fate
 
   upload-nightly:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     permissions:
       contents: write
     needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
