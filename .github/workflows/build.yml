@@ -222,6 +222,7 @@ jobs:
             git
             make
             diffutils
+            tar
           pacboy: >-
             toolchain:p
             cmake:p
@@ -236,6 +237,16 @@ jobs:
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
           ./run-tests.sh $(pwd)/install/llvm-mingw
+          cd install
+          NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
+          mv llvm-mingw $NAME
+          tar -Jcf ../$NAME.tar.xz $NAME
+      - uses: actions/upload-artifact@v3
+        with:
+          name: msys2-${{matrix.sys}}-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
 
   # Use the Linux cross compilers built in the first step to cross compile
   # llvm and make a proper standalone toolchain for Windows (for all 4
