@@ -294,6 +294,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Checkout llvm-project
         run: |
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build and test libcxx
         run: |
