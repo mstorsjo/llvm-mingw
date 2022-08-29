@@ -1,0 +1,66 @@
+From e81cdd32863c57b60438b4de36f940456862ac20 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Fri, 12 Aug 2022 00:28:01 +0300
+Subject: [PATCH 2/3] [libcxx] [test] Detect the UCRT printf("%a") formatting
+ bug
+
+This fixes testing with mingw, if built without __USE_MINGW_ANSI_STDIO=1.
+---
+ .../facet.num.put.members/put_double.hex.pass.cpp   |  2 +-
+ .../put_long_double.hex.pass.cpp                    |  2 +-
+ libcxx/utils/libcxx/test/features.py                | 13 +++++++++++++
+ 3 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp
+index 21efa978abdc..ebad5535a245 100644
+--- a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp
+@@ -15,7 +15,7 @@
+ // With the Microsoft UCRT, printf("%a", 0.0) produces "0x0.0000000000000p+0"
+ // while other C runtimes produce just "0x0p+0".
+ // https://developercommunity.visualstudio.com/t/Printf-formatting-of-float-as-hex-prints/1660844
+-// XFAIL: msvc
++// XFAIL: win32-broken-printf-a-precision
+ 
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
+diff --git a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp
+index c97c9a0c4036..284a59b13316 100644
+--- a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp
+@@ -15,7 +15,7 @@
+ // With the Microsoft UCRT, printf("%a", 0.0) produces "0x0.0000000000000p+0"
+ // while other C runtimes produce just "0x0p+0".
+ // https://developercommunity.visualstudio.com/t/Printf-formatting-of-float-as-hex-prints/1660844
+-// XFAIL: msvc
++// XFAIL: win32-broken-printf-a-precision
+ 
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
+diff --git a/libcxx/utils/libcxx/test/features.py b/libcxx/utils/libcxx/test/features.py
+index 46bbd2427f0a..08c2f13d0670 100644
+--- a/libcxx/utils/libcxx/test/features.py
++++ b/libcxx/utils/libcxx/test/features.py
+@@ -109,6 +109,19 @@ DEFAULT_FEATURES = [
+             }
+           """)),
+ 
++  # Check for a Windows UCRT bug (not fixed upstream yet)
++  # https://developercommunity.visualstudio.com/t/Printf-formatting-of-float-as-hex-prints/1660844
++  Feature(name='win32-broken-printf-a-precision',
++          when=lambda cfg: '_WIN32' in compilerMacros(cfg) and not programSucceeds(cfg, """
++            #include <stdio.h>
++            #include <string.h>
++            int main(int, char**) {
++              char buf[100];
++              snprintf(buf, sizeof(buf), "%a", 0.0);
++              return strcmp(buf, "0x0p+0");
++            }
++          """)),
++
+   # Check for Glibc < 2.27, where the ru_RU.UTF-8 locale had
+   # mon_decimal_point == ".", which our tests don't handle.
+   Feature(name='glibc-old-ru_RU-decimal-point',
+-- 
+2.25.1
+

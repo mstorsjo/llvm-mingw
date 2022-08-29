@@ -1,0 +1,236 @@
+From 6ec92313f1166cd9e0a04e4885a7682f1621798e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 29 Aug 2022 16:36:38 +0300
+Subject: [PATCH 3/3] [libcxx] [test] Detect mingw configurations with broken
+ long double printfs
+
+This fixes testing with mingw, if built without __USE_MINGW_ANSI_STDIO=1
+on x86.
+---
+ .../iostream.format/ext.manip/get_money.pass.cpp   |  1 +
+ .../iostream.format/ext.manip/put_money.pass.cpp   |  1 +
+ .../long_double.pass.cpp                           |  1 +
+ .../get_long_double_en_US.pass.cpp                 |  1 +
+ .../get_long_double_fr_FR.pass.cpp                 |  1 +
+ .../get_long_double_ru_RU.pass.cpp                 |  1 +
+ .../get_long_double_zh_CN.pass.cpp                 |  1 +
+ .../put_long_double_en_US.pass.cpp                 |  1 +
+ .../put_long_double_fr_FR.pass.cpp                 |  1 +
+ .../put_long_double_ru_RU.pass.cpp                 |  1 +
+ .../put_long_double_zh_CN.pass.cpp                 |  1 +
+ .../put_long_double.hex.pass.cpp                   |  1 +
+ .../facet.num.put.members/put_long_double.pass.cpp |  1 +
+ .../strings/string.conversions/to_string.pass.cpp  |  2 ++
+ .../strings/string.conversions/to_wstring.pass.cpp |  1 +
+ libcxx/utils/libcxx/test/features.py               | 14 ++++++++++++++
+ 16 files changed, 30 insertions(+)
+
+diff --git a/libcxx/test/std/input.output/iostream.format/ext.manip/get_money.pass.cpp b/libcxx/test/std/input.output/iostream.format/ext.manip/get_money.pass.cpp
+index 92b82e5f0278..8f62cbaf08f8 100644
+--- a/libcxx/test/std/input.output/iostream.format/ext.manip/get_money.pass.cpp
++++ b/libcxx/test/std/input.output/iostream.format/ext.manip/get_money.pass.cpp
+@@ -10,6 +10,7 @@
+ 
+ // template <class moneyT> T7 get_money(moneyT& mon, bool intl = false);
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.en_US.UTF-8
+ 
+ #include <iomanip>
+diff --git a/libcxx/test/std/input.output/iostream.format/ext.manip/put_money.pass.cpp b/libcxx/test/std/input.output/iostream.format/ext.manip/put_money.pass.cpp
+index 0cfbcee0c4e2..cc041a0d0e62 100644
+--- a/libcxx/test/std/input.output/iostream.format/ext.manip/put_money.pass.cpp
++++ b/libcxx/test/std/input.output/iostream.format/ext.manip/put_money.pass.cpp
+@@ -10,6 +10,7 @@
+ 
+ // template <class charT, class moneyT> T8 put_money(const moneyT& mon, bool intl = false);
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.en_US.UTF-8
+ 
+ #include <iomanip>
+diff --git a/libcxx/test/std/input.output/iostream.format/output.streams/ostream.formatted/ostream.inserters.arithmetic/long_double.pass.cpp b/libcxx/test/std/input.output/iostream.format/output.streams/ostream.formatted/ostream.inserters.arithmetic/long_double.pass.cpp
+index 8fafd7c009c7..045a26a6dcd9 100644
+--- a/libcxx/test/std/input.output/iostream.format/output.streams/ostream.formatted/ostream.inserters.arithmetic/long_double.pass.cpp
++++ b/libcxx/test/std/input.output/iostream.format/output.streams/ostream.formatted/ostream.inserters.arithmetic/long_double.pass.cpp
+@@ -11,6 +11,7 @@
+ // template <class charT, class traits = char_traits<charT> >
+ //   class basic_ostream;
+ 
++// XFAIL: win32-broken-long-double
+ // operator<<(long double val);
+ 
+ #include <ostream>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp
+index 21117da3c288..3adc456e6b3f 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp
+@@ -13,6 +13,7 @@
+ // iter_type get(iter_type b, iter_type e, bool intl, ios_base& iob,
+ //               ios_base::iostate& err, long double& v) const;
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.en_US.UTF-8
+ 
+ #include <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp
+index 3effa80e7d6f..f082ffd6fa5f 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp
+@@ -13,6 +13,7 @@
+ 
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.fr_FR.UTF-8
+ 
+ // <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp
+index e680f2ea8816..a7095a5e89a9 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp
+@@ -9,6 +9,7 @@
+ // NetBSD does not support LC_MONETARY at the moment
+ // XFAIL: netbsd
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.ru_RU.UTF-8
+ 
+ // XFAIL: glibc-old-ru_RU-decimal-point
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp
+index c3c419851bad..146466d96966 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp
+@@ -11,6 +11,7 @@
+ 
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.zh_CN.UTF-8
+ 
+ // <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp
+index 7092c236eb20..fe9b5cdf245c 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp
+@@ -13,6 +13,7 @@
+ // iter_type put(iter_type s, bool intl, ios_base& f, char_type fill,
+ //               long double units) const;
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.en_US.UTF-8
+ 
+ #include <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp
+index 05b4ee474944..dcb478ca39e7 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp
+@@ -13,6 +13,7 @@
+ 
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.fr_FR.UTF-8
+ 
+ // <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp
+index 4aea1016e735..1582eab2a014 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp
+@@ -11,6 +11,7 @@
+ 
+ // REQUIRES: locale.ru_RU.UTF-8
+ 
++// XFAIL: win32-broken-long-double
+ // XFAIL: glibc-old-ru_RU-decimal-point
+ 
+ // <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp
+index 446657bb3156..d7182053f421 100644
+--- a/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp
+@@ -11,6 +11,7 @@
+ 
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
++// XFAIL: win32-broken-long-double
+ // REQUIRES: locale.zh_CN.UTF-8
+ 
+ // <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp
+index 284a59b13316..e9390c6c61fc 100644
+--- a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp
+@@ -17,6 +17,7 @@
+ // https://developercommunity.visualstudio.com/t/Printf-formatting-of-float-as-hex-prints/1660844
+ // XFAIL: win32-broken-printf-a-precision
+ 
++// XFAIL: win32-broken-long-double
+ // XFAIL: LIBCXX-AIX-FIXME
+ 
+ #include <locale>
+diff --git a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp
+index 3327a35a6045..be2bf75efb60 100644
+--- a/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp
++++ b/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp
+@@ -12,6 +12,7 @@
+ 
+ // iter_type put(iter_type s, ios_base& iob, char_type fill, long double v) const;
+ 
++// XFAIL: win32-broken-long-double
+ // XFAIL: win32-broken-printf-g-precision
+ 
+ #include <locale>
+diff --git a/libcxx/test/std/strings/string.conversions/to_string.pass.cpp b/libcxx/test/std/strings/string.conversions/to_string.pass.cpp
+index 3de0232e796e..e5d737cc8888 100644
+--- a/libcxx/test/std/strings/string.conversions/to_string.pass.cpp
++++ b/libcxx/test/std/strings/string.conversions/to_string.pass.cpp
+@@ -6,6 +6,8 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++// XFAIL: win32-broken-long-double
++
+ // <string>
+ 
+ // string to_string(int val);
+diff --git a/libcxx/test/std/strings/string.conversions/to_wstring.pass.cpp b/libcxx/test/std/strings/string.conversions/to_wstring.pass.cpp
+index 530982defd4c..6d06f53518cd 100644
+--- a/libcxx/test/std/strings/string.conversions/to_wstring.pass.cpp
++++ b/libcxx/test/std/strings/string.conversions/to_wstring.pass.cpp
+@@ -7,6 +7,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ // XFAIL: no-wide-characters
++// XFAIL: win32-broken-long-double
+ 
+ // <string>
+ 
+diff --git a/libcxx/utils/libcxx/test/features.py b/libcxx/utils/libcxx/test/features.py
+index 08c2f13d0670..c7c00b126b9e 100644
+--- a/libcxx/utils/libcxx/test/features.py
++++ b/libcxx/utils/libcxx/test/features.py
+@@ -122,6 +122,20 @@ DEFAULT_FEATURES = [
+             }
+           """)),
+ 
++  # Check for broken printfs of "long double". (MinGW on x86 without
++  # __USE_MINGW_ANSI_STDIO.)
++  Feature(name='win32-broken-long-double',
++          when=lambda cfg: '_WIN32' in compilerMacros(cfg) and not programSucceeds(cfg, """
++            #include <stdio.h>
++            #include <string.h>
++            int main(int, char**) {
++              char buf[100];
++              long double ld = 1.0;
++              snprintf(buf, sizeof(buf), "%Lf", ld);
++              return strcmp(buf, "1.000000");
++            }
++          """)),
++
+   # Check for Glibc < 2.27, where the ru_RU.UTF-8 locale had
+   # mon_decimal_point == ".", which our tests don't handle.
+   Feature(name='glibc-old-ru_RU-decimal-point',
+-- 
+2.25.1
+
