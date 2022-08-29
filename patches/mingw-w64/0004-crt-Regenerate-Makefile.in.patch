@@ -1,0 +1,665 @@
+From 979d7f6723cbe66c94aa26032cc4e26f6dfcba53 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Sun, 28 Aug 2022 00:21:01 +0300
+Subject: [PATCH 4/4] crt: Regenerate Makefile.in
+
+---
+ mingw-w64-crt/Makefile.in | 187 +++++++++++++++++++-------------------
+ 1 file changed, 94 insertions(+), 93 deletions(-)
+
+diff --git a/mingw-w64-crt/Makefile.in b/mingw-w64-crt/Makefile.in
+index 1ad82f1a6..ecdb71ba3 100644
+--- a/mingw-w64-crt/Makefile.in
++++ b/mingw-w64-crt/Makefile.in
+@@ -879,7 +879,7 @@ am__lib32_libmingwex_a_SOURCES_DIST = crt/dllentry.c crt/dllmain.c \
+ 	stdio/mingw_vsnprintfw.c stdio/mingw_vsprintf.c \
+ 	stdio/mingw_vsprintfw.c stdio/mingw_wscanf.c \
+ 	stdio/mingw_wvfscanf.c stdio/snprintf.c stdio/snwprintf.c \
+-	stdio/strtof.c stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
++	stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
+ 	stdio/vasprintf.c stdio/vfscanf.c stdio/vfwscanf.c \
+ 	stdio/vscanf.c stdio/vsnprintf.c stdio/vsnwprintf.c \
+ 	stdio/vsscanf.c stdio/vswscanf.c stdio/vwscanf.c stdio/wtoll.c \
+@@ -1217,7 +1217,6 @@ am__objects_22 = crt/lib32_libmingwex_a-dllentry.$(OBJEXT) \
+ 	stdio/lib32_libmingwex_a-mingw_wvfscanf.$(OBJEXT) \
+ 	stdio/lib32_libmingwex_a-snprintf.$(OBJEXT) \
+ 	stdio/lib32_libmingwex_a-snwprintf.$(OBJEXT) \
+-	stdio/lib32_libmingwex_a-strtof.$(OBJEXT) \
+ 	stdio/lib32_libmingwex_a-truncate.$(OBJEXT) \
+ 	stdio/lib32_libmingwex_a-ulltoa.$(OBJEXT) \
+ 	stdio/lib32_libmingwex_a-ulltow.$(OBJEXT) \
+@@ -1460,7 +1459,7 @@ am__lib32_libmsvcrt_common_a_SOURCES_DIST = misc/mbrtowc.c \
+ 	misc/uchar_mbrtoc16.c misc/uchar_mbrtoc32.c misc/wcrtomb.c \
+ 	stdio/_getc_nolock.c stdio/_getwc_nolock.c \
+ 	stdio/_putc_nolock.c stdio/_putwc_nolock.c \
+-	stdio/acrt_iob_func.c stdio/snprintf_alias.c \
++	stdio/acrt_iob_func.c stdio/strtof.c stdio/snprintf_alias.c \
+ 	stdio/vsnprintf_alias.c math/frexp.c
+ am__objects_34 = misc/lib32_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	misc/lib32_libmsvcrt_common_a-mbsinit.$(OBJEXT) \
+@@ -1476,6 +1475,7 @@ am__objects_34 = misc/lib32_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	stdio/lib32_libmsvcrt_common_a-_putc_nolock.$(OBJEXT) \
+ 	stdio/lib32_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT) \
+ 	stdio/lib32_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT) \
++	stdio/lib32_libmsvcrt_common_a-strtof.$(OBJEXT) \
+ 	stdio/lib32_libmsvcrt_common_a-snprintf_alias.$(OBJEXT) \
+ 	stdio/lib32_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT) \
+ 	math/lib32_libmsvcrt_common_a-frexp.$(OBJEXT)
+@@ -2275,7 +2275,7 @@ am__lib64_libmingwex_a_SOURCES_DIST = crt/dllentry.c crt/dllmain.c \
+ 	stdio/mingw_vsnprintfw.c stdio/mingw_vsprintf.c \
+ 	stdio/mingw_vsprintfw.c stdio/mingw_wscanf.c \
+ 	stdio/mingw_wvfscanf.c stdio/snprintf.c stdio/snwprintf.c \
+-	stdio/strtof.c stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
++	stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
+ 	stdio/vasprintf.c stdio/vfscanf.c stdio/vfwscanf.c \
+ 	stdio/vscanf.c stdio/vsnprintf.c stdio/vsnwprintf.c \
+ 	stdio/vsscanf.c stdio/vswscanf.c stdio/vwscanf.c stdio/wtoll.c \
+@@ -2613,7 +2613,6 @@ am__objects_73 = crt/lib64_libmingwex_a-dllentry.$(OBJEXT) \
+ 	stdio/lib64_libmingwex_a-mingw_wvfscanf.$(OBJEXT) \
+ 	stdio/lib64_libmingwex_a-snprintf.$(OBJEXT) \
+ 	stdio/lib64_libmingwex_a-snwprintf.$(OBJEXT) \
+-	stdio/lib64_libmingwex_a-strtof.$(OBJEXT) \
+ 	stdio/lib64_libmingwex_a-truncate.$(OBJEXT) \
+ 	stdio/lib64_libmingwex_a-ulltoa.$(OBJEXT) \
+ 	stdio/lib64_libmingwex_a-ulltow.$(OBJEXT) \
+@@ -2778,7 +2777,7 @@ am__lib64_libmsvcrt_common_a_SOURCES_DIST = misc/mbrtowc.c \
+ 	misc/uchar_mbrtoc16.c misc/uchar_mbrtoc32.c misc/wcrtomb.c \
+ 	stdio/_getc_nolock.c stdio/_getwc_nolock.c \
+ 	stdio/_putc_nolock.c stdio/_putwc_nolock.c \
+-	stdio/acrt_iob_func.c stdio/snprintf_alias.c \
++	stdio/acrt_iob_func.c stdio/strtof.c stdio/snprintf_alias.c \
+ 	stdio/vsnprintf_alias.c math/frexp.c
+ am__objects_81 = misc/lib64_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	misc/lib64_libmsvcrt_common_a-mbsinit.$(OBJEXT) \
+@@ -2794,6 +2793,7 @@ am__objects_81 = misc/lib64_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	stdio/lib64_libmsvcrt_common_a-_putc_nolock.$(OBJEXT) \
+ 	stdio/lib64_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT) \
+ 	stdio/lib64_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT) \
++	stdio/lib64_libmsvcrt_common_a-strtof.$(OBJEXT) \
+ 	stdio/lib64_libmsvcrt_common_a-snprintf_alias.$(OBJEXT) \
+ 	stdio/lib64_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT) \
+ 	math/lib64_libmsvcrt_common_a-frexp.$(OBJEXT)
+@@ -3541,7 +3541,7 @@ am__libarm32_libmingwex_a_SOURCES_DIST = crt/dllentry.c crt/dllmain.c \
+ 	stdio/mingw_vsnprintfw.c stdio/mingw_vsprintf.c \
+ 	stdio/mingw_vsprintfw.c stdio/mingw_wscanf.c \
+ 	stdio/mingw_wvfscanf.c stdio/snprintf.c stdio/snwprintf.c \
+-	stdio/strtof.c stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
++	stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
+ 	stdio/vasprintf.c stdio/vfscanf.c stdio/vfwscanf.c \
+ 	stdio/vscanf.c stdio/vsnprintf.c stdio/vsnwprintf.c \
+ 	stdio/vsscanf.c stdio/vswscanf.c stdio/vwscanf.c stdio/wtoll.c \
+@@ -3885,7 +3885,6 @@ am__objects_118 = crt/libarm32_libmingwex_a-dllentry.$(OBJEXT) \
+ 	stdio/libarm32_libmingwex_a-mingw_wvfscanf.$(OBJEXT) \
+ 	stdio/libarm32_libmingwex_a-snprintf.$(OBJEXT) \
+ 	stdio/libarm32_libmingwex_a-snwprintf.$(OBJEXT) \
+-	stdio/libarm32_libmingwex_a-strtof.$(OBJEXT) \
+ 	stdio/libarm32_libmingwex_a-truncate.$(OBJEXT) \
+ 	stdio/libarm32_libmingwex_a-ulltoa.$(OBJEXT) \
+ 	stdio/libarm32_libmingwex_a-ulltow.$(OBJEXT) \
+@@ -4031,7 +4030,7 @@ am__libarm32_libmsvcrt_common_a_SOURCES_DIST = misc/mbrtowc.c \
+ 	misc/uchar_mbrtoc16.c misc/uchar_mbrtoc32.c misc/wcrtomb.c \
+ 	stdio/_getc_nolock.c stdio/_getwc_nolock.c \
+ 	stdio/_putc_nolock.c stdio/_putwc_nolock.c \
+-	stdio/acrt_iob_func.c stdio/snprintf_alias.c \
++	stdio/acrt_iob_func.c stdio/strtof.c stdio/snprintf_alias.c \
+ 	stdio/vsnprintf_alias.c math/frexp.c
+ am__objects_126 = misc/libarm32_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	misc/libarm32_libmsvcrt_common_a-mbsinit.$(OBJEXT) \
+@@ -4047,6 +4046,7 @@ am__objects_126 = misc/libarm32_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	stdio/libarm32_libmsvcrt_common_a-_putc_nolock.$(OBJEXT) \
+ 	stdio/libarm32_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT) \
+ 	stdio/libarm32_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT) \
++	stdio/libarm32_libmsvcrt_common_a-strtof.$(OBJEXT) \
+ 	stdio/libarm32_libmsvcrt_common_a-snprintf_alias.$(OBJEXT) \
+ 	stdio/libarm32_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT) \
+ 	math/libarm32_libmsvcrt_common_a-frexp.$(OBJEXT)
+@@ -4855,7 +4855,7 @@ am__libarm64_libmingwex_a_SOURCES_DIST = crt/dllentry.c crt/dllmain.c \
+ 	stdio/mingw_vsnprintfw.c stdio/mingw_vsprintf.c \
+ 	stdio/mingw_vsprintfw.c stdio/mingw_wscanf.c \
+ 	stdio/mingw_wvfscanf.c stdio/snprintf.c stdio/snwprintf.c \
+-	stdio/strtof.c stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
++	stdio/truncate.c stdio/ulltoa.c stdio/ulltow.c \
+ 	stdio/vasprintf.c stdio/vfscanf.c stdio/vfwscanf.c \
+ 	stdio/vscanf.c stdio/vsnprintf.c stdio/vsnwprintf.c \
+ 	stdio/vsscanf.c stdio/vswscanf.c stdio/vwscanf.c stdio/wtoll.c \
+@@ -5164,7 +5164,6 @@ am__objects_163 = crt/libarm64_libmingwex_a-dllentry.$(OBJEXT) \
+ 	stdio/libarm64_libmingwex_a-mingw_wvfscanf.$(OBJEXT) \
+ 	stdio/libarm64_libmingwex_a-snprintf.$(OBJEXT) \
+ 	stdio/libarm64_libmingwex_a-snwprintf.$(OBJEXT) \
+-	stdio/libarm64_libmingwex_a-strtof.$(OBJEXT) \
+ 	stdio/libarm64_libmingwex_a-truncate.$(OBJEXT) \
+ 	stdio/libarm64_libmingwex_a-ulltoa.$(OBJEXT) \
+ 	stdio/libarm64_libmingwex_a-ulltow.$(OBJEXT) \
+@@ -5228,7 +5227,7 @@ am__libarm64_libmsvcrt_common_a_SOURCES_DIST = misc/mbrtowc.c \
+ 	misc/uchar_mbrtoc16.c misc/uchar_mbrtoc32.c misc/wcrtomb.c \
+ 	stdio/_getc_nolock.c stdio/_getwc_nolock.c \
+ 	stdio/_putc_nolock.c stdio/_putwc_nolock.c \
+-	stdio/acrt_iob_func.c stdio/snprintf_alias.c \
++	stdio/acrt_iob_func.c stdio/strtof.c stdio/snprintf_alias.c \
+ 	stdio/vsnprintf_alias.c math/frexp.c
+ am__objects_168 = misc/libarm64_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	misc/libarm64_libmsvcrt_common_a-mbsinit.$(OBJEXT) \
+@@ -5244,6 +5243,7 @@ am__objects_168 = misc/libarm64_libmsvcrt_common_a-mbrtowc.$(OBJEXT) \
+ 	stdio/libarm64_libmsvcrt_common_a-_putc_nolock.$(OBJEXT) \
+ 	stdio/libarm64_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT) \
+ 	stdio/libarm64_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT) \
++	stdio/libarm64_libmsvcrt_common_a-strtof.$(OBJEXT) \
+ 	stdio/libarm64_libmsvcrt_common_a-snprintf_alias.$(OBJEXT) \
+ 	stdio/libarm64_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT) \
+ 	math/libarm64_libmsvcrt_common_a-frexp.$(OBJEXT)
+@@ -8955,7 +8955,6 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/lib32_libmingwex_a-scanf2-argcount-wchar.Po \
+ 	stdio/$(DEPDIR)/lib32_libmingwex_a-snprintf.Po \
+ 	stdio/$(DEPDIR)/lib32_libmingwex_a-snwprintf.Po \
+-	stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Po \
+ 	stdio/$(DEPDIR)/lib32_libmingwex_a-strtok_r.Po \
+ 	stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Po \
+ 	stdio/$(DEPDIR)/lib32_libmingwex_a-ulltoa.Po \
+@@ -8996,6 +8995,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-_putwc_nolock.Po \
+ 	stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-acrt_iob_func.Po \
+ 	stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Po \
++	stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Po \
+ 	stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-vsnprintf_alias.Po \
+ 	stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_scprintf.Po \
+ 	stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_vscprintf.Po \
+@@ -9078,7 +9078,6 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/lib64_libmingwex_a-scanf2-argcount-wchar.Po \
+ 	stdio/$(DEPDIR)/lib64_libmingwex_a-snprintf.Po \
+ 	stdio/$(DEPDIR)/lib64_libmingwex_a-snwprintf.Po \
+-	stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Po \
+ 	stdio/$(DEPDIR)/lib64_libmingwex_a-strtok_r.Po \
+ 	stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Po \
+ 	stdio/$(DEPDIR)/lib64_libmingwex_a-ulltoa.Po \
+@@ -9105,6 +9104,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-_putwc_nolock.Po \
+ 	stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-acrt_iob_func.Po \
+ 	stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Po \
++	stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Po \
+ 	stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-vsnprintf_alias.Po \
+ 	stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-fseeki64.Po \
+ 	stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-mingw_lock.Po \
+@@ -9185,7 +9185,6 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmingwex_a-scanf2-argcount-wchar.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmingwex_a-snprintf.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmingwex_a-snwprintf.Po \
+-	stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmingwex_a-strtok_r.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmingwex_a-ulltoa.Po \
+@@ -9212,6 +9211,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-_putwc_nolock.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-acrt_iob_func.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Po \
++	stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-vsnprintf_alias.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-_setmaxstdio.Po \
+ 	stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-fseeki64.Po \
+@@ -9294,7 +9294,6 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmingwex_a-scanf2-argcount-wchar.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmingwex_a-snprintf.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmingwex_a-snwprintf.Po \
+-	stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmingwex_a-strtok_r.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmingwex_a-ulltoa.Po \
+@@ -9321,6 +9320,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib32_libm_a-_libm_dummy.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-_putwc_nolock.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-acrt_iob_func.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Po \
++	stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-vsnprintf_alias.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-_setmaxstdio.Po \
+ 	stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-fseeki64.Po \
+@@ -10543,6 +10543,7 @@ src_msvcrt_common = \
+   stdio/_putc_nolock.c \
+   stdio/_putwc_nolock.c \
+   stdio/acrt_iob_func.c \
++  stdio/strtof.c \
+   stdio/snprintf_alias.c \
+   stdio/vsnprintf_alias.c \
+   math/frexp.c
+@@ -10887,7 +10888,7 @@ src_libmingwex = \
+   stdio/mingw_snprintfw.c  stdio/mingw_sprintf.c     stdio/mingw_sprintfw.c   stdio/mingw_sscanf.c      stdio/mingw_swscanf.c   \
+   stdio/mingw_vfprintf.c   stdio/mingw_vfprintfw.c   stdio/mingw_vfscanf.c    stdio/mingw_vprintf.c     stdio/mingw_vprintfw.c  \
+   stdio/mingw_vsnprintf.c  stdio/mingw_vsnprintfw.c  stdio/mingw_vsprintf.c   stdio/mingw_vsprintfw.c   stdio/mingw_wscanf.c    \
+-  stdio/mingw_wvfscanf.c   stdio/snprintf.c          stdio/snwprintf.c        stdio/strtof.c            stdio/truncate.c        \
++  stdio/mingw_wvfscanf.c   stdio/snprintf.c          stdio/snwprintf.c        stdio/truncate.c        \
+   stdio/ulltoa.c           stdio/ulltow.c            stdio/vasprintf.c        stdio/vfscanf.c           stdio/vfwscanf.c        \
+   stdio/vscanf.c           stdio/vsnprintf.c         stdio/vsnwprintf.c        stdio/vsscanf.c         \
+   stdio/vswscanf.c         stdio/vwscanf.c           stdio/wtoll.c            stdio/mingw_asprintf.c    stdio/mingw_vasprintf.c
+@@ -14526,8 +14527,6 @@ stdio/lib32_libmingwex_a-snprintf.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib32_libmingwex_a-snwprintf.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+-stdio/lib32_libmingwex_a-strtof.$(OBJEXT): stdio/$(am__dirstamp) \
+-	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib32_libmingwex_a-truncate.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib32_libmingwex_a-ulltoa.$(OBJEXT): stdio/$(am__dirstamp) \
+@@ -14917,6 +14916,8 @@ stdio/lib32_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib32_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
++stdio/lib32_libmsvcrt_common_a-strtof.$(OBJEXT):  \
++	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib32_libmsvcrt_common_a-snprintf_alias.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib32_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT):  \
+@@ -16463,8 +16464,6 @@ stdio/lib64_libmingwex_a-snprintf.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib64_libmingwex_a-snwprintf.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+-stdio/lib64_libmingwex_a-strtof.$(OBJEXT): stdio/$(am__dirstamp) \
+-	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib64_libmingwex_a-truncate.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib64_libmingwex_a-ulltoa.$(OBJEXT): stdio/$(am__dirstamp) \
+@@ -16758,6 +16757,8 @@ stdio/lib64_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib64_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
++stdio/lib64_libmsvcrt_common_a-strtof.$(OBJEXT):  \
++	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib64_libmsvcrt_common_a-snprintf_alias.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/lib64_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT):  \
+@@ -18198,8 +18199,6 @@ stdio/libarm32_libmingwex_a-snprintf.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm32_libmingwex_a-snwprintf.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+-stdio/libarm32_libmingwex_a-strtof.$(OBJEXT): stdio/$(am__dirstamp) \
+-	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm32_libmingwex_a-truncate.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm32_libmingwex_a-ulltoa.$(OBJEXT): stdio/$(am__dirstamp) \
+@@ -18555,6 +18554,8 @@ stdio/libarm32_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm32_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
++stdio/libarm32_libmsvcrt_common_a-strtof.$(OBJEXT):  \
++	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm32_libmsvcrt_common_a-snprintf_alias.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm32_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT):  \
+@@ -20101,8 +20102,6 @@ stdio/libarm64_libmingwex_a-snprintf.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm64_libmingwex_a-snwprintf.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+-stdio/libarm64_libmingwex_a-strtof.$(OBJEXT): stdio/$(am__dirstamp) \
+-	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm64_libmingwex_a-truncate.$(OBJEXT): stdio/$(am__dirstamp) \
+ 	stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm64_libmingwex_a-ulltoa.$(OBJEXT): stdio/$(am__dirstamp) \
+@@ -20226,6 +20225,8 @@ stdio/libarm64_libmsvcrt_common_a-_putwc_nolock.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm64_libmsvcrt_common_a-acrt_iob_func.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
++stdio/libarm64_libmsvcrt_common_a-strtof.$(OBJEXT):  \
++	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm64_libmsvcrt_common_a-snprintf_alias.$(OBJEXT):  \
+ 	stdio/$(am__dirstamp) stdio/$(DEPDIR)/$(am__dirstamp)
+ stdio/libarm64_libmsvcrt_common_a-vsnprintf_alias.$(OBJEXT):  \
+@@ -24391,7 +24392,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-scanf2-argcount-wchar.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-snprintf.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-snwprintf.Po@am__quote@ # am--include-marker
+-@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-strtok_r.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmingwex_a-ulltoa.Po@am__quote@ # am--include-marker
+@@ -24432,6 +24432,7 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-_putwc_nolock.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-acrt_iob_func.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Po@am__quote@ # am--include-marker
++@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-vsnprintf_alias.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_scprintf.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_vscprintf.Po@am__quote@ # am--include-marker
+@@ -24514,7 +24515,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-scanf2-argcount-wchar.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-snprintf.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-snwprintf.Po@am__quote@ # am--include-marker
+-@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-strtok_r.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmingwex_a-ulltoa.Po@am__quote@ # am--include-marker
+@@ -24541,6 +24541,7 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-_putwc_nolock.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-acrt_iob_func.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Po@am__quote@ # am--include-marker
++@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-vsnprintf_alias.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-fseeki64.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-mingw_lock.Po@am__quote@ # am--include-marker
+@@ -24621,7 +24622,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-scanf2-argcount-wchar.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-snprintf.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-snwprintf.Po@am__quote@ # am--include-marker
+-@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-strtok_r.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmingwex_a-ulltoa.Po@am__quote@ # am--include-marker
+@@ -24648,6 +24648,7 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-_putwc_nolock.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-acrt_iob_func.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Po@am__quote@ # am--include-marker
++@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-vsnprintf_alias.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-_setmaxstdio.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-fseeki64.Po@am__quote@ # am--include-marker
+@@ -24730,7 +24731,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-scanf2-argcount-wchar.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-snprintf.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-snwprintf.Po@am__quote@ # am--include-marker
+-@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-strtok_r.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmingwex_a-ulltoa.Po@am__quote@ # am--include-marker
+@@ -24757,6 +24757,7 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-_putwc_nolock.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-acrt_iob_func.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Po@am__quote@ # am--include-marker
++@AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-vsnprintf_alias.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-_setmaxstdio.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-fseeki64.Po@am__quote@ # am--include-marker
+@@ -33161,20 +33162,6 @@ stdio/lib32_libmingwex_a-snwprintf.obj: stdio/snwprintf.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib32_libmingwex_a-snwprintf.obj `if test -f 'stdio/snwprintf.c'; then $(CYGPATH_W) 'stdio/snwprintf.c'; else $(CYGPATH_W) '$(srcdir)/stdio/snwprintf.c'; fi`
+ 
+-stdio/lib32_libmingwex_a-strtof.o: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib32_libmingwex_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Tpo -c -o stdio/lib32_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib32_libmingwex_a-strtof.o' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib32_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-
+-stdio/lib32_libmingwex_a-strtof.obj: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib32_libmingwex_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Tpo -c -o stdio/lib32_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib32_libmingwex_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib32_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-
+ stdio/lib32_libmingwex_a-truncate.o: stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib32_libmingwex_a-truncate.o -MD -MP -MF stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Tpo -c -o stdio/lib32_libmingwex_a-truncate.o `test -f 'stdio/truncate.c' || echo '$(srcdir)/'`stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Tpo stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Po
+@@ -34967,6 +34954,20 @@ stdio/lib32_libmsvcrt_common_a-acrt_iob_func.obj: stdio/acrt_iob_func.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib32_libmsvcrt_common_a-acrt_iob_func.obj `if test -f 'stdio/acrt_iob_func.c'; then $(CYGPATH_W) 'stdio/acrt_iob_func.c'; else $(CYGPATH_W) '$(srcdir)/stdio/acrt_iob_func.c'; fi`
+ 
++stdio/lib32_libmsvcrt_common_a-strtof.o: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib32_libmsvcrt_common_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Tpo -c -o stdio/lib32_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib32_libmsvcrt_common_a-strtof.o' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib32_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++
++stdio/lib32_libmsvcrt_common_a-strtof.obj: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib32_libmsvcrt_common_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Tpo -c -o stdio/lib32_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib32_libmsvcrt_common_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib32_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++
+ stdio/lib32_libmsvcrt_common_a-snprintf_alias.o: stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib32_libmsvcrt_common_a-snprintf_alias.o -MD -MP -MF stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Tpo -c -o stdio/lib32_libmsvcrt_common_a-snprintf_alias.o `test -f 'stdio/snprintf_alias.c' || echo '$(srcdir)/'`stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Tpo stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Po
+@@ -43843,20 +43844,6 @@ stdio/lib64_libmingwex_a-snwprintf.obj: stdio/snwprintf.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib64_libmingwex_a-snwprintf.obj `if test -f 'stdio/snwprintf.c'; then $(CYGPATH_W) 'stdio/snwprintf.c'; else $(CYGPATH_W) '$(srcdir)/stdio/snwprintf.c'; fi`
+ 
+-stdio/lib64_libmingwex_a-strtof.o: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib64_libmingwex_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Tpo -c -o stdio/lib64_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib64_libmingwex_a-strtof.o' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib64_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-
+-stdio/lib64_libmingwex_a-strtof.obj: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib64_libmingwex_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Tpo -c -o stdio/lib64_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib64_libmingwex_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib64_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-
+ stdio/lib64_libmingwex_a-truncate.o: stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib64_libmingwex_a-truncate.o -MD -MP -MF stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Tpo -c -o stdio/lib64_libmingwex_a-truncate.o `test -f 'stdio/truncate.c' || echo '$(srcdir)/'`stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Tpo stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Po
+@@ -45201,6 +45188,20 @@ stdio/lib64_libmsvcrt_common_a-acrt_iob_func.obj: stdio/acrt_iob_func.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib64_libmsvcrt_common_a-acrt_iob_func.obj `if test -f 'stdio/acrt_iob_func.c'; then $(CYGPATH_W) 'stdio/acrt_iob_func.c'; else $(CYGPATH_W) '$(srcdir)/stdio/acrt_iob_func.c'; fi`
+ 
++stdio/lib64_libmsvcrt_common_a-strtof.o: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib64_libmsvcrt_common_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Tpo -c -o stdio/lib64_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib64_libmsvcrt_common_a-strtof.o' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib64_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++
++stdio/lib64_libmsvcrt_common_a-strtof.obj: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib64_libmsvcrt_common_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Tpo -c -o stdio/lib64_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/lib64_libmsvcrt_common_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/lib64_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++
+ stdio/lib64_libmsvcrt_common_a-snprintf_alias.o: stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/lib64_libmsvcrt_common_a-snprintf_alias.o -MD -MP -MF stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Tpo -c -o stdio/lib64_libmsvcrt_common_a-snprintf_alias.o `test -f 'stdio/snprintf_alias.c' || echo '$(srcdir)/'`stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Tpo stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Po
+@@ -53587,20 +53588,6 @@ stdio/libarm32_libmingwex_a-snwprintf.obj: stdio/snwprintf.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm32_libmingwex_a-snwprintf.obj `if test -f 'stdio/snwprintf.c'; then $(CYGPATH_W) 'stdio/snwprintf.c'; else $(CYGPATH_W) '$(srcdir)/stdio/snwprintf.c'; fi`
+ 
+-stdio/libarm32_libmingwex_a-strtof.o: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm32_libmingwex_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Tpo -c -o stdio/libarm32_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm32_libmingwex_a-strtof.o' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm32_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-
+-stdio/libarm32_libmingwex_a-strtof.obj: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm32_libmingwex_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Tpo -c -o stdio/libarm32_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm32_libmingwex_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm32_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-
+ stdio/libarm32_libmingwex_a-truncate.o: stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm32_libmingwex_a-truncate.o -MD -MP -MF stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Tpo -c -o stdio/libarm32_libmingwex_a-truncate.o `test -f 'stdio/truncate.c' || echo '$(srcdir)/'`stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Tpo stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Po
+@@ -55281,6 +55268,20 @@ stdio/libarm32_libmsvcrt_common_a-acrt_iob_func.obj: stdio/acrt_iob_func.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm32_libmsvcrt_common_a-acrt_iob_func.obj `if test -f 'stdio/acrt_iob_func.c'; then $(CYGPATH_W) 'stdio/acrt_iob_func.c'; else $(CYGPATH_W) '$(srcdir)/stdio/acrt_iob_func.c'; fi`
+ 
++stdio/libarm32_libmsvcrt_common_a-strtof.o: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm32_libmsvcrt_common_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Tpo -c -o stdio/libarm32_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm32_libmsvcrt_common_a-strtof.o' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm32_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++
++stdio/libarm32_libmsvcrt_common_a-strtof.obj: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm32_libmsvcrt_common_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Tpo -c -o stdio/libarm32_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm32_libmsvcrt_common_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm32_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++
+ stdio/libarm32_libmsvcrt_common_a-snprintf_alias.o: stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm32_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm32_libmsvcrt_common_a-snprintf_alias.o -MD -MP -MF stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Tpo -c -o stdio/libarm32_libmsvcrt_common_a-snprintf_alias.o `test -f 'stdio/snprintf_alias.c' || echo '$(srcdir)/'`stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Tpo stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Po
+@@ -64143,20 +64144,6 @@ stdio/libarm64_libmingwex_a-snwprintf.obj: stdio/snwprintf.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm64_libmingwex_a-snwprintf.obj `if test -f 'stdio/snwprintf.c'; then $(CYGPATH_W) 'stdio/snwprintf.c'; else $(CYGPATH_W) '$(srcdir)/stdio/snwprintf.c'; fi`
+ 
+-stdio/libarm64_libmingwex_a-strtof.o: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm64_libmingwex_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Tpo -c -o stdio/libarm64_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm64_libmingwex_a-strtof.o' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm64_libmingwex_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
+-
+-stdio/libarm64_libmingwex_a-strtof.obj: stdio/strtof.c
+-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm64_libmingwex_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Tpo -c -o stdio/libarm64_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Tpo stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Po
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm64_libmingwex_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
+-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm64_libmingwex_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
+-
+ stdio/libarm64_libmingwex_a-truncate.o: stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmingwex_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm64_libmingwex_a-truncate.o -MD -MP -MF stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Tpo -c -o stdio/libarm64_libmingwex_a-truncate.o `test -f 'stdio/truncate.c' || echo '$(srcdir)/'`stdio/truncate.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Tpo stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Po
+@@ -64801,6 +64788,20 @@ stdio/libarm64_libmsvcrt_common_a-acrt_iob_func.obj: stdio/acrt_iob_func.c
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm64_libmsvcrt_common_a-acrt_iob_func.obj `if test -f 'stdio/acrt_iob_func.c'; then $(CYGPATH_W) 'stdio/acrt_iob_func.c'; else $(CYGPATH_W) '$(srcdir)/stdio/acrt_iob_func.c'; fi`
+ 
++stdio/libarm64_libmsvcrt_common_a-strtof.o: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm64_libmsvcrt_common_a-strtof.o -MD -MP -MF stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Tpo -c -o stdio/libarm64_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm64_libmsvcrt_common_a-strtof.o' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm64_libmsvcrt_common_a-strtof.o `test -f 'stdio/strtof.c' || echo '$(srcdir)/'`stdio/strtof.c
++
++stdio/libarm64_libmsvcrt_common_a-strtof.obj: stdio/strtof.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm64_libmsvcrt_common_a-strtof.obj -MD -MP -MF stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Tpo -c -o stdio/libarm64_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Tpo stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stdio/strtof.c' object='stdio/libarm64_libmsvcrt_common_a-strtof.obj' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stdio/libarm64_libmsvcrt_common_a-strtof.obj `if test -f 'stdio/strtof.c'; then $(CYGPATH_W) 'stdio/strtof.c'; else $(CYGPATH_W) '$(srcdir)/stdio/strtof.c'; fi`
++
+ stdio/libarm64_libmsvcrt_common_a-snprintf_alias.o: stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libarm64_libmsvcrt_common_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stdio/libarm64_libmsvcrt_common_a-snprintf_alias.o -MD -MP -MF stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Tpo -c -o stdio/libarm64_libmsvcrt_common_a-snprintf_alias.o `test -f 'stdio/snprintf_alias.c' || echo '$(srcdir)/'`stdio/snprintf_alias.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Tpo stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Po
+@@ -74203,7 +74204,6 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-ulltoa.Po
+@@ -74244,6 +74244,7 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_scprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_vscprintf.Po
+@@ -74326,7 +74327,6 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-ulltoa.Po
+@@ -74353,6 +74353,7 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-fseeki64.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-mingw_lock.Po
+@@ -74433,7 +74434,6 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-ulltoa.Po
+@@ -74460,6 +74460,7 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-_setmaxstdio.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-fseeki64.Po
+@@ -74542,7 +74543,6 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-ulltoa.Po
+@@ -74569,6 +74569,7 @@ distclean: distclean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-_setmaxstdio.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-fseeki64.Po
+@@ -77515,7 +77516,6 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmingwex_a-ulltoa.Po
+@@ -77556,6 +77556,7 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_scprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/lib32_libmsvcrt_extra_a-_vscprintf.Po
+@@ -77638,7 +77639,6 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmingwex_a-ulltoa.Po
+@@ -77665,6 +77665,7 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-fseeki64.Po
+ 	-rm -f stdio/$(DEPDIR)/lib64_libmsvcrt_extra_a-mingw_lock.Po
+@@ -77745,7 +77746,6 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmingwex_a-ulltoa.Po
+@@ -77772,6 +77772,7 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-_setmaxstdio.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm32_libmsvcrt_extra_a-fseeki64.Po
+@@ -77854,7 +77855,6 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-scanf2-argcount-wchar.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-snprintf.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-snwprintf.Po
+-	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-strtok_r.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-truncate.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmingwex_a-ulltoa.Po
+@@ -77881,6 +77881,7 @@ maintainer-clean: maintainer-clean-am
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-_putwc_nolock.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-acrt_iob_func.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-snprintf_alias.Po
++	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-strtof.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_common_a-vsnprintf_alias.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-_setmaxstdio.Po
+ 	-rm -f stdio/$(DEPDIR)/libarm64_libmsvcrt_extra_a-fseeki64.Po
+-- 
+2.25.1
+
