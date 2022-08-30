@@ -20,6 +20,8 @@ LLVM_ARGS=""
 MINGW_ARGS=""
 CFGUARD_ARGS="--enable-cfguard"
 HOST_ARGS=""
+MINGW_TOOLS_ARGS=""
+MINGW_LIBRARIES_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -67,6 +69,11 @@ while [ $# -gt 0 ]; do
     --wipe-runtimes)
         WIPE_RUNTIMES=1
         ;;
+    --skip-include-triplet-prefix)
+        MINGW_ARGS="$MINGW_ARGS $1"
+        MINGW_TOOLS_ARGS="$MINGW_TOOLS_ARGS $1"
+        MINGW_LIBRARIES_ARGS="$MINGW_LIBRARIES_ARGS $1"
+        ;;
     *)
         if [ -n "$PREFIX" ]; then
             echo Unrecognized parameter $1
@@ -78,7 +85,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] dest"
+    echo "$0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] [--skip-include-triplet-prefix] dest"
     exit 1
 fi
 
@@ -98,7 +105,7 @@ if [ -z "$NO_TOOLS" ]; then
         ./strip-llvm.sh $PREFIX
     fi
     ./install-wrappers.sh $PREFIX $HOST_ARGS
-    ./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS
+    ./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS $MINGW_TOOLS_ARGS
 fi
 if [ -n "$NO_RUNTIMES" ]; then
     exit 0
@@ -114,6 +121,6 @@ fi
 ./build-mingw-w64.sh $PREFIX $MINGW_ARGS $CFGUARD_ARGS
 ./build-compiler-rt.sh $PREFIX $CFGUARD_ARGS
 ./build-libcxx.sh $PREFIX $CFGUARD_ARGS
-./build-mingw-w64-libraries.sh $PREFIX $CFGUARD_ARGS
+./build-mingw-w64-libraries.sh $PREFIX $MINGW_LIBRARIES_ARGS $CFGUARD_ARGS
 ./build-compiler-rt.sh $PREFIX --build-sanitizers # CFGUARD_ARGS intentionally omitted
 ./build-openmp.sh $PREFIX $CFGUARD_ARGS
