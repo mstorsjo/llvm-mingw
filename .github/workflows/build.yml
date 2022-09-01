@@ -161,6 +161,7 @@ jobs:
           install: >-
             git
             make
+            diffutils
           pacboy: >-
             toolchain:p
             cmake:p
