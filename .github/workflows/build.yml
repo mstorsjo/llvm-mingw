@@ -47,7 +47,7 @@ jobs:
         if: github.event_name == 'schedule'
         run: |
           . versions
-          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION, with assertions enabled
+          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION
           cat versions >> $GITHUB_ENV
           mkdir -p install/llvm-mingw
           cp versions install/llvm-mingw
