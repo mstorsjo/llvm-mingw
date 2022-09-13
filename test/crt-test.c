@@ -157,9 +157,83 @@ int main(int argc, char* argv[]) {
     char buf[200];
     int i;
     uint64_t myconst = 0xbaadf00dcafe;
+    void *retptr;
 
+    memset(buf, '#', sizeof(buf));
+    retptr = memcpy(buf, "foo", 4);
+    TEST(retptr == buf);
+    TEST_STR(buf, "foo");
+    TEST_INT(buf[5], '#');
+
+#if defined(__GLIBC__) || defined(__MINGW32__)
+    memset(buf, '#', sizeof(buf));
+    retptr = mempcpy(buf, "foo", 4);
+    TEST(retptr == buf + 4);
+    TEST_STR(buf, "foo");
+    TEST_INT(buf[5], '#');
+#endif
+
+    memset(buf, '#', sizeof(buf));
+    memcpy(buf, "foobar", 7);
+    retptr = memmove(buf + 2, buf, 3);
+    TEST(retptr == buf + 2);
+    TEST_STR(buf, "fofoor");
+    TEST_INT(buf[8], '#');
+
+    memset(buf, '#', sizeof(buf));
+    memcpy(buf, "foobar", 7);
+    retptr = memmove(buf, buf + 2, 3);
+    TEST(retptr == buf);
+    TEST_STR(buf, "obabar");
+    TEST_INT(buf[8], '#');
+
+    retptr = memset(buf, '#', sizeof(buf));
+    TEST(retptr == buf);
+    TEST_INT(buf[0], '#');
+    TEST_INT(buf[sizeof(buf)-1], '#');
+
+    memset(buf, '#', sizeof(buf));
+    retptr = strcpy(buf, "foo");
+    TEST(retptr == buf);
+    TEST_STR(buf, "foo");
+    TEST_INT(buf[5], '#');
+
+    memset(buf, '#', sizeof(buf));
+    retptr = strncpy(buf, "foobar", 3);
+    TEST(retptr == buf);
+    TEST_INT(buf[3], '#');
+    buf[3] = '\0';
+    TEST_STR(buf, "foo");
+
+    memset(buf, '#', sizeof(buf));
+    retptr = strncpy(buf, "foobar", sizeof(buf));
+    TEST(retptr == buf);
+    TEST_STR(buf, "foobar");
+    TEST_INT(buf[sizeof(buf)-1], '\0');
+
+    memset(buf, '#', sizeof(buf));
+    strcpy(buf, "foo");
+    retptr = strcat(buf, "bar");
+    TEST(retptr == buf);
+    TEST_STR(buf, "foobar");
+
+    memset(buf, '#', sizeof(buf));
+    strcpy(buf, "foo");
+    retptr = strncat(buf, "bar", 5);
+    TEST(retptr == buf);
+    TEST_STR(buf, "foobar");
+
+    memset(buf, '#', sizeof(buf));
+    strcpy(buf, "foo");
+    retptr = strncat(buf, "bar", 2);
+    TEST(retptr == buf);
+    TEST_STR(buf, "fooba");
+
+    memset(buf, '#', sizeof(buf));
     snprintf(buf, sizeof(buf), "%f", 3.141592654);
     TEST_STR(buf, "3.141593");
+    TEST_INT(buf[sizeof(buf)-1], '#');
+
     snprintf(buf, sizeof(buf), "%e", 42.0);
     TEST_STR(buf, "4.200000e+01");
     snprintf(buf, sizeof(buf), "%a", 42.0);
