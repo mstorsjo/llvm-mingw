@@ -273,7 +273,7 @@ for arch in $ARCHS; do
     if [ "$arch" = "i686" ]; then
         compiler_rt_arch=i386
     fi
-    for i in libc++ libunwind libssp-0 libclang_rt.asan_dynamic-$compiler_rt_arch libomp; do
+    for i in libc++ libunwind libclang_rt.asan_dynamic-$compiler_rt_arch libomp; do
         if [ -f $PREFIX/$arch-w64-mingw32/bin/$i.dll ]; then
             cp $PREFIX/$arch-w64-mingw32/bin/$i.dll $TEST_DIR
             DLL="$DLL $i"
