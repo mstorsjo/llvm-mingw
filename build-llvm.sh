@@ -128,14 +128,18 @@ fi
 
 [ -z "$CHECKOUT_ONLY" ] || exit 0
 
+setcores() {
+    : ${CORES:=$(nproc 2>/dev/null)}
+    : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
+    : ${CORES:=4}
+}
+
 if command -v ninja >/dev/null; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
     BUILDCMD=ninja
 else
-    : ${CORES:=$(nproc 2>/dev/null)}
-    : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
-    : ${CORES:=4}
+    setcores
 
     case $(uname) in
     MINGW*)
@@ -149,6 +153,12 @@ else
         ;;
     esac
     BUILDCMD=make
+fi
+
+if [ -n "$FLANG" ]; then
+    setcores
+    # clang cross: 40 jobs -> 48 GB
+    CORES=$(($CORES > 40 ? 40 : $CORES))
 fi
 
 CMAKEFLAGS="$LLVM_CMAKEFLAGS"
