@@ -154,8 +154,8 @@ RUN cd test && \
     done
 
 # Build libssp
-COPY build-libssp.sh libssp-Makefile ./
-RUN ./build-libssp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS
+COPY build-libssp.sh ./
+RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
 
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
