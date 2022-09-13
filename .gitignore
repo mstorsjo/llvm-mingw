@@ -1,6 +1,5 @@
 /llvm-project
 /mingw-w64
-/libssp
 /lldb-mi
 /make-*
 /libffi
