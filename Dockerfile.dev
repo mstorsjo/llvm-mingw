@@ -160,6 +160,9 @@ RUN cd test && \
         for test in stacksmash; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong || exit 1; \
         done; \
+        for test in bufferoverflow; do \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -lssp -D_FORTIFY_SOURCE=2 -O2 || exit 1; \
+        done; \
     done
 
 # Build OpenMP

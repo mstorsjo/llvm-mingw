@@ -76,6 +76,7 @@ TESTS_CPP_DLL="tlstest-lib throwcatch-lib"
 TESTS_CPP_LINK_DLL="throwcatch-main"
 TESTS_SSP="stacksmash"
 TESTS_ASAN="stacksmash"
+TESTS_FORTIFY="bufferoverflow"
 TESTS_UBSAN="ubsan"
 TESTS_OMP="hello-omp"
 TESTS_UWP="uwp-error"
@@ -162,6 +163,9 @@ for arch in $ARCHS; do
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
     done
+    for test in $TESTS_FORTIFY; do
+        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -O2 -D_FORTIFY_SOURCE=2 -lssp
+    done
     for test in $TESTS_IDL; do
         # This is primary a build-only test, so no need to execute it.
         # The IDL output isn't arch specific, but we want to test the
@@ -236,7 +240,7 @@ for arch in $ARCHS; do
             DLL="$DLL $i"
         fi
     done
-    RUN_TESTS="$TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_CPP_LINK_DLL $TESTS_EXTRA $TESTS_SSP"
+    RUN_TESTS="$TESTS_C $TESTS_C_LINK_DLL $TESTS_CPP $TESTS_CPP_LINK_DLL $TESTS_EXTRA $TESTS_SSP $TESTS_FORTIFY"
     cd $TEST_DIR
     if [ -n "$COPY" ]; then
         COPYFILES=""
