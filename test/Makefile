@@ -217,7 +217,7 @@ ifeq ($(ARCH), i686)
     COMPILER_RT_ARCH = i386
 endif
 
-RUNTIMES = libc++ libunwind libssp-0 libclang_rt.asan_dynamic-$(COMPILER_RT_ARCH) libomp
+RUNTIMES = libc++ libunwind libclang_rt.asan_dynamic-$(COMPILER_RT_ARCH) libomp
 ifneq ($(RUNTIMES_SRC),)
 LOCAL_RUNTIMES = $(patsubst $(RUNTIMES_SRC)/%, %, $(wildcard $(addprefix $(RUNTIMES_SRC)/, $(addsuffix $(DLLEXT), $(RUNTIMES)))))
 
