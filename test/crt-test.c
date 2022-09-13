@@ -1087,12 +1087,18 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(cos(2*F(3.141592654)), 1.0, 0.01); \
     TEST_FLT_NAN_ANY(cos(F(INFINITY))); \
     TEST_FLT_NAN_ANY(cos(F(-INFINITY))); \
-    TEST_FLT_NAN(cos(F(NAN)), F(NAN)); \
-    TEST_FLT_NAN(cos(-F(NAN)), -F(NAN))
+    TEST_FLT_NAN(cos(F(NAN)), F(NAN))
 
     TEST_COS(cos);
     TEST_COS(cosf);
     TEST_COS(cosl);
+
+#ifndef __OPTIMIZE__
+    // GCC and Clang break this test when optimizing.
+    TEST_FLT_NAN(cos(-F(NAN)), -F(NAN));
+    TEST_FLT_NAN(cosf(-F(NAN)), -F(NAN));
+    TEST_FLT_NAN(cosl(-F(NAN)), -F(NAN));
+#endif
 
 #define TEST_SIN(sin) \
     TEST_FLT_ACCURACY(sin(F(0.0)), 0.0, 0.01); \
