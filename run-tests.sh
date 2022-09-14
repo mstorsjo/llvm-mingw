@@ -213,7 +213,7 @@ for arch in $ARCHS; do
         i686|x86_64) ;;
         *) continue ;;
         esac
-        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fsanitize=undefined
+        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fsanitize=undefined -fno-sanitize-recover=all
         TESTS_EXTRA="$TESTS_EXTRA $test"
     done
     for test in $TESTS_OMP; do
