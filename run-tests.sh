@@ -101,6 +101,7 @@ for arch in $ARCHS; do
     esac
 
     TEST_DIR="$arch"
+    TESTS_EXTRA=""
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     # A leftover libc++.dll from a previous round will cause the linker to find it (and error out) instead of
     # locating libc++.dll.a in a later include directory.
@@ -127,7 +128,6 @@ for arch in $ARCHS; do
     for test in $TESTS_C_LINK_DLL; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -L$TEST_DIR -l${test%-main}-lib
     done
-    TESTS_EXTRA=""
     for test in $TESTS_C_NO_BUILTIN; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-no-builtin.exe -fno-builtin
         TESTS_EXTRA="$TESTS_EXTRA $test-no-builtin"
