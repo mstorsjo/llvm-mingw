@@ -188,7 +188,7 @@ for arch in $ARCHS; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -mguard=cf
     done
     for test in $TESTS_FORTIFY; do
-        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-fortify.exe -O2 -D_FORTIFY_SOURCE=2 -lssp
+        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-fortify.exe -O2 -D_FORTIFY_SOURCE=2
         TESTS_EXTRA="$TESTS_EXTRA $test-fortify"
         if [ "$test" != "crt-test" ]; then
             # crt-test doesn't trigger failures
