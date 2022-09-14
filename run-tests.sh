@@ -203,7 +203,7 @@ for arch in $ARCHS; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$TEST_DIR/$test-asan.pdb
         # Only run these tests on native windows; asan doesn't run in wine.
         if [ -n "$NATIVE" ]; then
-            TESTS_EXTRA="$TESTS_EXTRA $test"
+            TESTS_EXTRA="$TESTS_EXTRA $test-asan"
         fi
     done
     for test in $TESTS_UBSAN; do
