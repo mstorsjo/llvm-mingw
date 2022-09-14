@@ -104,8 +104,9 @@ for arch in $ARCHS; do
     TESTS_EXTRA=""
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     # A leftover libc++.dll from a previous round will cause the linker to find it (and error out) instead of
-    # locating libc++.dll.a in a later include directory.
-    rm -f $TEST_DIR/libc++.dll
+    # locating libc++.dll.a in a later include directory. The same goes with
+    # libunwind.dll.
+    rm -f $TEST_DIR/libc++.dll $TEST_DIR/libunwind.dll
     mkdir -p $TEST_DIR
     for test in $TESTS_C; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe
