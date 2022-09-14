@@ -491,8 +491,7 @@ int main(int argc, char* argv[]) {
 
 #define TEST_STRTOD_RANGE_EXPECT(strtod, prefix, val, expect) \
     errno = 0; \
-    TEST_FLT_SIGN(strtod(prefix ## #val, NULL), expect); \
-    TEST_INT(errno, ERANGE)
+    TEST_FLT_SIGN(strtod(prefix ## #val, NULL), expect)
 
 #define TEST_STRTOD_STRTOF_RANGE_EXPECT(strtod, strtof, prefix, val, expect) \
     TEST_STRTOD_VALUE(strtod, prefix, val, val); \
