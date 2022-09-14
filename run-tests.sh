@@ -103,6 +103,7 @@ for arch in $ARCHS; do
 
     TEST_DIR="$arch"
     TESTS_EXTRA=""
+    FAILURE_TESTS=""
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     # A leftover libc++.dll from a previous round will cause the linker to find it (and error out) instead of
     # locating libc++.dll.a in a later include directory. The same goes with
@@ -162,10 +163,15 @@ for arch in $ARCHS; do
     done
     for test in $TESTS_SSP; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
+        FAILURE_TESTS="$FAILURE_TESTS $test"
     done
     for test in $TESTS_FORTIFY; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-fortify.exe -O2 -D_FORTIFY_SOURCE=2 -lssp
         TESTS_EXTRA="$TESTS_EXTRA $test-fortify"
+        if [ "$test" != "crt-test" ]; then
+            # crt-test doesn't trigger failures
+            FAILURE_TESTS="$FAILURE_TESTS $test-fortify"
+        fi
     done
     for test in $TESTS_IDL; do
         # This is primary a build-only test, so no need to execute it.
@@ -209,6 +215,7 @@ for arch in $ARCHS; do
         # Only run these tests on native windows; asan doesn't run in wine.
         if [ -n "$NATIVE" ]; then
             TESTS_EXTRA="$TESTS_EXTRA $test-asan"
+            FAILURE_TESTS="$FAILURE_TESTS $test-asan"
         fi
     done
     for test in $TESTS_UBSAN; do
@@ -220,6 +227,7 @@ for arch in $ARCHS; do
         esac
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fsanitize=undefined -fno-sanitize-recover=all
         TESTS_EXTRA="$TESTS_EXTRA $test"
+        FAILURE_TESTS="$FAILURE_TESTS $test"
     done
     for test in $TESTS_OMP; do
         case $arch in
@@ -258,6 +266,72 @@ for arch in $ARCHS; do
             file=$test.exe
             $RUN $file
         done
+
+        # These don't strictly require running native instead of in Wine
+        # (except for sanitizers, but they are already filtered out at this
+        # point), but some of the error situations trigger crashes, which
+        # might not work robustly on all exotic Wine configurations - thus
+        # only run these tests on native Windows.
+        if [ -n "$NATIVE" ]; then
+            for test in $FAILURE_TESTS; do
+                file=$test.exe
+                OUT=cmdoutput
+                rm -f $OUT
+                if $RUN $file trigger > $OUT 2>&1; then
+                    cat $OUT
+                    echo $file trigger should have failed
+                    exit 1
+                else
+                    ret=$?
+                    cat $OUT
+                    echo $file trigger failed expectedly, returned $ret
+
+                    case $test in
+                    stacksmash-asan)
+                        grep -q stack-buffer-overflow $OUT
+                        grep -q "func.*stacksmash.c" $OUT
+                        ;;
+                    ubsan)
+                        grep -q "signed integer overflow" $OUT
+                        ;;
+                    stacksmash)
+                        # GNU libssp writes this directly to the console,
+                        # and it can't be redirected, so we can't check for its presence.
+                        #grep -q "stack smashing detected" $OUT
+                        ;;
+                    bufferoverflow-*)
+                        # GNU libssp writes this directly to the console,
+                        # and it can't be redirected, so we can't check for its presence.
+                        #grep -q "buffer overflow detected" $OUT
+                        ;;
+                    *)
+                        echo Unhandled failure test $test
+                        exit 1
+                        ;;
+                    esac
+                    rm -f $OUT
+                fi
+            done
+            # Run all testcases for the bufferoverflow test.
+            file=bufferoverflow-fortify.exe
+            OUT=cmdoutput
+            i=0
+            while [ $i -le 10 ]; do
+                rm -f $OUT
+                if $RUN $file $i > $OUT 2>&1; then
+                    cat $OUT
+                    echo $file $i should have failed
+                    exit 1
+                else
+                    ret=$?
+                    cat $OUT
+                    echo $file $i failed expectedly, returned $ret
+                    #grep -q "buffer overflow detected" $OUT
+                    rm -f $OUT
+                fi
+                i=$(($i+1))
+            done
+        fi
     fi
     cd ..
 done
