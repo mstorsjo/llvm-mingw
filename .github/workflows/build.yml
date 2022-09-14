@@ -242,6 +242,12 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - i686
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -250,17 +256,18 @@ jobs:
             unzip
       - uses: actions/download-artifact@v3
         with:
-          name: windows-x86_64-toolchain
+          name: windows-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
-          unzip -q llvm-mingw-x86_64.zip
-          rm llvm-mingw-x86_64.zip
+          unzip -q llvm-mingw-*.zip
+          rm llvm-mingw-*.zip
           mv llvm-mingw-* /llvm-mingw
           echo /llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v2
       - name: Run tests
         run: |
           ./run-tests.sh /llvm-mingw
+          ./run-lldb-tests.sh /llvm-mingw
 
   # Test cross-building ffmpeg for all 4 targeted architectures from linux.
   # This is done only on scheduled builds, with a toolchain with assertions
