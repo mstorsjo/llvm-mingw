@@ -20,7 +20,7 @@
 
 __attribute__((noinline))
 void func(char *ptr, int idx) {
-    ptr[idx] = 0;
+    ptr[idx] ^= 1;
 }
 
 int main(int argc, char *argv[]) {
