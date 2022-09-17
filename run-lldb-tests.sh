@@ -17,7 +17,7 @@
 set -ex
 
 if [ $# -lt 1 ]; then
-    echo $0 dest
+    echo $0 prefix
     exit 1
 fi
 PREFIX="$1"
