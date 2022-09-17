@@ -24,6 +24,13 @@ PREFIX="$1"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH=$PREFIX/bin:$PATH
 
+# We use tool names with explicit .exe suffixes here, so that it works both
+# in msys2 bash and in bash in WSL.
+: ${CXX:=clang++.exe}
+: ${LLDB:=lldb.exe}
+: ${STRIP:=strip.exe}
+: ${OBJCOPY:=objcopy.exe}
+
 TARGET=$(clang.exe --version | grep Target: | awk '{print $2}')
 ARCH="${TARGET%%-*}"
 
@@ -35,19 +42,19 @@ TEST_DIR="$ARCH"
 mkdir -p $TEST_DIR
 
 # Build an executable with DWARF debug info
-clang++.exe hello-exception.cpp -o $TEST_DIR/hello-exception-dwarf.exe -g
+$CXX hello-exception.cpp -o $TEST_DIR/hello-exception-dwarf.exe -g
 
 # Build an executable with PDB debug info
-clang++.exe hello-exception.cpp -o $TEST_DIR/hello-exception-pdb.exe -g -gcodeview -Wl,-pdb=
+$CXX hello-exception.cpp -o $TEST_DIR/hello-exception-pdb.exe -g -gcodeview -Wl,-pdb=
 # Strip the executable that uses pdb; the crt startup files and mingw static
 # library object files have dwarf debug info, so the binary has got a bit of
 # both, and lldb would choose to use the dwarf parts unless we strip it.
-strip.exe $TEST_DIR/hello-exception-pdb.exe
+$STRIP $TEST_DIR/hello-exception-pdb.exe
 
 # Make a DWARF split debug info file with gnu debuglink.
 cp $TEST_DIR/hello-exception-dwarf.exe $TEST_DIR/hello-exception-split.exe
-objcopy.exe --only-keep-debug $TEST_DIR/hello-exception-split.exe $TEST_DIR/hello-exception-split.dbg
-objcopy.exe --strip-all $TEST_DIR/hello-exception-split.exe
+$OBJCOPY --only-keep-debug $TEST_DIR/hello-exception-split.exe $TEST_DIR/hello-exception-split.dbg
+$OBJCOPY --strip-all $TEST_DIR/hello-exception-split.exe
 objcopy.exe --add-gnu-debuglink=$TEST_DIR/hello-exception-split.dbg $TEST_DIR/hello-exception-split.exe
 
 for i in libc++ libunwind; do
@@ -66,7 +73,7 @@ run
 bt
 EOF
 for exe in hello-exception-dwarf.exe hello-exception-pdb.exe hello-exception-split.exe; do
-    lldb.exe -b -s $SCRIPT -- $TEST_DIR/$exe -crash < /dev/null > $OUT 2>/dev/null
+    $LLDB -b -s $SCRIPT -- $TEST_DIR/$exe -crash < /dev/null > $OUT 2>/dev/null
     cat $OUT
     grep -q "Access violation" $OUT
     if [ "$ARCH" != "armv7" ] || [ "$exe" = "hello-exception-pdb.exe" ]; then
@@ -93,7 +100,7 @@ run
 bt
 cont
 EOF
-lldb.exe -b -s $SCRIPT -- $TEST_DIR/$exe -breakpoint < /dev/null > $OUT 2>/dev/null
+$LLDB -b -s $SCRIPT -- $TEST_DIR/$exe -breakpoint < /dev/null > $OUT 2>/dev/null
 cat $OUT
 grep -q "stop reason = Exception 0x80000003" $OUT
 # Not checking that __debugbreak is "frame #0"; on arm/aarch64, the program
@@ -115,7 +122,7 @@ bt
 finish
 cont
 EOF
-lldb.exe -b -s $SCRIPT -- $TEST_DIR/$exe -noop < /dev/null > $OUT 2>/dev/null
+$LLDB -b -s $SCRIPT -- $TEST_DIR/$exe -noop < /dev/null > $OUT 2>/dev/null
 cat $OUT
 grep -q "Breakpoint 1: where = hello-exception.*.exe.done.* at hello-exception.cpp:" $OUT
 grep -q "stop reason = breakpoint" $OUT
