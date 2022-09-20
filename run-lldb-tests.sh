@@ -79,10 +79,8 @@ for exe in hello-exception-dwarf.exe hello-exception-pdb.exe hello-exception-spl
     if [ "$ARCH" != "armv7" ] || [ "$exe" = "hello-exception-pdb.exe" ]; then
         grep -q "volatile int.*NULL.*0x42" $OUT
     fi
-    if [ "$ARCH" != "armv7" ] && ([ "$ARCH" != "i686" ] || [ "$exe" != "hello-exception-pdb.exe" ]); then
+    if [ "$ARCH" != "armv7" ]; then
         # armv7 pdb gives "val=<unavailable>".
-        # i686 pdb also gives "val=<unavailable>" since LLDB 16
-        # (see https://github.com/llvm/llvm-project/issues/57799 for details).
         grep -q "frame #0: .*hello-exception.*.exe.recurse(val=0) at hello-exception.cpp:" $OUT
         grep -q "hello-exception.*.exe.recurse(val=10) at hello-exception.cpp:" $OUT
     fi
