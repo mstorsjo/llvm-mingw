@@ -44,6 +44,8 @@ ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 ARG DEFAULT_CRT=ucrt
 
+ARG CFGUARD_ARGS=--disable-cfguard
+
 # Build everything that uses the llvm monorepo. We need to build the mingw runtime before the compiler-rt/libunwind/libcxxabi/libcxx runtimes.
 COPY build-llvm.sh build-lldb-mi.sh strip-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh ./
 COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
@@ -51,18 +53,18 @@ RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
     ./build-lldb-mi.sh $TOOLCHAIN_PREFIX && \
     ./strip-llvm.sh $TOOLCHAIN_PREFIX && \
     ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
-    ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT && \
+    ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT $CFGUARD_ARGS && \
     ./build-mingw-w64-tools.sh $TOOLCHAIN_PREFIX && \
-    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX && \
-    ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
-    ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX && \
+    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
+    ./build-libcxx.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
+    ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
-    ./build-openmp.sh $TOOLCHAIN_PREFIX && \
+    ./build-openmp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     rm -rf /build/*
 
 # Build libssp
 COPY build-libssp.sh libssp-Makefile ./
-RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
+RUN ./build-libssp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     rm -rf /build/*
 
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
