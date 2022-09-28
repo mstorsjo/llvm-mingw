@@ -67,7 +67,7 @@ RUN ./install-wrappers.sh $TOOLCHAIN_PREFIX
 
 ARG DEFAULT_CRT=ucrt
 
-ARG CFGUARD_ARGS=--disable-cfguard
+ARG CFGUARD_ARGS=--enable-cfguard
 
 # Build MinGW-w64
 COPY build-mingw-w64.sh ./

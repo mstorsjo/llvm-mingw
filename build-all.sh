@@ -18,7 +18,7 @@ set -e
 
 LLVM_ARGS=""
 MINGW_ARGS=""
-CFGUARD_ARGS="--disable-cfguard"
+CFGUARD_ARGS="--enable-cfguard"
 
 while [ $# -gt 0 ]; do
     case "$1" in
