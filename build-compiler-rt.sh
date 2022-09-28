@@ -18,12 +18,14 @@ set -e
 
 SRC_DIR=../lib/builtins
 BUILD_SUFFIX=
+BUILD_BUILTINS=TRUE
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--build-sanitizers" ]; then
         SRC_DIR=..
         BUILD_SUFFIX=-sanitizers
         SANITIZERS=1
+        BUILD_BUILTINS=FALSE
     else
         PREFIX="$1"
     fi
@@ -95,6 +97,7 @@ for arch in $ARCHS; do
         -DCMAKE_C_COMPILER_TARGET=$arch-windows-gnu \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
         -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
+        -DCOMPILER_RT_BUILD_BUILTINS=$BUILD_BUILTINS \
         -DLLVM_CONFIG_PATH="" \
         -DSANITIZER_CXX_ABI=libc++ \
         $SRC_DIR
