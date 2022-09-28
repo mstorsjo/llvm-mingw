@@ -16,9 +16,24 @@
 
 set -e
 
-PREFIX="$1"
+CFGUARD_CFLAGS=
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --enable-cfguard)
+        CFGUARD_CFLAGS="-mguard=cf"
+        ;;
+    --disable-cfguard)
+        CFGUARD_CFLAGS=
+        ;;
+    *)
+        PREFIX="$1"
+        ;;
+    esac
+    shift
+done
 if [ -z "$PREFIX" ]; then
-    echo $0 dest
+    echo "$0 [--enable-cfguard|--disable-cfguard] dest"
     exit 1
 fi
 
@@ -84,6 +99,8 @@ for arch in $ARCHS; do
         -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
         -DLIBOMP_ENABLE_SHARED=TRUE \
+        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
+        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         $CMAKEFLAGS \
         ..
     $BUILDCMD ${CORES+-j$CORES}

@@ -20,6 +20,8 @@ set -e
 : ${DEFAULT_MSVCRT:=ucrt}
 : ${MINGW_W64_VERSION:=d4a0c84d908243a45255a06dc293d3d7c06db98c}
 
+CFGUARD_FLAGS=
+
 while [ $# -gt 0 ]; do
     case "$1" in
     --skip-include-triplet-prefix)
@@ -31,6 +33,12 @@ while [ $# -gt 0 ]; do
     --with-default-msvcrt=*)
         DEFAULT_MSVCRT="${1#*=}"
         ;;
+    --enable-cfguard)
+        CFGUARD_FLAGS="--enable-cfguard"
+        ;;
+    --disable-cfguard)
+        CFGUARD_FLAGS=
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -39,7 +47,7 @@ while [ $# -gt 0 ]; do
 done
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] dest
+        echo "$0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] dest"
         exit 1
     fi
 
@@ -118,7 +126,7 @@ for arch in $ARCHS; do
         ;;
     esac
     FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
-    ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS
+    ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS $CFGUARD_FLAGS
     $MAKE -j$CORES
     $MAKE install
     cd ..

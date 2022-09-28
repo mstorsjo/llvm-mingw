@@ -18,6 +18,7 @@ set -e
 
 BUILD_STATIC=ON
 BUILD_SHARED=ON
+CFGUARD_CFLAGS=
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--disable-shared" ]; then
@@ -28,13 +29,17 @@ while [ $# -gt 0 ]; do
         BUILD_STATIC=OFF
     elif [ "$1" = "--enable-static" ]; then
         BUILD_STATIC=ON
+    elif [ "$1" = "--enable-cfguard" ]; then
+        CFGUARD_CFLAGS="-mguard=cf"
+    elif [ "$1" = "--disable-cfguard" ]; then
+        CFGUARD_CFLAGS=
     else
         PREFIX="$1"
     fi
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--disable-shared] [--disable-static] dest
+    echo "$0 [--disable-shared] [--disable-static] [--enable-cfguard|--disable-cfguard] dest"
     exit 1
 fi
 
@@ -107,6 +112,8 @@ for arch in $ARCHS; do
         -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
         -DLIBCXXABI_ENABLE_SHARED=OFF \
         -DLIBCXXABI_LIBDIR_SUFFIX="" \
+        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
+        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         ..
 
     $BUILDCMD ${CORES+-j$CORES}

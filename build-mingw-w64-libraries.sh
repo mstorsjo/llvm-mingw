@@ -16,11 +16,26 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
-    echo $0 dest
+USE_CFLAGS="-g -O2"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --enable-cfguard)
+        USE_CFLAGS="-g -O2 -mguard=cf"
+        ;;
+    --disable-cfguard)
+        USE_CFLAGS="-g -O2"
+        ;;
+    *)
+        PREFIX="$1"
+        ;;
+    esac
+    shift
+done
+if [ -z "$PREFIX" ]; then
+    echo "$0 [--enable-cfguard|--disable-cfguard] dest"
     exit 1
 fi
-PREFIX="$1"
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH="$PREFIX/bin:$PATH"
@@ -43,7 +58,9 @@ for lib in winpthreads winstorecompat; do
         mkdir -p build-$arch
         cd build-$arch
         arch_prefix="$PREFIX/$arch-w64-mingw32"
-        ../configure --host=$arch-w64-mingw32 --prefix="$arch_prefix" --libdir="$arch_prefix/lib"
+        ../configure --host=$arch-w64-mingw32 --prefix="$arch_prefix" --libdir="$arch_prefix/lib" \
+            CFLAGS="$USE_CFLAGS" \
+            CXXFLAGS="$USE_CFLAGS"
         make -j$CORES
         make install
         cd ..

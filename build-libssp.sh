@@ -16,8 +16,24 @@
 
 set -e
 
-if [ $# -lt 1 ]; then
-    echo $0 dest
+CFGUARD_CFLAGS=
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --enable-cfguard)
+        CFGUARD_CFLAGS="-mguard=cf"
+        ;;
+    --disable-cfguard)
+        CFGUARD_CFLAGS=
+        ;;
+    *)
+        PREFIX="$1"
+        ;;
+    esac
+    shift
+done
+if [ -z "$PREFIX" ]; then
+    echo "$0 [--enable-cfguard|--disable-cfguard] dest"
     exit 1
 fi
 
@@ -26,7 +42,6 @@ if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
 
-PREFIX="$1"
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH="$PREFIX/bin:$PATH"
@@ -80,7 +95,7 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
-    $MAKE -f ../Makefile -j$CORES CROSS=$arch-w64-mingw32-
+    $MAKE -f ../Makefile -j$CORES CROSS=$arch-w64-mingw32- CFGUARD_CFLAGS="$CFGUARD_CFLAGS"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     cp libssp.a "$PREFIX/$arch-w64-mingw32/lib"
     cp libssp_nonshared.a "$PREFIX/$arch-w64-mingw32/lib"
