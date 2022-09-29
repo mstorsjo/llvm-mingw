@@ -42,6 +42,20 @@ if ! $ANY_ARCH-w64-mingw32-gcc -E is-ucrt.c > /dev/null 2>&1; then
 fi
 rm -f is-ucrt.c
 
+if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-clang -x c++ - -o has-cfguard-test.exe -mguard=cf); then
+    if llvm-readobj --coff-load-config has-cfguard-test.exe | grep -q 'CF_INSTRUMENTED (0x100)'; then
+        HAS_CFGUARD=1
+    elif [ -n "$HAS_CFGUARD" ]; then
+        echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2
+        rm -f has-cfguard-test.exe
+        exit 1
+    fi
+    rm -f has-cfguard-test.exe
+elif [ -n "$HAS_CFGUARD" ]; then
+    echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2
+    exit 1
+fi
+
 : ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
 
 if [ -z "$RUN_X86" ]; then
@@ -82,6 +96,9 @@ TESTS_OMP="hello-omp"
 TESTS_UWP="uwp-error"
 TESTS_IDL="idltest"
 TESTS_OTHER_TARGETS="hello"
+if [ -n "$HAS_CFGUARD" ]; then
+    TESTS_CFGUARD="cfguard-test"
+fi
 for arch in $ARCHS; do
     case $arch in
     i686|x86_64)
@@ -165,6 +182,9 @@ for arch in $ARCHS; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -fstack-protector-strong
         FAILURE_TESTS="$FAILURE_TESTS $test"
     done
+    for test in $TESTS_CFGUARD; do
+        $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test.exe -mguard=cf
+    done
     for test in $TESTS_FORTIFY; do
         $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-fortify.exe -O2 -D_FORTIFY_SOURCE=2 -lssp
         TESTS_EXTRA="$TESTS_EXTRA $test-fortify"
@@ -216,6 +236,14 @@ for arch in $ARCHS; do
         if [ -n "$NATIVE" ]; then
             TESTS_EXTRA="$TESTS_EXTRA $test-asan"
             FAILURE_TESTS="$FAILURE_TESTS $test-asan"
+        fi
+        if [ -n "$HAS_CFGUARD" ]; then
+            # Smoke test ASAN with CFGuard to make sure it doesn't trip.
+            $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-asan-cfguard.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$TEST_DIR/$test-asan.pdb -mguard=cf
+            if [ -n "$NATIVE" ]; then
+                TESTS_EXTRA="$TESTS_EXTRA $test-asan-cfguard"
+                FAILURE_TESTS="$FAILURE_TESTS $test-asan-cfguard"
+            fi
         fi
     done
     for test in $TESTS_UBSAN; do
@@ -287,7 +315,7 @@ for arch in $ARCHS; do
                     echo $file trigger failed expectedly, returned $ret
 
                     case $test in
-                    stacksmash-asan)
+                    stacksmash-asan|stacksmash-asan-cfguard)
                         grep -q stack-buffer-overflow $OUT
                         grep -q "func.*stacksmash.c" $OUT
                         ;;
@@ -330,6 +358,22 @@ for arch in $ARCHS; do
                     rm -f $OUT
                 fi
                 i=$(($i+1))
+            done
+            for test in $TESTS_CFGUARD; do
+                file=$test.exe
+                OUT=cmdoutput
+                rm -f $OUT
+                if $RUN $test.exe check_enabled; then
+                    $RUN $test.exe normal_icall
+                    $RUN $test.exe invalid_icall_nocf || [ $? = 2 ]
+                    # We want to check the exit code to be 0xc0000409
+                    # (STATUS_STACK_BUFFER_OVERRUN aka fail fast exception).
+                    # MSYS2 bash does not give us the full 32-bit exit code, so
+                    # we have to rely on cmd.exe to perform the check.
+                    # (This probably doesn't work on Wine, but Wine doesn't
+                    # support CFG anyway, at least not for now...)
+                    $RUN cmd //v:on //c "$test.exe invalid_icall & if !errorlevel! equ -1073740791 (exit 0) else (exit 1)"
+                fi
             done
         fi
     fi
