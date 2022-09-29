@@ -80,6 +80,8 @@ mingw32uwp)
     FLAGS="$FLAGS -DWINAPI_FAMILY=WINAPI_FAMILY_APP"
     # the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
     FLAGS="$FLAGS -DUNICODE"
+    # Force the Universal C Runtime
+    FLAGS="$FLAGS -D_UCRT"
 
     # Default linker flags; passed after any user specified -l options,
     # to let the user specified libraries take precedence over these.
@@ -91,9 +93,6 @@ mingw32uwp)
     # been built targeting UCRT originally.
     LINKER_FLAGS="$LINKER_FLAGS -Wl,-lucrtapp"
     LINKER_FLAGS="$LINKER_FLAGS --end-no-unused-arguments"
-
-    # Force the Universal C Runtime
-    FLAGS="$FLAGS -D_UCRT"
     ;;
 esac
 
