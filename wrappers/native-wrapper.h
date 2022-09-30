@@ -154,6 +154,21 @@ static inline void split_argv(const TCHAR *argv0, const TCHAR **dir_ptr, const T
     if (dash) {
         *dash = '\0';
         exe = dash + 1;
+        // Handle [<target>-]llvm-<tool> as exe=llvm-<tool>
+        TCHAR *dash2 = _tcsrchr(target, '-');
+        if (dash2 && !_tcscmp(dash2, _T("-llvm"))) {
+            // Found <target>-llvm-<tool>; move the llvm- prefix to
+            // exe. Convert the original dash which we overwrite with '\0'
+            // back into a dash and split the string at the preceding dash.
+            *dash = '-';
+            *dash2 = '\0';
+            exe = dash2 + 1;
+        } else if (!_tcscmp(target, _T("llvm"))) {
+            // Found llvm-<tool>; don't treat "llvm" as target but move
+            // it to the exe part.
+            exe = basename;
+            target = NULL;
+        }
     } else {
         target = NULL;
     }

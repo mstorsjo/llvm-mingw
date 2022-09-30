@@ -21,8 +21,11 @@
 int _tmain(int argc, TCHAR* argv[]) {
     const TCHAR *dir;
     const TCHAR *exe;
-    split_argv(argv[0], &dir, NULL, NULL, &exe);
-    TCHAR *exe_path = concat(dir, concat(_T("llvm-"), exe));
+    const TCHAR *basename, *target;
+    split_argv(argv[0], &dir, &basename, &target, &exe);
+    if (_tcsncmp(exe, _T("llvm-"), 5))
+        exe = concat(_T("llvm-"), exe);
+    TCHAR *exe_path = concat(dir, exe);
 
     return run_final(exe_path, (const TCHAR *const *) argv);
 }
