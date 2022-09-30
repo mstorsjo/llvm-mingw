@@ -86,6 +86,7 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
+    [ -n "$NO_RECONF" ] || rm -rf CMake*
 
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \

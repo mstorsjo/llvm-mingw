@@ -96,6 +96,7 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf build-$arch$BUILD_SUFFIX
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX
+    [ -n "$NO_RECONF" ] || rm -rf CMake*
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \

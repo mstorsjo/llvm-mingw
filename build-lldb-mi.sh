@@ -112,6 +112,7 @@ cd lldb-mi
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR
+[ -n "$NO_RECONF" ] || rm -rf CMake*
 cmake \
     ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \

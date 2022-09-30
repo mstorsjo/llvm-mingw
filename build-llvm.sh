@@ -292,6 +292,7 @@ fi
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR
+[ -n "$NO_RECONF" ] || rm -rf CMake*
 # Building LLDB for macOS fails unless building libc++ is enabled at the
 # same time, or unless the LLDB tests are disabled.
 cmake \
