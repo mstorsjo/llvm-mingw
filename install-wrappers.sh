@@ -88,11 +88,18 @@ for arch in $ARCHS; do
         for exec in clang clang++ gcc g++ c++ as; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
-        for exec in addr2line ar ranlib nm objcopy readelf strings strip; do
+        for exec in addr2line ar ranlib nm objcopy readelf strings strip llvm-ar llvm-ranlib; do
             if [ -n "$HOST" ]; then
                 link_target=llvm-wrapper
             else
-                link_target=llvm-$exec
+                case $exec in
+                llvm-*)
+                    link_target=$exec
+                    ;;
+                *)
+                    link_target=llvm-$exec
+                    ;;
+                esac
             fi
             ln -sf $link_target$EXEEXT $arch-w64-$target_os-$exec$EXEEXT || true
         done
