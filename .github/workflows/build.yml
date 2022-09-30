@@ -52,12 +52,10 @@ jobs:
           cat versions >> $GITHUB_ENV
           mkdir -p install/llvm-mingw
           cp versions install/llvm-mingw
-          echo Enabling CFGuard when building with latest llvm and mingw-w64
-          echo CFGUARD_PARAMS=--enable-cfguard >> $GITHUB_ENV
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $CFGUARD_PARAMS
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v3
@@ -92,12 +90,10 @@ jobs:
           cat versions >> $GITHUB_ENV
           mkdir -p install/llvm-mingw
           cp versions install/llvm-mingw
-          echo Enabling CFGuard when building with latest llvm and mingw-w64
-          echo CFGUARD_PARAMS=--enable-cfguard >> $GITHUB_ENV
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts $CFGUARD_PARAMS
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v3
@@ -123,8 +119,6 @@ jobs:
           . versions
           echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION
           cat versions >> $GITHUB_ENV
-          echo Enabling CFGuard when building with latest llvm and mingw-w64
-          echo CFGUARD_PARAMS=--enable-cfguard >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - name: Build
         run: |
@@ -134,7 +128,7 @@ jobs:
           # (and gets picked up), but only exists in native form.
           # Disable use of zstd too - it's also available, but only in native
           # form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $CFGUARD_PARAMS
+          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           cd install
           tar -Jcf ../llvm-mingw-macos.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v3
@@ -183,12 +177,10 @@ jobs:
           . versions
           echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION
           cat versions >> $GITHUB_ENV
-          echo Enabling CFGuard when building with latest llvm and mingw-w64
-          echo CFGUARD_PARAMS=--enable-cfguard >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - name: Build
         run: |
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $CFGUARD_PARAMS
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           ./run-tests.sh $(pwd)/install/llvm-mingw
 
   # Use the Linux cross compilers built in the first step to cross compile
