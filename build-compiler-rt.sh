@@ -19,8 +19,8 @@ set -e
 SRC_DIR=../lib/builtins
 BUILD_SUFFIX=
 BUILD_BUILTINS=TRUE
-ENABLE_CFGUARD=
-CFGUARD_CFLAGS=
+ENABLE_CFGUARD=1
+CFGUARD_CFLAGS="-mguard=cf"
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--build-sanitizers" ]; then
@@ -28,6 +28,11 @@ while [ $# -gt 0 ]; do
         BUILD_SUFFIX=-sanitizers
         SANITIZERS=1
         BUILD_BUILTINS=FALSE
+        # Override the default cfguard options here; this unfortunately
+        # also overrides the user option if --enable-cfguard is passed
+        # before --build-sanitizers.
+        CFGUARD_CFLAGS=
+        ENABLE_CFGUARD=
     elif [ "$1" = "--enable-cfguard" ]; then
         CFGUARD_CFLAGS="-mguard=cf"
         ENABLE_CFGUARD=1
