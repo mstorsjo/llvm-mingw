@@ -16,7 +16,7 @@
 
 set -e
 
-USE_CFLAGS="-g -O2"
+USE_CFLAGS="-g -O2 -mguard=cf"
 
 while [ $# -gt 0 ]; do
     case "$1" in
