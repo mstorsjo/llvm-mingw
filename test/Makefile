@@ -244,13 +244,7 @@ ifeq ($(NATIVE),)
 endif
 TEST_TARGETS = $(addprefix .tested., $(TESTS))
 
-ifneq ($(NATIVE),)
 ifeq ($(CMD),)
-    # These don't strictly require running native instead of in Wine
-    # (except for asan, but that's are already filtered out at this
-    # point), but some of the error situations trigger crashes, which
-    # might not work robustly on all exotic Wine configurations - thus
-    # only run these tests on native Windows.
     # These tests don't support being run in cmd.exe.
     FAILURE_TEST_TARGETS = $(addprefix .failtested., $(FAILURE_TESTS))
     CUSTOM1_FAILURE_TEST_TARGETS = .customtest1.bufferoverflow-fortify$(EXEEXT)
@@ -261,7 +255,6 @@ ifeq ($(CMD),)
         CUSTOM2_FAILURE_TEST_TARGETS = .customtest2.cfguard-test$(EXEEXT)
     endif
     endif
-endif
 endif
 
 ALL_TEST_TARGETS = $(TEST_TARGETS) $(FAILURE_TEST_TARGETS) $(CUSTOM1_FAILURE_TEST_TARGETS) $(CUSTOM2_FAILURE_TEST_TARGETS)
