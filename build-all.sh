@@ -89,6 +89,6 @@ fi
 ./build-compiler-rt.sh $PREFIX $CFGUARD_ARGS
 ./build-libcxx.sh $PREFIX $CFGUARD_ARGS
 ./build-mingw-w64-libraries.sh $PREFIX $CFGUARD_ARGS
-./build-compiler-rt.sh $PREFIX --build-sanitizers
+./build-compiler-rt.sh $PREFIX --build-sanitizers # CFGUARD_ARGS intentionally omitted
 ./build-libssp.sh $PREFIX $CFGUARD_ARGS
 ./build-openmp.sh $PREFIX $CFGUARD_ARGS
