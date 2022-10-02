@@ -114,5 +114,5 @@ int main(int argc, char *argv[]) {
         }
     }
     printf("%s ( check_enabled | normal_icall | invalid_icall | invalid_icall_nocf )\n", argv[0]);
-    return 32;
+    return 0;
 }
