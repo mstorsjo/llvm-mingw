@@ -275,10 +275,6 @@ $(TEST_TARGETS): .tested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $(LOCAL_RUNTI
 	$(DO_RUN)$<
 	$(TOUCH_TARGET)
 
-# GNU libssp writes the error messages directly to the console, and it can't be
-# redirected, so we can't check for the presence of those messages.
-# grep -q "stack smashing detected" $$OUT || exit 1
-# grep -q "buffer overflow detected" $$OUT || exit 1
 $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $(LOCAL_RUNTIMES)
 	@echo $(DO_RUN)$< trigger; \
 	OUT=log1-$*; \
@@ -300,8 +296,10 @@ $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $
 			grep -q "signed integer overflow" $$OUT || exit 1; \
 			;; \
 		stacksmash) \
+			grep -q "stack smashing detected" $$OUT || exit 1; \
 			;; \
 		bufferoverflow-*) \
+			grep -q "buffer overflow detected" $$OUT || exit 1; \
 			;; \
 		*) \
 			echo Unhandled failure test $*; \
@@ -312,7 +310,6 @@ $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $
 	fi
 	@touch $@
 
-# grep -q "buffer overflow detected" $$OUT || exit 1
 .customtest1.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $(LOCAL_RUNTIMES)
 	@i=0; while [ $$i -le 10 ]; do \
 		OUT=log2-$*; \
@@ -327,6 +324,7 @@ $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $
 			ret=$$?; \
 			cat $$OUT; \
 			echo OK: $* $$i failed expectedly, returned $$ret; \
+			grep -q "buffer overflow detected" $$OUT || exit 1; \
 			rm -f $$OUT; \
 		fi; \
 		i=$$(($$i+1)); \
