@@ -21,8 +21,21 @@ while [ $# -gt 0 ]; do
     --with-python)
         PYTHON=1
         ;;
+    --disable-lldb)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        NO_LLDB=1
+        ;;
     --disable-lldb-mi)
         NO_LLDB_MI=1
+        ;;
+    --disable-clang-tools-extra)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
+    --disable-mingw-w64-tools)
+        NO_MINGW_W64_TOOLS=1
+        ;;
+    --disable-make)
+        NO_MAKE=1
         ;;
     *)
         if [ -z "$NATIVE" ]; then
@@ -40,7 +53,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python] [--disable-lldb-mi]
+    echo $0 native prefix arch [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tool-extra] [--disable-mingw-w64-tools] [--disable-make]
     exit 1
 fi
 
@@ -59,11 +72,15 @@ if [ -n "$PYTHON" ]; then
 fi
 
 ./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
-if [ -z "$NO_LLDB_MI" ]; then
+if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
     ./build-lldb-mi.sh $PREFIX --host=$HOST
 fi
 ./strip-llvm.sh $PREFIX --host=$HOST
-./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
+if [ -z "$NO_MINGW_W64_TOOLS" ]; then
+    ./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
+fi
 ./install-wrappers.sh $PREFIX --host=$HOST
 ./prepare-cross-toolchain.sh $NATIVE $PREFIX $CROSS_ARCH
-./build-make.sh $PREFIX --host=$HOST
+if [ -z "$NO_MAKE" ]; then
+    ./build-make.sh $PREFIX --host=$HOST
+fi
