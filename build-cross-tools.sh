@@ -57,6 +57,13 @@ if [ -z "$CROSS_ARCH" ]; then
     exit 1
 fi
 
+for dep in git curl cmake; do
+    if ! command -v $dep >/dev/null; then
+        echo "$dep not installed. Please install it and retry" 1>&2
+        exit 1
+    fi
+done
+
 export PATH="$NATIVE/bin:$PATH"
 HOST=$CROSS_ARCH-w64-mingw32
 
