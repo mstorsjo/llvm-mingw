@@ -62,9 +62,4 @@ RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
     ./build-openmp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     rm -rf /build/*
 
-# Build libssp
-COPY build-libssp.sh ./
-RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
-
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH

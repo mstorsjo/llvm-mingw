@@ -72,7 +72,7 @@ if [ -z "$PREFIX" ]; then
     exit 1
 fi
 
-for dep in git curl cmake; do
+for dep in git cmake; do
     if ! command -v $dep >/dev/null; then
         echo "$dep not installed. Please install it and retry" 1>&2
         exit 1
@@ -96,5 +96,4 @@ fi
 ./build-libcxx.sh $PREFIX $CFGUARD_ARGS
 ./build-mingw-w64-libraries.sh $PREFIX $CFGUARD_ARGS
 ./build-compiler-rt.sh $PREFIX --build-sanitizers # CFGUARD_ARGS intentionally omitted
-./build-libssp.sh $PREFIX # CFGUARD_ARGS not used
 ./build-openmp.sh $PREFIX $CFGUARD_ARGS
