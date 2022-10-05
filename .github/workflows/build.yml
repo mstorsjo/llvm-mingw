@@ -170,6 +170,12 @@ jobs:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [prepare]
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - arm64
     steps:
       - uses: actions/checkout@v3
       - name: Build
@@ -184,7 +190,7 @@ jobs:
           # form. Therefore, autodetection will pick them up, but linking
           # universal binaries fails as those libraries are unavailable in the
           # other (arm64) architecture form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
+          MACOS_REDIST=1 MACOS_REDIST_ARCHS="${{matrix.arch}}" LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-ucrt-macos-universal
@@ -192,7 +198,7 @@ jobs:
           tar -Jcf ../$NAME.tar.xz $NAME
       - uses: actions/upload-artifact@v3
         with:
-          name: macos-ucrt-toolchain
+          name: macos-ucrt-${{matrix.arch}}-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
