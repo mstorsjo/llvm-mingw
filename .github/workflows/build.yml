@@ -288,6 +288,12 @@ jobs:
   macos:
     needs: [prepare, macos-stage1, linux-profile]
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - arm64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -314,17 +320,19 @@ jobs:
           # form. Therefore, autodetection will pick them up, but linking
           # universal binaries fails as those libraries are unavailable in the
           # other (x86_64) architecture form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $HOME/llvm $(pwd)/install/llvm-mingw --thinlto --pgo
+          MACOS_REDIST=1 MACOS_REDIST_ARCHS="${{matrix.arch}}" LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $HOME/llvm $(pwd)/install/llvm-mingw --thinlto --pgo ${{ matrix.arch != 'arm64' && '--no-runtimes' || '' }}
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
-          ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
-          ./run-tests.sh $(pwd)/install/llvm-mingw
+          if ${{matrix.arch == 'arm64'}}; then
+              ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
+              ./run-tests.sh $(pwd)/install/llvm-mingw
+          fi
           cd install
-          NAME=llvm-mingw-$TAG-ucrt-macos-universal
+          NAME=llvm-mingw-$TAG-ucrt-macos-${{matrix.arch}}
           mv llvm-mingw $NAME
           gtar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-ucrt-toolchain
+          name: macos-ucrt-${{matrix.arch}}-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
