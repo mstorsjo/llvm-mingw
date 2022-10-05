@@ -55,7 +55,12 @@ if [ -n "$HOST" ]; then
 fi
 
 if [ -n "$MACOS_REDIST" ]; then
-    WRAPPER_FLAGS="$WRAPPER_FLAGS -arch arm64 -arch x86_64 -mmacosx-version-min=10.9"
+    : ${MACOS_REDIST_ARCHS:=arm64 x86_64}
+    : ${MACOS_REDIST_VERSION:=10.9}
+    for arch in $MACOS_REDIST_ARCHS; do
+        WRAPPER_FLAGS="$WRAPPER_FLAGS -arch $arch"
+    done
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -mmacosx-version-min=$MACOS_REDIST_VERSION"
 fi
 
 if [ -n "$EXEEXT" ]; then
