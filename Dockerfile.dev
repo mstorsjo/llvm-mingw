@@ -146,7 +146,7 @@ RUN cd test && \
             ;; \
         esac && \
         for test in stacksmash; do \
-            $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,-pdb,$arch/$test-asan.pdb || exit 1; \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,--pdb= || exit 1; \
         done; \
         for test in ubsan; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fsanitize=undefined -fno-sanitize-recover=all || exit 1; \

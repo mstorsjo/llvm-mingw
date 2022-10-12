@@ -45,7 +45,7 @@ mkdir -p $TEST_DIR
 $CXX hello-exception.cpp -o $TEST_DIR/hello-exception-dwarf.exe -g
 
 # Build an executable with PDB debug info
-$CXX hello-exception.cpp -o $TEST_DIR/hello-exception-pdb.exe -g -gcodeview -Wl,-pdb=
+$CXX hello-exception.cpp -o $TEST_DIR/hello-exception-pdb.exe -g -gcodeview -Wl,--pdb=
 # Strip the executable that uses pdb; the crt startup files and mingw static
 # library object files have dwarf debug info, so the binary has got a bit of
 # both, and lldb would choose to use the dwarf parts unless we strip it.
