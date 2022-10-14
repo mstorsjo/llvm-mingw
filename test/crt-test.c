@@ -175,7 +175,21 @@ int vsscanf_wrap(const char* str, const char* fmt, ...) {
     return ret;
 }
 
+double int_to_double(uint64_t i) {
+    union {
+        uint64_t i;
+        double d;
+    } u;
+    u.i = i;
+    return u.d;
+}
+
 int main(int argc, char* argv[]) {
+    // The plain "NAN" constant in MSVC is negative, while it is positive
+    // in other environments.
+    double pNAN = int_to_double(0x7ff8000000000000ULL);
+    double nNAN = int_to_double(0xfff8000000000000ULL);
+
     char buf[200];
     int i;
     uint64_t myconst = 0xbaadf00dcafe;
@@ -1402,8 +1416,8 @@ int main(int argc, char* argv[]) {
     TEST_FLT(fabs((double)F(-3.125)), 3.125); \
     TEST_FLT(fabs((double)F(INFINITY)), INFINITY); \
     TEST_FLT(fabs((double)F(-INFINITY)), INFINITY); \
-    TEST_FLT_NAN(fabs((double)F(NAN)), F(NAN)); \
-    TEST_FLT_NAN(fabs((double)-F(NAN)), F(NAN))
+    TEST_FLT_NAN(fabs((double)F(pNAN)), F(pNAN)); \
+    TEST_FLT_NAN(fabs((double)F(nNAN)), F(pNAN))
 
     TEST_FABS(fabs, double);
     TEST_FABS(fabsf, float);
@@ -1640,13 +1654,13 @@ int main(int argc, char* argv[]) {
     TEST_FLT_ACCURACY(copysign(F(3.125), F(-1)), -3.125, 0.0001); \
     TEST_FLT_ACCURACY(copysign(F(-3.125), F(-1)), -3.125, 0.0001); \
     TEST_FLT_ACCURACY(copysign(F(-3.125), F(1)), 3.125, 0.0001); \
-    TEST_FLT_ACCURACY(copysign(F(3.125), -F(NAN)), -3.125, 0.0001); \
+    TEST_FLT_ACCURACY(copysign(F(3.125), F(nNAN)), -3.125, 0.0001); \
     TEST_FLT(copysign(F(INFINITY), F(1)), INFINITY); \
     TEST_FLT(copysign(F(INFINITY), F(-1)), -INFINITY); \
     TEST_FLT(copysign(F(-INFINITY), F(-1)), -INFINITY); \
     TEST_FLT(copysign(F(-INFINITY), F(1)), INFINITY); \
-    TEST_FLT_NAN(copysign(F(NAN), F(-1)), -F(NAN)); \
-    TEST_FLT_NAN(copysign(-F(NAN), F(NAN)), F(NAN))
+    TEST_FLT_NAN(copysign(F(pNAN), F(-1)), F(nNAN)); \
+    TEST_FLT_NAN(copysign(F(nNAN), F(pNAN)), F(pNAN))
 
     TEST_COPYSIGN(copysign);
     TEST_COPYSIGN(copysignf);
@@ -1698,7 +1712,7 @@ int main(int argc, char* argv[]) {
     TEST_INT(LL(1073741824) / 357913941, 3); // __rt_sdiv64
     TEST_INT(LL(2147483647) / LL(1), 2147483647); // __rt_sdiv64
     TEST_INT(LL(2147483647) / LL(-1), -2147483647); // __rt_sdiv64
-    TEST_INT(LL(-2147483648) / LL(1), -2147483648LL); // __rt_sdiv64
+    TEST_INT(LL(-2147483648LL) / LL(1), -2147483648LL); // __rt_sdiv64
     TEST_INT(LL(0) / LL(2305843009213693952), 0); // __rt_sdiv64
     TEST_INT(LL(0) / LL(2305843009213693953), 0); // __rt_sdiv64
     TEST_INT(LL(0) / LL(2147483648), 0); // __rt_sdiv64
