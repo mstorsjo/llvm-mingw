@@ -138,11 +138,33 @@ const char *context = "";
         } \
     } while (0)
 
-#define F(x) strtod(#x, NULL)
-#define L(x) strtol(#x, NULL, 0)
-#define UL(x) strtoul(#x, NULL, 0)
-#define LL(x) strtoll(#x, NULL, 0)
-#define ULL(x) strtoull(#x, NULL, 0)
+double double_wrap_impl(double f) {
+    return f;
+}
+long long_wrap_impl(long l) {
+    return l;
+}
+unsigned long ulong_wrap_impl(unsigned long u) {
+    return u;
+}
+long long longlong_wrap_impl(long long l) {
+    return l;
+}
+unsigned long long ulonglong_wrap_impl(unsigned long long u) {
+    return u;
+}
+
+double (*double_wrap)(double f) = double_wrap_impl;
+long (*long_wrap)(long l) = long_wrap_impl;
+unsigned long (*ulong_wrap)(unsigned long u) = ulong_wrap_impl;
+long long (*longlong_wrap)(long long l) = longlong_wrap_impl;
+unsigned long long (*ulonglong_wrap)(unsigned long long l) = ulonglong_wrap_impl;
+
+#define F(x) double_wrap(x)
+#define L(x) long_wrap(x)
+#define UL(x) ulong_wrap(x)
+#define LL(x) longlong_wrap(x)
+#define ULL(x) ulonglong_wrap(x ## ULL)
 
 int vsscanf_wrap(const char* str, const char* fmt, ...) {
     va_list ap;
@@ -1762,9 +1784,9 @@ int main(int argc, char* argv[]) {
 
     TEST_INT((unsigned long long)F(4.2), 4);
     TEST_INT((signed long long)F(4.2), 4);
-    TEST_INT((unsigned long long)F(123456789012345678), 123456789012345680ULL);
-    TEST_INT((signed long long)F(123456789012345678), 123456789012345680ULL);
-    TEST_INT((signed long long)F(-123456789012345), -123456789012345LL);
+    TEST_INT((unsigned long long)F(123456789012345678.0), 123456789012345680ULL);
+    TEST_INT((signed long long)F(123456789012345678.0), 123456789012345680ULL);
+    TEST_INT((signed long long)F(-123456789012345.0), -123456789012345LL);
 
     TEST_INT((unsigned long long)(float)F(4.2), 4);
     TEST_INT((signed long long)(float)F(4.2), 4);
@@ -1798,9 +1820,9 @@ int main(int argc, char* argv[]) {
 #ifdef __SIZEOF_INT128__
     TEST_INT((__uint128_t)F(4.2), 4);
     TEST_INT((__int128_t)F(4.2), 4);
-    TEST_INT((__uint128_t)F(123456789012345678), 123456789012345680ULL);
-    TEST_INT((__int128_t)F(123456789012345678), 123456789012345680ULL);
-    TEST_INT((__int128_t)F(-123456789012345), -123456789012345LL);
+    TEST_INT((__uint128_t)F(123456789012345678.0), 123456789012345680ULL);
+    TEST_INT((__int128_t)F(123456789012345678.0), 123456789012345680ULL);
+    TEST_INT((__int128_t)F(-123456789012345.0), -123456789012345LL);
 
     TEST_INT((__uint128_t)(float)F(4.2), 4);
     TEST_INT((__int128_t)(float)F(4.2), 4);
