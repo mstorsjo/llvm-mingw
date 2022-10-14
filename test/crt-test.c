@@ -138,6 +138,9 @@ const char *context = "";
         } \
     } while (0)
 
+char char_wrap_impl(char c) {
+    return c;
+}
 double double_wrap_impl(double f) {
     return f;
 }
@@ -153,18 +156,25 @@ long long longlong_wrap_impl(long long l) {
 unsigned long long ulonglong_wrap_impl(unsigned long long u) {
     return u;
 }
+const char *str_wrap_impl(const char *str) {
+    return str;
+}
 
+char (*char_wrap)(char c) = char_wrap_impl;
 double (*double_wrap)(double f) = double_wrap_impl;
 long (*long_wrap)(long l) = long_wrap_impl;
 unsigned long (*ulong_wrap)(unsigned long u) = ulong_wrap_impl;
 long long (*longlong_wrap)(long long l) = longlong_wrap_impl;
 unsigned long long (*ulonglong_wrap)(unsigned long long l) = ulonglong_wrap_impl;
+const char *(*str_wrap)(const char *str) = str_wrap_impl;
 
+#define C(x) char_wrap(x)
 #define F(x) double_wrap(x)
 #define L(x) long_wrap(x)
 #define UL(x) ulong_wrap(x)
 #define LL(x) longlong_wrap(x)
 #define ULL(x) ulonglong_wrap(x ## ULL)
+#define S(x) str_wrap(x)
 
 int vsscanf_wrap(const char* str, const char* fmt, ...) {
     va_list ap;
@@ -196,14 +206,14 @@ int main(int argc, char* argv[]) {
     void *retptr;
 
     memset(buf, '#', sizeof(buf));
-    retptr = memcpy(buf, "foo", 4);
+    retptr = memcpy(buf, S("foo"), L(4));
     TEST(retptr == buf);
     TEST_STR(buf, "foo");
     TEST_INT(buf[5], '#');
 
 #if defined(__GLIBC__) || defined(__MINGW32__)
     memset(buf, '#', sizeof(buf));
-    retptr = mempcpy(buf, "foo", 4);
+    retptr = mempcpy(buf, S("foo"), L(4));
     TEST(retptr == buf + 4);
     TEST_STR(buf, "foo");
     TEST_INT(buf[5], '#');
@@ -211,57 +221,57 @@ int main(int argc, char* argv[]) {
 
     memset(buf, '#', sizeof(buf));
     memcpy(buf, "foobar", 7);
-    retptr = memmove(buf + 2, buf, 3);
+    retptr = memmove(buf + 2, S(buf), L(3));
     TEST(retptr == buf + 2);
     TEST_STR(buf, "fofoor");
     TEST_INT(buf[8], '#');
 
     memset(buf, '#', sizeof(buf));
     memcpy(buf, "foobar", 7);
-    retptr = memmove(buf, buf + 2, 3);
+    retptr = memmove(buf, S(buf + 2), L(3));
     TEST(retptr == buf);
     TEST_STR(buf, "obabar");
     TEST_INT(buf[8], '#');
 
-    retptr = memset(buf, '#', sizeof(buf));
+    retptr = memset(buf, C('#'), sizeof(buf) + L(0));
     TEST(retptr == buf);
     TEST_INT(buf[0], '#');
     TEST_INT(buf[sizeof(buf)-1], '#');
 
     memset(buf, '#', sizeof(buf));
-    retptr = strcpy(buf, "foo");
+    retptr = strcpy(buf, S("foo"));
     TEST(retptr == buf);
     TEST_STR(buf, "foo");
     TEST_INT(buf[5], '#');
 
     memset(buf, '#', sizeof(buf));
-    retptr = strncpy(buf, "foobar", 3);
+    retptr = strncpy(buf, S("foobar"), L(3));
     TEST(retptr == buf);
     TEST_INT(buf[3], '#');
     buf[3] = '\0';
     TEST_STR(buf, "foo");
 
     memset(buf, '#', sizeof(buf));
-    retptr = strncpy(buf, "foobar", sizeof(buf));
+    retptr = strncpy(buf, S("foobar"), sizeof(buf) + L(0));
     TEST(retptr == buf);
     TEST_STR(buf, "foobar");
     TEST_INT(buf[sizeof(buf)-1], '\0');
 
     memset(buf, '#', sizeof(buf));
     strcpy(buf, "foo");
-    retptr = strcat(buf, "bar");
+    retptr = strcat(buf, S("bar"));
     TEST(retptr == buf);
     TEST_STR(buf, "foobar");
 
     memset(buf, '#', sizeof(buf));
     strcpy(buf, "foo");
-    retptr = strncat(buf, "bar", 5);
+    retptr = strncat(buf, S("bar"), L(5));
     TEST(retptr == buf);
     TEST_STR(buf, "foobar");
 
     memset(buf, '#', sizeof(buf));
     strcpy(buf, "foo");
-    retptr = strncat(buf, "bar", 2);
+    retptr = strncat(buf, S("bar"), L(2));
     TEST(retptr == buf);
     TEST_STR(buf, "fooba");
 
