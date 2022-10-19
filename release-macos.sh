@@ -23,6 +23,10 @@ fi
 
 TAG=$1
 
+# macOS itself doesn't ship with libzstd; avoid picking up a zstd
+# dependency from libraries installed e.g. with homebrew.
+export LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF"
+
 RELNAME=llvm-mingw-$TAG-ucrt-macos-universal
 DEST=$HOME/$RELNAME
 rm -rf $DEST
