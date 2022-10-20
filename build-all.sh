@@ -54,6 +54,9 @@ while [ $# -gt 0 ]; do
     --disable-cfguard)
         CFGUARD_ARGS="--disable-cfguard"
         ;;
+    --no-runtimes)
+        NO_RUNTIMES=1
+        ;;
     *)
         if [ -n "$PREFIX" ]; then
             echo Unrecognized parameter $1
@@ -65,7 +68,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] dest"
+    echo "$0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] dest"
     exit 1
 fi
 
@@ -84,8 +87,11 @@ if [ -z "$FULL_LLVM" ]; then
     ./strip-llvm.sh $PREFIX
 fi
 ./install-wrappers.sh $PREFIX
-./build-mingw-w64.sh $PREFIX $MINGW_ARGS $CFGUARD_ARGS
 ./build-mingw-w64-tools.sh $PREFIX
+if [ -n "$NO_RUNTIMES" ]; then
+    exit 0
+fi
+./build-mingw-w64.sh $PREFIX $MINGW_ARGS $CFGUARD_ARGS
 ./build-compiler-rt.sh $PREFIX $CFGUARD_ARGS
 ./build-libcxx.sh $PREFIX $CFGUARD_ARGS
 ./build-mingw-w64-libraries.sh $PREFIX $CFGUARD_ARGS
