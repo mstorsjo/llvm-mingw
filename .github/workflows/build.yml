@@ -166,16 +166,10 @@ jobs:
           retention-days: 7
 
   # Build a cross compiler for macOS, targeting Windows.
-  macos:
+  macos-x86_64:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [prepare]
     runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch:
-          - x86_64
-          - arm64
     steps:
       - uses: actions/checkout@v3
       - name: Build
@@ -190,15 +184,55 @@ jobs:
           # form. Therefore, autodetection will pick them up, but linking
           # universal binaries fails as those libraries are unavailable in the
           # other (arm64) architecture form.
-          MACOS_REDIST=1 MACOS_REDIST_ARCHS="${{matrix.arch}}" LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
+          MACOS_REDIST=1 MACOS_REDIST_ARCHS="x86_64" LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
-          NAME=llvm-mingw-$TAG-ucrt-macos-universal
+          NAME=llvm-mingw-$TAG-ucrt-macos-x86_64
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz $NAME
       - uses: actions/upload-artifact@v3
         with:
-          name: macos-ucrt-${{matrix.arch}}-toolchain
+          name: macos-ucrt-x86_64-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
+
+  # Cross-build an arm64 version of the toolchain, on x86_64 macOS.
+  macos-arm64:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [macos-x86_64, prepare]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+        run: |
+          brew install ninja
+          # Cross-build the toolchain - but don't build runtimes, as we can't
+          # execute the newly built toolchain here.
+          MACOS_REDIST=1 MACOS_REDIST_ARCHS="arm64" LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --no-runtimes
+      - uses: actions/download-artifact@v3
+        with:
+          name: macos-ucrt-x86_64-toolchain
+      - name: Unpack existing toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mv llvm-mingw* llvm-mingw-native
+      - name: Assemble the cross-built toolchain
+        env:
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
+          cd install
+          NAME=llvm-mingw-$TAG-ucrt-macos-arm64
+          mv llvm-mingw $NAME
+          tar -Jcf ../$NAME.tar.xz $NAME
+      - uses: actions/upload-artifact@v3
+        with:
+          name: macos-arm64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
@@ -648,7 +682,7 @@ jobs:
     if: false
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-aarch64, macos-x86_64, macos-arm64, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
