@@ -37,8 +37,16 @@ for i in libc++ libunwind; do
     fi
 done
 
+# Copy the clang bundled runtime libraries (compiler-rt)
 cp -a $CLANG_RESOURCE_DIR/lib $DEST/lib/clang/$CLANG_VERSION
+
 rm -rf $DEST/include
+# Copy over headers and arch specific files, converting a unix style
+# install (everything in arch specific subdirectories) into
+# what we'd have when built on Windows, as if build-mingw-w64.sh
+# was called with --skip-include-triplet-prefit, with all headers
+# in $DEST/include, and only keeping the bin and lib directories for the
+# individual architectures.
 cp -a $SRC/generic-w64-mingw32/include $DEST/include
 for arch in $ARCHS; do
     mkdir -p $DEST/$arch-w64-mingw32
