@@ -26,7 +26,7 @@ jobs:
           echo MINGW_W64_VERSION=$(git ls-remote https://github.com/mingw-w64/mingw-w64.git | grep 'refs/heads/master$' | awk '{print $1}') >> versions
           echo PYTHON_VERSION_MINGW=$(git ls-remote https://github.com/msys2-contrib/cpython-mingw.git | grep 'refs/heads/mingw-v3.10.5$' | awk '{print $1}') >> versions
           cat versions
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: versions
           path: |
@@ -39,7 +39,7 @@ jobs:
     needs: [get-versions]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         if: github.event_name == 'schedule'
         with:
@@ -60,7 +60,7 @@ jobs:
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $CFGUARD_PARAMS
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: linux-toolchain
           path: |
@@ -79,7 +79,7 @@ jobs:
     needs: [get-versions]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         if: github.event_name == 'schedule'
         with:
@@ -100,7 +100,7 @@ jobs:
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts $CFGUARD_PARAMS
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: linux-asserts-toolchain
           path: |
@@ -125,7 +125,7 @@ jobs:
           cat versions >> $GITHUB_ENV
           echo Enabling CFGuard when building with latest llvm and mingw-w64
           echo CFGUARD_PARAMS=--enable-cfguard >> $GITHUB_ENV
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build
         run: |
           brew install ninja
@@ -137,7 +137,7 @@ jobs:
           MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $CFGUARD_PARAMS
           cd install
           tar -Jcf ../llvm-mingw-macos.tar.xz llvm-mingw
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: macos-toolchain
           path: |
@@ -190,7 +190,7 @@ jobs:
           cat versions >> $GITHUB_ENV
           echo Enabling CFGuard when building with latest llvm and mingw-w64
           echo CFGUARD_PARAMS=--enable-cfguard >> $GITHUB_ENV
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build
         run: |
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $CFGUARD_PARAMS
@@ -228,14 +228,14 @@ jobs:
           echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION cpython-mingw $PYTHON_VERSION_MINGW
           cat /opt/llvm-mingw/versions >> $GITHUB_ENV
           echo LLDB_MI_PARAMS=--disable-lldb-mi >> $GITHUB_ENV
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw-${{matrix.arch}} ${{matrix.arch}} --with-python $LLDB_MI_PARAMS
           cd install
           zip -9rq ../llvm-mingw-${{matrix.arch}}.zip llvm-mingw-${{matrix.arch}}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: windows-${{matrix.arch}}-toolchain
           path: |
@@ -272,7 +272,7 @@ jobs:
           rm llvm-mingw-*.zip
           mv llvm-mingw-* /llvm-mingw
           echo /llvm-mingw/bin >> $GITHUB_PATH
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run tests
         run: |
           ./run-tests.sh /llvm-mingw
@@ -305,7 +305,7 @@ jobs:
           sudo mv llvm-mingw /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - name: Checkout ffmpeg
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ffmpeg/ffmpeg
           path: ffmpeg
@@ -354,7 +354,7 @@ jobs:
           mv llvm-mingw-* /llvm-mingw
           echo /llvm-mingw/bin >> $GITHUB_PATH
       - name: Checkout ffmpeg
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ffmpeg/ffmpeg
           path: ffmpeg
