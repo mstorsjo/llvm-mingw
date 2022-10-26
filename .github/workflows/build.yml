@@ -258,6 +258,7 @@ jobs:
           msystem: mingw64
           install: >-
             unzip
+            make
       - uses: actions/download-artifact@v3
         with:
           name: windows-${{matrix.arch}}-toolchain
