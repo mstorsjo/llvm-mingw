@@ -58,7 +58,7 @@ fi
 
 : ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
 
-if [ -z "$RUN_X86" ]; then
+if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ]; then
     case $(uname) in
     MINGW*|MSYS*)
         NATIVE_X86=1
