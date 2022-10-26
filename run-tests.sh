@@ -44,14 +44,14 @@ rm -f is-ucrt.c
 
 if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-clang -x c++ - -o has-cfguard-test.exe -mguard=cf); then
     if llvm-readobj --coff-load-config has-cfguard-test.exe | grep -q 'CF_INSTRUMENTED (0x100)'; then
-        HAS_CFGUARD=1
-    elif [ -n "$HAS_CFGUARD" ]; then
+        HAVE_CFGUARD=1
+    elif [ -n "$HAVE_CFGUARD" ]; then
         echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2
         rm -f has-cfguard-test.exe
         exit 1
     fi
     rm -f has-cfguard-test.exe
-elif [ -n "$HAS_CFGUARD" ]; then
+elif [ -n "$HAVE_CFGUARD" ]; then
     echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2
     exit 1
 fi
@@ -97,7 +97,7 @@ TESTS_OMP="hello-omp"
 TESTS_UWP="uwp-error"
 TESTS_IDL="idltest"
 TESTS_OTHER_TARGETS="hello"
-if [ -n "$HAS_CFGUARD" ]; then
+if [ -n "$HAVE_CFGUARD" ]; then
     TESTS_CFGUARD="cfguard-test"
 fi
 for arch in $ARCHS; do
@@ -239,7 +239,7 @@ for arch in $ARCHS; do
             TESTS_EXTRA="$TESTS_EXTRA $test-asan"
             FAILURE_TESTS="$FAILURE_TESTS $test-asan"
         fi
-        if [ -n "$HAS_CFGUARD" ]; then
+        if [ -n "$HAVE_CFGUARD" ]; then
             # Smoke test ASAN with CFGuard to make sure it doesn't trip.
             $arch-w64-mingw32-clang $test.c -o $TEST_DIR/$test-asan-cfguard.exe -fsanitize=address -g -gcodeview -Wl,--pdb= -mguard=cf
             if [ -n "$NATIVE" ]; then
