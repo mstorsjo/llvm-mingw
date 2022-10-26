@@ -84,8 +84,7 @@ TESTS_C_DLL="autoimport-lib"
 TESTS_C_LINK_DLL="autoimport-main"
 TESTS_C_NO_BUILTIN="crt-test"
 TESTS_C_ANSI_STDIO="crt-test"
-TESTS_CPP="hello-cpp global-terminate longjmp-cleanup"
-TESTS_CPP_LOAD_DLL="tlstest-main"
+TESTS_CPP="hello-cpp global-terminate tlstest-main longjmp-cleanup"
 TESTS_CPP_EXCEPTIONS="hello-exception exception-locale exception-reduced"
 TESTS_CPP_STATIC="hello-exception"
 TESTS_CPP_DLL="tlstest-lib throwcatch-lib"
@@ -174,10 +173,6 @@ for arch in $ARCHS; do
     for test in $TESTS_CPP_STATIC; do
         $arch-w64-mingw32-clang++ $test.cpp -static -o $TEST_DIR/$test-static.exe
         TESTS_EXTRA="$TESTS_EXTRA $test-static"
-    done
-    for test in $TESTS_CPP_LOAD_DLL; do
-        $arch-w64-mingw32-clang++ $test.cpp -o $TEST_DIR/$test.exe
-        TESTS_EXTRA="$TESTS_EXTRA $test"
     done
     for test in $TESTS_CPP_DLL; do
         $arch-w64-mingw32-clang++ $test.cpp -shared -o $TEST_DIR/$test.dll -Wl,--out-implib,$TEST_DIR/lib$test.dll.a
