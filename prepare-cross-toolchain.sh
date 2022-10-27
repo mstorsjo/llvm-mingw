@@ -30,12 +30,11 @@ CLANG_RESOURCE_DIR="$("$SRC/bin/clang" --print-resource-dir)"
 CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
 
 # If linked to a shared libc++/libunwind, we need to bundle those DLLs
-# in the bin directory.
-for i in libc++ libunwind; do
-    if [ -f $SRC/$CROSS_ARCH-w64-mingw32/bin/$i.dll ]; then
-        cp $SRC/$CROSS_ARCH-w64-mingw32/bin/$i.dll $DEST/bin
-    fi
-done
+# in the bin directory. For simplicity, copy all runtime DLLs to the
+# bin directory - that way, users who have this directory in $PATH
+# can run the executables they've built directly without fiddling
+# with copying them.
+cp $SRC/$CROSS_ARCH-w64-mingw32/bin/*.dll $DEST/bin
 
 # Copy the clang resource files (include, lib, share). The clang cross
 # build installs the main headers, but since we didn't build the runtimes
