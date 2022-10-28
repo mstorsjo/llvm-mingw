@@ -132,6 +132,9 @@ for arch in $ARCHS; do
         ;;
     esac
     FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
+    if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
+        FLAGS="$FLAGS --includedir=$PREFIX/include"
+    fi
     ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS $CFGUARD_FLAGS $CRT_CONFIG_FLAGS
     $MAKE -j$CORES
     $MAKE install
