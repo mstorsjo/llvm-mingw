@@ -26,6 +26,9 @@ while [ $# -gt 0 ]; do
     --disable-cfguard)
         USE_CFLAGS="-g -O2"
         ;;
+    --skip-include-triplet-prefix)
+        SKIP_INCLUDE_TRIPLET_PREFIX=1
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -33,7 +36,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--enable-cfguard|--disable-cfguard] dest"
+    echo "$0 [--enable-cfguard|--disable-cfguard] [--skip-include-triplet-prefix] dest"
     exit 1
 fi
 mkdir -p "$PREFIX"
@@ -58,7 +61,11 @@ for lib in winpthreads winstorecompat; do
         mkdir -p build-$arch
         cd build-$arch
         arch_prefix="$PREFIX/$arch-w64-mingw32"
-        ../configure --host=$arch-w64-mingw32 --prefix="$arch_prefix" --libdir="$arch_prefix/lib" \
+        FLAGS=""
+        if [ -n "$SKIP_INCLUDE_TRIPLET_PREFIX" ]; then
+            FLAGS="$FLAGS --includedir=$PREFIX/include"
+        fi
+        ../configure --host=$arch-w64-mingw32 --prefix="$arch_prefix" --libdir="$arch_prefix/lib" $FLAGS \
             CFLAGS="$USE_CFLAGS" \
             CXXFLAGS="$USE_CFLAGS"
         make -j$CORES
