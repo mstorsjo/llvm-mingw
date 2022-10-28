@@ -62,7 +62,7 @@ rm -rf $DEST/include
 cp -a $SRC/generic-w64-mingw32/include $DEST/include
 for arch in $ARCHS; do
     mkdir -p $DEST/$arch-w64-mingw32
-    for subdir in bin lib; do
+    for subdir in bin lib share; do
         cp -a $SRC/$arch-w64-mingw32/$subdir $DEST/$arch-w64-mingw32
     done
 done
