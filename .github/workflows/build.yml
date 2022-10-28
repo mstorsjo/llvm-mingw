@@ -309,6 +309,11 @@ jobs:
           sudo apt-get update && sudo apt-get install nasm
           mkdir ffmpeg-build
           cd ffmpeg-build
+          # Set a limit of 3 minutes per process/object file; with unproven
+          # versions from latest git, the compiler may occasionally hang.
+          # Make sure we exit in a reasonable time instead of waiting for
+          # the whole github actions timeout of 6h before exiting.
+          ulimit -t 180
           ../ffmpeg/configure --arch=${{matrix.arch}} --target-os=mingw32 --cross-prefix=${{matrix.arch}}-w64-mingw32- --enable-gpl
           make -j$(nproc)
 
