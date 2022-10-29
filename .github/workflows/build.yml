@@ -365,6 +365,42 @@ jobs:
           NATIVE=1 ./test-libcxx-module.sh /llvm-mingw
           ./run-tests.sh /llvm-mingw
           ./run-lldb-tests.sh /llvm-mingw
+      - name: Run tests with make directly
+        run: |
+          mkdir test/local
+          cd test/local
+          export PATH=/llvm-mingw/bin:$PATH
+          make -f ../Makefile -j$(nproc) HAVE_SANITIZERS=1 HAVE_OPENMP=1 NATIVE=1 test
+
+  test-toolchain-cmd:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux-cross-windows]
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - i686
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-ucrt-${{matrix.arch}}-toolchain
+      - name: Unpack toolchain
+        run: |
+          powershell Expand-Archive llvm-mingw-*.zip -DestinationPath .
+          del llvm-mingw-*.zip
+          move llvm-mingw-* ..\toolchain
+          echo %cd%\..\toolchain\bin>> %GITHUB_PATH%
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: |
+          mkdir test\local
+          cd test\local
+          mingw32-make -f ../Makefile HAVE_SANITIZERS=1 HAVE_OPENMP=1 test
 
   # Run libcxx's tests with the cross-built i686/x86_64 toolchains from above.
   # (This builds its own copy of libcxx, but it should be pretty much
