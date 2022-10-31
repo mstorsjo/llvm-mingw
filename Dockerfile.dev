@@ -109,6 +109,12 @@ RUN cd test && \
             $arch-w64-mingw32-widl $test.idl -h -o $arch/$test.h && \
             $arch-w64-mingw32-clang $test.c -I$arch -o $arch/$test.exe -lole32 || exit 1; \
         done; \
+        for test in stacksmash; do \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong || exit 1; \
+        done; \
+        for test in bufferoverflow; do \
+            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -D_FORTIFY_SOURCE=2 -O2 || exit 1; \
+        done; \
     done
 
 # Build C++ test applications
@@ -150,17 +156,6 @@ RUN cd test && \
         done; \
         for test in ubsan; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fsanitize=undefined -fno-sanitize-recover=all || exit 1; \
-        done; \
-    done
-
-RUN cd test && \
-    for arch in $TOOLCHAIN_ARCHS; do \
-        mkdir -p $arch && \
-        for test in stacksmash; do \
-            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fstack-protector-strong || exit 1; \
-        done; \
-        for test in bufferoverflow; do \
-            $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -D_FORTIFY_SOURCE=2 -O2 || exit 1; \
         done; \
     done
 
