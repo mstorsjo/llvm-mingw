@@ -134,6 +134,13 @@ done
 cd ..
 
 for arch in $ARCHS; do
+    if [ ! -f $PREFIX/$arch-w64-mingw32/lib/libssp.a ]; then
+        # Create empty dummy archives, to avoid failing when the compiler
+        # driver adds -lssp -lssh_nonshared when linking.
+        llvm-ar rcs $PREFIX/$arch-w64-mingw32/lib/libssp.a
+        llvm-ar rcs $PREFIX/$arch-w64-mingw32/lib/libssp_nonshared.a
+    fi
+
     mkdir -p "$PREFIX/$arch-w64-mingw32/share/mingw32"
     for file in COPYING COPYING.MinGW-w64/COPYING.MinGW-w64.txt COPYING.MinGW-w64-runtime/COPYING.MinGW-w64-runtime.txt; do
         install -m644 "$file" "$PREFIX/$arch-w64-mingw32/share/mingw32"

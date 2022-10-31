@@ -153,10 +153,6 @@ RUN cd test && \
         done; \
     done
 
-# Build libssp
-COPY build-libssp.sh ./
-RUN ./build-libssp.sh $TOOLCHAIN_PREFIX
-
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         mkdir -p $arch && \
