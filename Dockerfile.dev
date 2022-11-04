@@ -163,16 +163,8 @@ RUN cd test && \
 COPY build-openmp.sh ./
 RUN ./build-openmp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS
 
-# OpenMP on windows only supports x86.
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        case $arch in \
-        i686|x86_64) \
-            ;; \
-        *) \
-            continue \
-            ;; \
-        esac && \
         for test in hello-omp; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fopenmp=libomp || exit 1; \
         done; \

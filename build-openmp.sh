@@ -72,14 +72,8 @@ fi
 for arch in $ARCHS; do
     CMAKEFLAGS=""
     case $arch in
-    i686)
-        ;;
     x86_64)
         CMAKEFLAGS="$CMAKEFLAGS -DLIBOMP_ASMFLAGS=-m64"
-        ;;
-    *)
-        # Not supported
-        continue
         ;;
     esac
 

@@ -114,14 +114,14 @@ for arch in $ARCHS; do
         COPY="$COPY_ARMV7"
         NATIVE="$NATIVE_ARMV7"
         unset HAVE_SANITIZERS
-        unset HAVE_OPENMP
+        HAVE_OPENMP=1
         ;;
     aarch64)
         RUN="$RUN_AARCH64"
         COPY="$COPY_AARCH64"
         NATIVE="$NATIVE_AARCH64"
         unset HAVE_SANITIZERS
-        unset HAVE_OPENMP
+        HAVE_OPENMP=1
         ;;
     esac
 
