@@ -146,6 +146,7 @@ export CXX=$HOST-clang++
 
 ../configure --prefix="$PREFIX" --build=$BUILD --host=$HOST \
     CFLAGS="-I$PREFIX/include" CXXFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib -Wl,-s" \
+    --with-build-python="$(which python3)" \
     --enable-shared             \
     --with-system-ffi           \
     --without-ensurepip         \
