@@ -14,7 +14,7 @@ jobs:
   # assertions enabled, has passed some amount of tests.
   get-versions:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Touch file
         run: |
@@ -37,7 +37,7 @@ jobs:
   linux:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [get-versions]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
@@ -75,7 +75,7 @@ jobs:
   linux-asserts:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [get-versions]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
@@ -107,7 +107,7 @@ jobs:
   macos:
     if: false
     needs: [get-versions]
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - uses: actions/download-artifact@v3
         if: github.event_name == 'schedule'
@@ -189,7 +189,7 @@ jobs:
   linux-cross:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -365,7 +365,7 @@ jobs:
   linux-test-cross-build-ffmpeg:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-asserts]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
