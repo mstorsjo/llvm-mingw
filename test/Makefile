@@ -58,6 +58,9 @@ endif
 EXEEXT = .exe
 DLLEXT = .dll
 
+# Available everywhere by default, but can be skipped by passing HAVE_OPENMP=
+HAVE_OPENMP = 1
+
 TESTS_C = hello hello-tls crt-test setjmp
 TESTS_C_DLL = autoimport-lib
 TESTS_C_LINK_DLL = autoimport-main

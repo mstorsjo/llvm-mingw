@@ -100,28 +100,24 @@ for arch in $ARCHS; do
         COPY="$COPY_I686"
         NATIVE="$NATIVE_X86"
         HAVE_SANITIZERS=1
-        HAVE_OPENMP=1
         ;;
     x86_64)
         RUN="$RUN_X86_64"
         COPY="$COPY_X86_64"
         NATIVE="$NATIVE_X86"
         HAVE_SANITIZERS=1
-        HAVE_OPENMP=1
         ;;
     armv7)
         RUN="$RUN_ARMV7"
         COPY="$COPY_ARMV7"
         NATIVE="$NATIVE_ARMV7"
         unset HAVE_SANITIZERS
-        HAVE_OPENMP=1
         ;;
     aarch64)
         RUN="$RUN_AARCH64"
         COPY="$COPY_AARCH64"
         NATIVE="$NATIVE_AARCH64"
         unset HAVE_SANITIZERS
-        HAVE_OPENMP=1
         ;;
     esac
 
@@ -141,8 +137,8 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     mkdir -p $TEST_DIR
     cd $TEST_DIR
-    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_SANITIZERS=$HAVE_SANITIZERS HAVE_OPENMP=$HAVE_OPENMP NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin clean
-    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_SANITIZERS=$HAVE_SANITIZERS HAVE_OPENMP=$HAVE_OPENMP NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin RUN="$RUN" $COPYARG $MAKEOPTS -j$CORES $TARGET
+    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_SANITIZERS=$HAVE_SANITIZERS NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin clean
+    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_SANITIZERS=$HAVE_SANITIZERS NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin RUN="$RUN" $COPYARG $MAKEOPTS -j$CORES $TARGET
     cd ..
 done
 echo All tests succeeded
