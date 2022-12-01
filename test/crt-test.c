@@ -516,7 +516,7 @@ int main(int argc, char* argv[]) {
     TEST_STRTOD_64B_RANGE(strtod, );
     TEST_STRTOD_64B_RANGE(wcstod, L);
 
-#if !defined(_WIN32) || (defined(__MINGW32__) && (defined(__i386__) || defined(__x86_64__)))
+#if !defined(_MSC_VER) && (__SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__)
 #define TEST_STRTOLD_80B_RANGE(strtold, prefix) \
     TEST_STRTOD_VALUE(strtold, prefix, 1.e310, 1e310L); \
     TEST_STRTOD_VALUE(strtold, prefix, -1.e310, -1e310L); \
