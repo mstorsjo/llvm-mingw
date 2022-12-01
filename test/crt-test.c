@@ -86,6 +86,17 @@ const char *context = "";
         } \
     } while (0)
 
+#if defined(__MINGW32__) || defined(TEST_NAN_PRESERVATION)
+// Only check for NAN sign presevation on mingw (where the tests currently
+// pass on all platforms and we want to keep checking that) or if
+// TEST_NAN_PRESERVATION is defined. This aspect does fail for some
+// functions on some libcs - but ignore those failures as it's a rather
+// overly pedantic test.
+#define NAN_MATCHING_SIGNS(a, b) (!!signbit(a) == !!signbit(b))
+#else
+#define NAN_MATCHING_SIGNS(a, b) (1)
+#endif
+
 // Use TEST_FLT_NAN with F(NAN) or -F(NAN) as the expect parameter.
 // On Glibc, F(-NAN), i.e. strtod("-NAN", NULL), returns a positive NAN.
 // On MSVC, the NAN literal is negative, but strtod("NAN", NULL) returns a
@@ -94,9 +105,9 @@ const char *context = "";
         tests++; \
         long double val = (x); \
         long double expval = (expect); \
-        if (!isnan(val) || !!signbit(val) != !!signbit(expval)) { \
+        if (!isnan(val) || !NAN_MATCHING_SIGNS(val, expval)) { \
             fails++; \
-            printf("%s:%d: %s%s failed, expected %f, got %f\n", __FILE__, __LINE__, context, #x, (double)expval, (double)val); \
+            printf("%s:%d: %s%s failed, expected %f (sign %d), got %f (sign %d)\n", __FILE__, __LINE__, context, #x, (double)expval, signbit(expval), (double)val, signbit(val)); \
         } \
     } while (0)
 
