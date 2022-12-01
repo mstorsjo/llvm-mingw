@@ -64,6 +64,7 @@ if [ -n "$HOST" ]; then
     CROSS_NAME=-$HOST
 fi
 
+[ -z "$CLEAN" ] || rm -rf build$CROSS_NAME
 mkdir -p build$CROSS_NAME
 cd build$CROSS_NAME
 ../configure --prefix="$PREFIX" $CONFIGFLAGS --program-prefix=mingw32- --enable-job-server LDFLAGS="-Wl,-s"
