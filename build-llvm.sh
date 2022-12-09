@@ -59,9 +59,6 @@ while [ $# -gt 0 ]; do
     --with-python)
         WITH_PYTHON=1
         ;;
-    --symlink-projects)
-        SYMLINK_PROJECTS=1
-        ;;
     --disable-lldb)
         unset LLDB
         ;;
@@ -77,7 +74,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--symlink-projects] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] dest
+        echo $0 [--enable-asserts] [--stage2] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] dest
         exit 1
     fi
 
@@ -283,41 +280,12 @@ fi
 
 cd llvm-project/llvm
 
-if [ -n "$SYMLINK_PROJECTS" ]; then
-    # If requested, hook up other tools by symlinking them into tools,
-    # instead of using LLVM_ENABLE_PROJECTS. This way, all source code is
-    # under the directory tree of the toplevel cmake file (llvm-project/llvm),
-    # which makes cmake use relative paths to all source files. Using relative
-    # paths makes for identical compiler output from different source trees in
-    # different locations (for cases where e.g. path names are included, in
-    # assert messages), allowing ccache to share caches across multiple
-    # checkouts.
-    cd tools
-    for p in clang lld lldb; do
-        if [ "$p" = "lldb" ] && [ -z "$LLDB" ]; then
-            continue
-        fi
-        if [ ! -e $p ]; then
-            ln -s ../../$p .
-        fi
-    done
-    cd ..
-    if [ -n "$CLANG_TOOLS_EXTRA" ]; then
-        cd ../clang/tools
-        if [ ! -e extra ]; then
-            ln -s ../../clang-tools-extra extra
-        fi
-        cd ../../llvm
-    fi
-else
-    EXPLICIT_PROJECTS=1
-    PROJECTS="clang;lld"
-    if [ -n "$LLDB" ]; then
-        PROJECTS="$PROJECTS;lldb"
-    fi
-    if [ -n "$CLANG_TOOLS_EXTRA" ]; then
-        PROJECTS="$PROJECTS;clang-tools-extra"
-    fi
+PROJECTS="clang;lld"
+if [ -n "$LLDB" ]; then
+    PROJECTS="$PROJECTS;lldb"
+fi
+if [ -n "$CLANG_TOOLS_EXTRA" ]; then
+    PROJECTS="$PROJECTS;clang-tools-extra"
 fi
 
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
@@ -329,7 +297,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
-    ${EXPLICIT_PROJECTS+-DLLVM_ENABLE_PROJECTS="$PROJECTS"} \
+    -DLLVM_ENABLE_PROJECTS="$PROJECTS" \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;X86" \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=$TOOLCHAIN_ONLY \
     -DLLVM_LINK_LLVM_DYLIB=$LINK_DYLIB \
