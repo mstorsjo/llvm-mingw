@@ -93,7 +93,7 @@ for arch in $ARCHS; do
         for exec in clang clang++ gcc g++ c++ as; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
-        for exec in addr2line ar ranlib nm objcopy readelf strings strip llvm-ar llvm-ranlib; do
+        for exec in addr2line ar ranlib nm objcopy readelf size strings strip llvm-ar llvm-ranlib; do
             if [ -n "$HOST" ]; then
                 link_target=llvm-wrapper
             else
@@ -129,7 +129,7 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf strings strip windres; do
+        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
         for exec in cc c99 c11; do
