@@ -171,24 +171,7 @@ if [ -n "$HOST" ]; then
 
 
     if [ -n "$native" ]; then
-        if [ -x "$native/llvm-tblgen$suffix" ]; then
-            CMAKEFLAGS="$CMAKEFLAGS -DLLVM_TABLEGEN=$native/llvm-tblgen$suffix"
-        fi
-        if [ -x "$native/clang-tblgen$suffix" ]; then
-            CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TABLEGEN=$native/clang-tblgen$suffix"
-        fi
-        if [ -x "$native/lldb-tblgen$suffix" ]; then
-            CMAKEFLAGS="$CMAKEFLAGS -DLLDB_TABLEGEN=$native/lldb-tblgen$suffix"
-        fi
-        if [ -x "$native/llvm-config$suffix" ]; then
-            CMAKEFLAGS="$CMAKEFLAGS -DLLVM_CONFIG_PATH=$native/llvm-config$suffix"
-        fi
-        if [ -x "$native/clang-pseudo-gen$suffix" ]; then
-            CMAKEFLAGS="$CMAKEFLAGS -DCLANG_PSEUDO_GEN=$native/clang-pseudo-gen$suffix"
-        fi
-        if [ -x "$native/clang-tidy-confusable-chars-gen$suffix" ]; then
-            CMAKEFLAGS="$CMAKEFLAGS -DCLANG_TIDY_CONFUSABLE_CHARS_GEN=$native/clang-tidy-confusable-chars-gen$suffix"
-        fi
+        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_NATIVE_TOOL_DIR=$native"
     fi
     CROSS_ROOT=$(cd $(dirname $(command -v $HOST-gcc))/../$HOST && pwd)
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$CROSS_ROOT"
