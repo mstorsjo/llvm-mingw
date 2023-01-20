@@ -52,14 +52,14 @@ cat<<EOF > is-ucrt.c
 #endif
 EOF
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
-if ! $ANY_ARCH-w64-mingw32-gcc -E is-ucrt.c > /dev/null 2>&1; then
+if ! $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -E is-ucrt.c > /dev/null 2>&1; then
     # If the default CRT isn't UCRT, we can't build for mingw32uwp.
     unset HAVE_UWP
 fi
 rm -f is-ucrt.c
 
-if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-clang -x c++ - -o has-cfguard-test.exe -mguard=cf); then
-    if llvm-readobj --coff-load-config has-cfguard-test.exe | grep -q 'CF_INSTRUMENTED (0x100)'; then
+if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-clang$TOOLEXT -x c++ - -o has-cfguard-test.exe -mguard=cf); then
+    if llvm-readobj$TOOLEXT --coff-load-config has-cfguard-test.exe | grep -q 'CF_INSTRUMENTED (0x100)'; then
         HAVE_CFGUARD=1
     elif [ -n "$HAVE_CFGUARD" ]; then
         echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2

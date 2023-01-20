@@ -252,7 +252,11 @@ ifeq ($(CMD),)
     FAILURE_TEST_TARGETS = $(addprefix .failtested., $(FAILURE_TESTS))
     CUSTOM1_FAILURE_TEST_TARGETS = .customtest1.bufferoverflow-fortify$(EXEEXT)
     ifneq ($(HAVE_CFGUARD),)
+    ifeq ($(WSL),)
+        # These tests do special calling of cmd.exe, which don't quite
+        # work when running with Linux make in WSL.
         CUSTOM2_FAILURE_TEST_TARGETS = .customtest2.cfguard-test$(EXEEXT)
+    endif
     endif
 endif
 endif
