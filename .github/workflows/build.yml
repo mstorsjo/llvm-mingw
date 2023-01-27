@@ -579,8 +579,6 @@ jobs:
   # Run the OpenMP tests with the cross-built toolchains from above.
   # This also forces testing the bundled python executables.
   test-openmp:
-    # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
