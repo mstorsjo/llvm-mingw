@@ -229,7 +229,6 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: github.event_name == 'schedule'
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -724,7 +723,6 @@ jobs:
   # enabled, to catch code generation bugs that might trigger asserts, to
   # find such regressions early.
   linux-test-cross-build-ffmpeg:
-    if: github.event_name == 'schedule'
     needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
@@ -769,7 +767,6 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: github.event_name == 'schedule'
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
