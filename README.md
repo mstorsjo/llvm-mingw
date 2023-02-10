@@ -13,6 +13,8 @@ Benefits of a LLVM based MinGW toolchain are:
   architecture
 - Support for generating debug info in PDB format
 - Support for Address Sanitizer and Undefined Behaviour Sanitizer
+- Since LLVM 16: Support for [Control Flow Guard](https://github.com/mstorsjo/llvm-mingw/issues/301)
+  (`-mguard=cf` compile and link flags)
 
 Clang on its own can also be used as compiler in the normal GNU binutils
 based environments though, so the main difference lies in replacing
