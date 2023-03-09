@@ -325,7 +325,6 @@ jobs:
             -DLIBCXX_CXX_ABI=libcxxabi `
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++ `
-            -DLIBCXX_TARGET_INFO="libcxx.test.target_info.MingwLocalTI" `
             -DLIBCXXABI_ENABLE_SHARED=NO `
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=YES `
             -DLIBCXX_USE_COMPILER_RT=YES `
