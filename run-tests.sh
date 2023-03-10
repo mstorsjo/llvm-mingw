@@ -58,7 +58,7 @@ if ! $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -E is-ucrt.c > /dev/null 2>&1; then
 fi
 rm -f is-ucrt.c
 
-if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-clang$TOOLEXT -x c++ - -o has-cfguard-test.exe -mguard=cf); then
+if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -x c++ - -o has-cfguard-test.exe -mguard=cf); then
     if llvm-readobj$TOOLEXT --coff-load-config has-cfguard-test.exe | grep -q 'CF_INSTRUMENTED (0x100)'; then
         HAVE_CFGUARD=1
     elif [ -n "$HAVE_CFGUARD" ]; then

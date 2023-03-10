@@ -37,8 +37,8 @@ ifneq ($(ARCH),)
     CROSS = $(ARCH)-w64-mingw32-
     CROSS_UWP = $(ARCH)-w64-mingw32uwp-
 endif
-CC = $(CROSS)clang$(TOOLEXT)
-CXX = $(CROSS)clang++$(TOOLEXT)
+CC = $(CROSS)gcc$(TOOLEXT)
+CXX = $(CROSS)g++$(TOOLEXT)
 WIDL = $(CROSS)widl$(TOOLEXT)
 CC_UWP = $(CROSS_UWP)clang$(TOOLEXT)
 
