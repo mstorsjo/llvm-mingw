@@ -141,8 +141,8 @@ mkdir -p $BUILDDIR
 cd $BUILDDIR
 BUILD=$(../config.guess) # Python configure requires build triplet for cross compilation
 
-export CC=$HOST-clang
-export CXX=$HOST-clang++
+export CC=$HOST-gcc
+export CXX=$HOST-g++
 
 ../configure --prefix="$PREFIX" --build=$BUILD --host=$HOST \
     CFLAGS="-I$PREFIX/include" CXXFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib -Wl,-s" \
