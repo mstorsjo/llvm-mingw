@@ -74,6 +74,12 @@ if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
 
+case $(uname) in
+MINGW*|MSYS*)
+    CRT_CONFIG_FLAGS="--disable-dependency-tracking"
+    ;;
+esac
+
 export PATH="$PREFIX/bin:$PATH"
 
 unset CC
@@ -126,7 +132,7 @@ for arch in $ARCHS; do
         ;;
     esac
     FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
-    ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS $CFGUARD_FLAGS
+    ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS $CFGUARD_FLAGS $CRT_CONFIG_FLAGS
     $MAKE -j$CORES
     $MAKE install
     cd ..
