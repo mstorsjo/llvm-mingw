@@ -153,20 +153,14 @@ if [ -n "$HOST" ]; then
     for dir in llvm-project/llvm/build/bin llvm-project/llvm/build-asserts/bin; do
         if [ -x "$dir/llvm-tblgen.exe" ]; then
             native="$(pwd)/$dir"
-            suffix=".exe"
             break
         elif [ -x "$dir/llvm-tblgen" ]; then
             native="$(pwd)/$dir"
-            suffix=""
             break
         fi
     done
     if [ -z "$native" ] && command -v llvm-tblgen >/dev/null; then
         native="$(dirname $(command -v llvm-tblgen))"
-        suffix=""
-        if [ -x "$native/llvm-tblgen.exe" ]; then
-            suffix=".exe"
-        fi
     fi
 
 
