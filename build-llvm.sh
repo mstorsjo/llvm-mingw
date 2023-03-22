@@ -122,6 +122,17 @@ fi
 
 [ -z "$CHECKOUT_ONLY" ] || exit 0
 
+case $(uname) in
+MINGW*)
+    TARGET_WINDOWS=1
+    ;;
+*)
+    if [ -n "$HOST" ]; then
+        TARGET_WINDOWS=1
+    fi
+    ;;
+esac
+
 if command -v ninja >/dev/null; then
     CMAKE_GENERATOR="Ninja"
     NINJA=1
@@ -174,13 +185,6 @@ if [ -n "$HOST" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
 
-    # Custom, llvm-mingw specific defaults. We normally set these in
-    # the frontend wrappers, but this makes sure they are enabled by
-    # default if that wrapper is bypassed as well.
-    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_RTLIB=compiler-rt"
-    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_UNWINDLIB=libunwind"
-    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_CXX_STDLIB=libc++"
-    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_LINKER=lld"
     BUILDDIR=$BUILDDIR-$HOST
 
     if [ -n "$WITH_PYTHON" ]; then
@@ -208,6 +212,16 @@ elif [ -n "$STAGE2" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=clang"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=clang++"
     CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=lld"
+fi
+
+if [ -n "$TARGET_WINDOWS" ]; then
+    # Custom, llvm-mingw specific defaults. We normally set these in
+    # the frontend wrappers, but this makes sure they are enabled by
+    # default if that wrapper is bypassed as well.
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_RTLIB=compiler-rt"
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_UNWINDLIB=libunwind"
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_CXX_STDLIB=libc++"
+    CMAKEFLAGS="$CMAKEFLAGS -DCLANG_DEFAULT_LINKER=lld"
 fi
 
 if [ -n "$LTO" ]; then
