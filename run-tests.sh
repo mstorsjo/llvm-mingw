@@ -111,7 +111,7 @@ for arch in $ARCHS; do
         RUN="$RUN_ARMV7"
         COPY="$COPY_ARMV7"
         NATIVE="$NATIVE_ARMV7"
-        unset HAVE_SANITIZERS
+        HAVE_SANITIZERS=1
         ;;
     aarch64)
         RUN="$RUN_AARCH64"

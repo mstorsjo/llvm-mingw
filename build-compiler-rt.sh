@@ -88,17 +88,6 @@ fi
 cd llvm-project/compiler-rt
 
 for arch in $ARCHS; do
-    if [ -n "$SANITIZERS" ]; then
-        case $arch in
-        i686|x86_64|aarch64)
-            # Sanitizers on windows only support x86 and aarch64.
-            ;;
-        *)
-            continue
-            ;;
-        esac
-    fi
-
     [ -z "$CLEAN" ] || rm -rf build-$arch$BUILD_SUFFIX
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX

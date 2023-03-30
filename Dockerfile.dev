@@ -141,16 +141,8 @@ RUN cd test && \
 # $CFGUARD_ARGS is intentionally omitted here.
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers
 
-# Sanitizers on windows only support x86 and aarch64.
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
-        case $arch in \
-        i686|x86_64|aarch64) \
-            ;; \
-        *) \
-            continue \
-            ;; \
-        esac && \
         for test in stacksmash; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test-asan.exe -fsanitize=address -g -gcodeview -Wl,--pdb= || exit 1; \
         done; \
