@@ -141,11 +141,11 @@ RUN cd test && \
 # $CFGUARD_ARGS is intentionally omitted here.
 RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers
 
-# Sanitizers on windows only support x86.
+# Sanitizers on windows only support x86 and aarch64.
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
         case $arch in \
-        i686|x86_64) \
+        i686|x86_64|aarch64) \
             ;; \
         *) \
             continue \

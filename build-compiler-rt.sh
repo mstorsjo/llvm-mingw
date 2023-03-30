@@ -90,8 +90,8 @@ cd llvm-project/compiler-rt
 for arch in $ARCHS; do
     if [ -n "$SANITIZERS" ]; then
         case $arch in
-        i686|x86_64)
-            # Sanitizers on windows only support x86.
+        i686|x86_64|aarch64)
+            # Sanitizers on windows only support x86 and aarch64.
             ;;
         *)
             continue

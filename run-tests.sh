@@ -117,7 +117,7 @@ for arch in $ARCHS; do
         RUN="$RUN_AARCH64"
         COPY="$COPY_AARCH64"
         NATIVE="$NATIVE_AARCH64"
-        unset HAVE_SANITIZERS
+        HAVE_SANITIZERS=1
         ;;
     esac
 
