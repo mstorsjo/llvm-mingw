@@ -59,7 +59,9 @@ EXEEXT = .exe
 DLLEXT = .dll
 
 # Available everywhere by default, but can be skipped by passing HAVE_OPENMP=
+# or HAVE_SANITIZERS=
 HAVE_OPENMP = 1
+HAVE_SANITIZERS = 1
 
 TESTS_C = hello hello-tls crt-test setjmp
 TESTS_C_DLL = autoimport-lib
