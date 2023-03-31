@@ -1,0 +1,31 @@
+From 4bdec627d333fbc8ba50b6f1f24deb0208d57f58 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 30 Mar 2023 12:27:39 +0300
+Subject: [PATCH 1/2] [compiler-rt] Make it clear that the sanitizers don't
+ support arm32 on Windows
+
+In practice, they haven't really been enabled within builds of
+llvm-mingw anyway, as they use the arch name armv7 here.
+---
+ compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake b/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
+index 99d672de4e88..2fcce4d6e74e 100644
+--- a/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
++++ b/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
+@@ -23,6 +23,11 @@ if(APPLE)
+   set(X86_64 x86_64 x86_64h)
+ endif()
+ 
++if(WIN32)
++  # The sanitizers don't support Windows on 32 bit ARM.
++  set(ARM32)
++endif()
++
+ set(ALL_SANITIZER_COMMON_SUPPORTED_ARCH ${X86} ${X86_64} ${PPC64} ${RISCV64}
+     ${ARM32} ${ARM64} ${MIPS32} ${MIPS64} ${S390X} ${SPARC} ${SPARCV9}
+     ${HEXAGON} ${LOONGARCH64})
+-- 
+2.34.1
+

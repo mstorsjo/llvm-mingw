@@ -1,0 +1,69 @@
+From d944ae635e1ca017803207a6a303d29a99820bb0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 30 Mar 2023 12:33:49 +0300
+Subject: [PATCH 2/2] WIP: [compiler-rt] Enable the sanitizers on Windows on
+ arm32 too
+
+---
+ compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake      | 3 +--
+ compiler-rt/lib/sanitizer_common/sanitizer_unwind_win.cpp | 7 +++++++
+ compiler-rt/lib/sanitizer_common/sanitizer_win.cpp        | 5 +++++
+ 3 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake b/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
+index 2fcce4d6e74e..35fab2ec40a4 100644
+--- a/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
++++ b/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
+@@ -24,8 +24,7 @@ if(APPLE)
+ endif()
+ 
+ if(WIN32)
+-  # The sanitizers don't support Windows on 32 bit ARM.
+-  set(ARM32)
++  set(ARM32 ${ARM32} armv7)
+ endif()
+ 
+ set(ALL_SANITIZER_COMMON_SUPPORTED_ARCH ${X86} ${X86_64} ${PPC64} ${RISCV64}
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_unwind_win.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_unwind_win.cpp
+index afcd01dae0b7..6fc18396ca63 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_unwind_win.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_unwind_win.cpp
+@@ -70,10 +70,17 @@ void BufferedStackTrace::UnwindSlow(uptr pc, void *context, u32 max_depth) {
+   stack_frame.AddrStack.Offset = ctx.Rsp;
+ #      endif
+ #    else
++#      if SANITIZER_ARM
++  int machine_type = IMAGE_FILE_MACHINE_ARM;
++  stack_frame.AddrPC.Offset = ctx.Pc;
++  stack_frame.AddrFrame.Offset = ctx.R11;
++  stack_frame.AddrStack.Offset = ctx.Sp;
++#      else
+   int machine_type = IMAGE_FILE_MACHINE_I386;
+   stack_frame.AddrPC.Offset = ctx.Eip;
+   stack_frame.AddrFrame.Offset = ctx.Ebp;
+   stack_frame.AddrStack.Offset = ctx.Esp;
++#      endif
+ #    endif
+   stack_frame.AddrPC.Mode = AddrModeFlat;
+   stack_frame.AddrFrame.Mode = AddrModeFlat;
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_win.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_win.cpp
+index e0568c9b62d5..90c5741fd9b9 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_win.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_win.cpp
+@@ -980,8 +980,13 @@ void SignalContext::InitPcSpBp() {
+   sp = (uptr)context_record->Rsp;
+ #    endif
+ #  else
++#    if SANITIZER_ARM
++  bp = (uptr)context_record->R11;
++  sp = (uptr)context_record->Sp;
++#    else
+   bp = (uptr)context_record->Ebp;
+   sp = (uptr)context_record->Esp;
++#    endif
+ #  endif
+ }
+ 
+-- 
+2.34.1
+
