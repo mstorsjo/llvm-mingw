@@ -19,7 +19,7 @@ set -e
 echo Skipping LLDB MI, as it is incompatible with the current version of LLVM
 exit 0
 
-: ${LLDB_MI_VERSION:=2388bd74133bc21eac59b2e2bf97f2a30770a315}
+: ${LLDB_MI_VERSION:=96ec7799b67f8b3660ac5de4995cf1595c43273a}
 BUILDDIR=build
 unset HOST
 
