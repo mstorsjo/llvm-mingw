@@ -219,11 +219,10 @@ jobs:
           cat /opt/llvm-mingw/versions >> $GITHUB_ENV
           mkdir -p install/llvm-mingw-${{matrix.arch}}
           cp /opt/llvm-mingw/versions install/llvm-mingw-${{matrix.arch}}
-          echo LLDB_MI_PARAMS=--disable-lldb-mi >> $GITHUB_ENV
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw-${{matrix.arch}} ${{matrix.arch}} --with-python $LLDB_MI_PARAMS
+          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw-${{matrix.arch}} ${{matrix.arch}} --with-python
           cd install
           zip -9rq ../llvm-mingw-${{matrix.arch}}.zip llvm-mingw-${{matrix.arch}}
       - uses: actions/upload-artifact@v3
