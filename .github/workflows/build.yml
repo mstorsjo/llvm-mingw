@@ -399,6 +399,90 @@ jobs:
           ninja
           ninja check-openmp
 
+  # Run the compiler-rt tests with the cross-built i686/x86_64 toolchains from
+  # above. This also forces testing the bundled python executables.
+  test-compiler-rt:
+    # These tests don't pass on the pinned 16.x branch, but only on latest
+    # git main - thus only run it for scheduled jobs.
+    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux-cross]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - i686
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-${{matrix.arch}}-toolchain
+      - name: Unpack toolchain
+        run: |
+          Expand-Archive llvm-mingw-*.zip -DestinationPath .
+          del llvm-mingw-*.zip
+          mv llvm-mingw-* c:\llvm-mingw
+          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Fetch version
+        if: github.event_name == 'schedule'
+        run: |
+          cat c:\llvm-mingw\versions | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - uses: actions/checkout@v3
+      - name: Checkout llvm-project
+        run: |
+          git config --global core.autocrlf false
+          bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
+      - name: Build test executables
+        run: |
+          cd llvm-project
+          mkdir build-tools
+          cd build-tools
+          cmake ../llvm `
+            -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DLLVM_TARGETS_TO_BUILD=X86 `
+            -DCMAKE_C_COMPILER=clang `
+            -DCMAKE_CXX_COMPILER=clang++
+          ninja not FileCheck llvm-config KillTheDoctor count
+          echo "LLVM_CONFIG=$PWD\bin\llvm-config.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CMAKE_DIR=$PWD\lib\cmake\llvm" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Build and test compiler-rt
+        # Skipping libfuzzer; all tests fail since the clang mingw driver
+        # doesn't support -fsanitize=fuzzer.
+        # Skipping ORC; the tests rely on llvm-jitlink being available,
+        # which requires building a large part of LLVM among the test
+        # tools above, and jitlink requires an MSVC toolchain to be available.
+        run: |
+          cd llvm-project
+          mkdir build-compiler-rt
+          cd build-compiler-rt
+          cmake ../compiler-rt `
+            -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
+            -DCMAKE_C_COMPILER=clang `
+            -DCMAKE_CXX_COMPILER=clang++ `
+            -DCMAKE_C_COMPILER_TARGET=${{matrix.arch}}-w64-windows-gnu `
+            -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE `
+            -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE `
+            -DLLVM_CONFIG_PATH="$Env:LLVM_CONFIG" `
+            -DLLVM_CMAKE_DIR="$Env:CMAKE_DIR" `
+            -DSANITIZER_CXX_ABI=libc++ `
+            -DCOMPILER_RT_INCLUDE_TESTS=ON `
+            -DCOMPILER_RT_BUILD_LIBFUZZER=OFF `
+            -DCOMPILER_RT_BUILD_ORC=OFF
+          ninja
+          # Ideally we'd run check-compiler-rt here, to include all potential
+          # tests. However, for i686 we want to skip check-asan-dynamic
+          # (which has stray failures) and check-interception (which always
+          # seems to fail in mingw i686 configurations). For x86_64, we also
+          # specify the individual testsuites to run, since check-compiler-rt
+          # also includes check-asan, which tests asan for the static CRT,
+          # which isn't supported on mingw targets.
+          ninja ${{ (matrix.arch == 'x86_64') && 'check-asan-dynamic check-interception' || '' }} check-builtins check-profile check-sanitizer check-ubsan
+
   # Test cross-building ffmpeg for all 4 targeted architectures from linux.
   # This is done only on scheduled builds, with a toolchain with assertions
   # enabled, to catch code generation bugs that might trigger asserts, to
