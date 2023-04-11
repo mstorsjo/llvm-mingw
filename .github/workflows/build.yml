@@ -281,6 +281,8 @@ jobs:
     # testing with the latest compiler instead of an older release).
     # Therefore, keep the test disabled by default; it's easy to enable
     # temporarily on a branch for testing.
+    # The libcxxabi and libunwind tests don't pass on the pinned 16.x branch,
+    # only on git main.
     if: false
     needs: [linux-cross]
     runs-on: windows-latest
@@ -332,7 +334,7 @@ jobs:
             -DLIBCXXABI_USE_LLVM_UNWINDER=YES `
             -DLIBCXX_EXTRA_SITE_DEFINES="__USE_MINGW_ANSI_STDIO=1;TEST_IS_EXECUTED_IN_A_SLOW_ENVIRONMENT"
           ninja
-          ninja check-cxx
+          ninja check-cxx check-cxxabi check-unwind
 
   # Run the OpenMP tests with the cross-built i686/x86_64 toolchains from above.
   # This also forces testing the bundled python executables.
