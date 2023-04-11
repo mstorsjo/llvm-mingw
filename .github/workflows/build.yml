@@ -484,9 +484,7 @@ jobs:
   # Run the compiler-rt tests with the cross-built i686/x86_64 toolchains from
   # above. This also forces testing the bundled python executables.
   test-compiler-rt:
-    # These tests don't pass on the pinned 16.x branch, but only on latest
-    # git main - thus only run it for scheduled jobs.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
