@@ -337,9 +337,7 @@ jobs:
   # Run the OpenMP tests with the cross-built i686/x86_64 toolchains from above.
   # This also forces testing the bundled python executables.
   test-openmp:
-    # Some tests fail here on the 15.x release branch, but it should pass
-    # with versions from git main. Therefore, only include this in scheduled
-    # builds for now.
+    # Only running these tests in scheduled builds.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross]
     runs-on: windows-latest
