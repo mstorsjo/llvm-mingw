@@ -389,7 +389,6 @@ jobs:
             -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
-            -DPYTHON_EXECUTABLE="$Env:PYTHON_EXE" `
             -DOPENMP_LLVM_TOOLS_DIR="$Env:TOOLS" `
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++ `
