@@ -419,9 +419,9 @@ jobs:
           name: linux-asserts-toolchain
       - name: Unpack cross toolchain
         run: |
-          tar -Jxf llvm-mingw-linux.tar.xz
-          rm llvm-mingw-linux.tar.xz
-          sudo mv llvm-mingw /opt/llvm-mingw
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          sudo mv llvm-mingw* /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - name: Checkout ffmpeg
         uses: actions/checkout@v3
@@ -474,8 +474,8 @@ jobs:
           name: windows-x86_64-toolchain
       - name: Unpack toolchain
         run: |
-          unzip -q llvm-mingw-x86_64.zip
-          rm llvm-mingw-x86_64.zip
+          unzip -q llvm-mingw-*.zip
+          rm llvm-mingw-*.zip
           mv llvm-mingw-* /llvm-mingw
           echo /llvm-mingw/bin >> $GITHUB_PATH
       - name: Checkout ffmpeg
