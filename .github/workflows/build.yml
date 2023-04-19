@@ -280,6 +280,21 @@ jobs:
           # dpkg --add-architecture i386 to install 32 bit wine fails currently
           sudo apt-get update && sudo apt-get install wine64-development
           wine64 wineboot
+      - name: Set up wine-arm64
+        run: |
+          docker pull linaro/wine-arm64
+          echo "#!/bin/sh" > wine-arm64
+          echo "EXE=\"\$1\"" >> wine-arm64
+          echo "shift" >> wine-arm64
+          echo "case \"\$EXE\" in" >> wine-arm64
+          echo "/*) BASE=\"\$(dirname \"\$EXE\")\" ;;" >> wine-arm64
+          echo "*) BASE=\"\$(pwd)\"; EXE=\"\$BASE/\$EXE\" ;;" >> wine-arm64
+          echo "esac" >> wine-arm64
+          echo "docker run --rm -v \"\$BASE:\$BASE\" linaro/wine-arm64 wine-arm64 \"\$EXE\" \"\$@\"" >> wine-arm64
+          chmod a+x wine-arm64
+          sudo mkdir -p /opt/wine-arm64/bin
+          sudo mv wine-arm64 /opt/wine-arm64/bin
+          echo /opt/wine-arm64/bin >> $GITHUB_PATH
       - uses: actions/download-artifact@v3
         with:
           name: linux-toolchain
@@ -292,7 +307,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run tests
         run: |
-          RUN_I686=false RUN_X86_64=wine64 ./run-tests.sh /opt/llvm-mingw
+          RUN_I686=false RUN_X86_64=wine64 RUN_AARCH64=wine-arm64 ./run-tests.sh /opt/llvm-mingw
 
   # Run libcxx's tests with the cross-built i686/x86_64 toolchains from above.
   # (This builds its own copy of libcxx, but it should be pretty much
