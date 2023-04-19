@@ -489,7 +489,7 @@ jobs:
           export PATH=/llvm-mingw/bin:$PATH
           mkdir ffmpeg-build
           cd ffmpeg-build
-          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --ignore-tests="vsynth1-mpeg2-422,vsynth2-mpeg2-422,vsynth3-mpeg2-422,vsynth_lena-mpeg2-422,seek-vsynth_lena-mpeg2-422"
+          ../ffmpeg/configure --samples=../fate-samples --enable-gpl
           make -j$(nproc)
           make fate-rsync
           make -j$(nproc) fate
