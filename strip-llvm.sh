@@ -117,7 +117,11 @@ if [ -n "$EXEEXT" ]; then
     rm -f clang-cpp* clang++*
 fi
 cd ..
-rm -rf share libexec
+rm -rf libexec
+cd share
+rm -rf clang opt-viewer scan-build scan-view
+rm -rf man/man1/scan-build*
+cd ..
 cd include
 rm -rf clang clang-c clang-tidy lld llvm llvm-c lldb
 cd ..
