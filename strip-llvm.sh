@@ -72,6 +72,8 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
         ;;
     clang-tidy)
         ;;
+    clang-target-wrapper*)
+        ;;
     clang-*)
         suffix="${basename#*-}"
         # Test removing all numbers from the suffix; if it is empty, the suffix
