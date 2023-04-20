@@ -31,7 +31,6 @@ RELNAME=llvm-mingw-$TAG-ucrt-macos-universal
 DEST=$HOME/$RELNAME
 rm -rf $DEST
 time CLEAN=1 SYNC=1 MACOS_REDIST=1 ./build-all.sh $DEST
-./strip-llvm.sh $DEST
 dir=$(pwd)
 cd $HOME
 tar -Jcvf $dir/$RELNAME.tar.xz $RELNAME
