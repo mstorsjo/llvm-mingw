@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   # For scheduled builds, get the commit ids of the latest versions to build.
   #
@@ -558,3 +561,21 @@ jobs:
           make -j$(nproc)
           make fate-rsync
           make -j$(nproc) fate
+
+  upload-nightly:
+    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    permissions:
+      contents: write
+    needs: [linux, macos, linux-cross, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      - name: Rearrange files
+        run: |
+          mv windows-*-toolchain/*.zip linux-toolchain/*.tar.xz macos-toolchain/*.tar.xz .
+      - name: Upload binaries
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+        run: |
+          gh release upload nightly *.tar.xz *.zip --clobber -R ${{github.repository}}
