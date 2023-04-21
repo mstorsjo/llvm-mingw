@@ -1,0 +1,36 @@
+name: Upload artifacts
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit to extract from'
+        required: true
+        type: string
+      tag:
+        description: 'Tag to upload to'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  upload-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{inputs.commit}}
+      - name: Rearrange files
+        run: |
+          mv windows-*-toolchain/*.zip linux-toolchain/*.tar.xz macos-toolchain/*.tar.xz .
+      - name: Upload binaries
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+        run: |
+          gh release upload ${{inputs.tag}} *.tar.xz *.zip --clobber -R ${{github.repository}}
