@@ -38,20 +38,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set build env vars
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} >> versions
-          echo MINGW_W64_VERSION=${{needs.get-versions.outputs.MINGW_W64_VERSION}} >> versions
-          . versions
-          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION
-          cat versions >> $GITHUB_ENV
-          mkdir -p install/llvm-mingw
-          cp versions install/llvm-mingw
       - name: Build
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v3
@@ -74,20 +68,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set build env vars
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} >> versions
-          echo MINGW_W64_VERSION=${{needs.get-versions.outputs.MINGW_W64_VERSION}} >> versions
-          . versions
-          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION, with assertions enabled
-          cat versions >> $GITHUB_ENV
-          mkdir -p install/llvm-mingw
-          cp versions install/llvm-mingw
       - name: Build
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v3
@@ -103,16 +91,11 @@ jobs:
     needs: [get-versions]
     runs-on: macos-latest
     steps:
-      - name: Set build env vars
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} >> versions
-          echo MINGW_W64_VERSION=${{needs.get-versions.outputs.MINGW_W64_VERSION}} >> versions
-          . versions
-          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION
-          cat versions >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - name: Build
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
         run: |
           brew install ninja
           # Building with MACOS_REDIST=1 (building universal binaries) without
@@ -121,6 +104,7 @@ jobs:
           # Disable use of zstd too - it's also available, but only in native
           # form.
           MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           tar -Jcf ../llvm-mingw-macos.tar.xz llvm-mingw
       - uses: actions/upload-artifact@v3
@@ -159,18 +143,14 @@ jobs:
             toolchain:p
             cmake:p
             ninja:p
-      - name: Set build env vars
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} >> versions
-          echo MINGW_W64_VERSION=${{needs.get-versions.outputs.MINGW_W64_VERSION}} >> versions
-          . versions
-          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION
-          cat versions >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - name: Build
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
         run: |
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./run-tests.sh $(pwd)/install/llvm-mingw
 
   # Use the Linux cross compilers built in the first step to cross compile
@@ -199,21 +179,15 @@ jobs:
           sudo mv llvm-mingw /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v3
-      - name: Fetch version
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} >> versions
-          echo MINGW_W64_VERSION=${{needs.get-versions.outputs.MINGW_W64_VERSION}} >> versions
-          echo PYTHON_VERSION_MINGW=${{needs.get-versions.outputs.PYTHON_VERSION_MINGW}} >> versions
-          . versions
-          echo Building llvm-project $LLVM_VERSION mingw-w64 $MINGW_W64_VERSION cpython-mingw $PYTHON_VERSION_MINGW
-          cat versions >> $GITHUB_ENV
-          mkdir -p install/llvm-mingw-${{matrix.arch}}
-          cp versions install/llvm-mingw-${{matrix.arch}}
       - name: Build
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
+          PYTHON_VERSION_MINGW: ${{needs.get-versions.outputs.PYTHON_VERSION_MINGW}}
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw-${{matrix.arch}} ${{matrix.arch}} --with-python
+          .github/workflows/store-version.sh install/llvm-mingw-${{matrix.arch}}/versions.txt
           cd install
           zip -9rq ../llvm-mingw-${{matrix.arch}}.zip llvm-mingw-${{matrix.arch}}
       - uses: actions/upload-artifact@v3
@@ -295,12 +269,10 @@ jobs:
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-      - name: Fetch version
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - uses: actions/checkout@v3
       - name: Checkout llvm-project
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
         run: |
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build and test libcxx
@@ -352,12 +324,10 @@ jobs:
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-      - name: Fetch version
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - uses: actions/checkout@v3
       - name: Checkout llvm-project
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
         run: |
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build test executables
@@ -416,12 +386,10 @@ jobs:
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-      - name: Fetch version
-        if: github.event_name == 'schedule'
-        run: |
-          echo LLVM_VERSION=${{needs.get-versions.outputs.LLVM_VERSION}} | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - uses: actions/checkout@v3
       - name: Checkout llvm-project
+        env:
+          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
         run: |
           git config --global core.autocrlf false
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
