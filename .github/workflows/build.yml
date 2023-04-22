@@ -205,11 +205,11 @@ jobs:
           TAG: ${{needs.prepare.outputs.TAG}}
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw-${{matrix.arch}} ${{matrix.arch}} --with-python
-          .github/workflows/store-version.sh install/llvm-mingw-${{matrix.arch}}/versions.txt
+          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-ucrt-${{matrix.arch}}
-          mv llvm-mingw-${{matrix.arch}} $NAME
+          mv llvm-mingw $NAME
           zip -9rq ../$NAME.zip $NAME
       - uses: actions/upload-artifact@v3
         with:
