@@ -14,7 +14,7 @@ jobs:
   # same version. This allows trusting builds without assertions enabled
   # slightly more, when we know a separate build of the same version but with
   # assertions enabled, has passed some amount of tests.
-  get-versions:
+  prepare:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     runs-on: ubuntu-latest
     outputs:
@@ -34,14 +34,14 @@ jobs:
   # Build a cross compiler for Linux, targeting Windows.
   linux:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [get-versions]
+    needs: [prepare]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Build
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
-          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
@@ -64,14 +64,14 @@ jobs:
   # here in scheduled builds somewhat slower.
   linux-asserts:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [get-versions]
+    needs: [prepare]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Build
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
-          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
@@ -88,14 +88,14 @@ jobs:
   # Build a cross compiler for macOS, targeting Windows.
   macos:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [get-versions]
+    needs: [prepare]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - name: Build
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
-          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
         run: |
           brew install ninja
           # Building with MACOS_REDIST=1 (building universal binaries) without
@@ -120,7 +120,7 @@ jobs:
   # these builds, but llvm-mingw's tests are run.
   msys2:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [get-versions]
+    needs: [prepare]
     runs-on: windows-latest
     defaults:
       run:
@@ -146,8 +146,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
-          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
         run: |
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
@@ -158,7 +158,7 @@ jobs:
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux, get-versions]
+    needs: [linux, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -181,9 +181,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
-          MINGW_W64_VERSION: ${{needs.get-versions.outputs.MINGW_W64_VERSION}}
-          PYTHON_VERSION_MINGW: ${{needs.get-versions.outputs.PYTHON_VERSION_MINGW}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          PYTHON_VERSION_MINGW: ${{needs.prepare.outputs.PYTHON_VERSION_MINGW}}
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw-${{matrix.arch}} ${{matrix.arch}} --with-python
@@ -249,7 +249,7 @@ jobs:
     # The libcxxabi and libunwind tests don't pass on the pinned 16.x branch,
     # only on git main.
     if: false
-    needs: [linux-cross, get-versions]
+    needs: [linux-cross, prepare]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -272,7 +272,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Checkout llvm-project
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build and test libcxx
@@ -304,7 +304,7 @@ jobs:
   test-openmp:
     # Only running these tests in scheduled builds.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross, get-versions]
+    needs: [linux-cross, prepare]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -327,7 +327,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Checkout llvm-project
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build test executables
@@ -366,7 +366,7 @@ jobs:
     # These tests don't pass on the pinned 16.x branch, but only on latest
     # git main - thus only run it for scheduled jobs.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross, get-versions]
+    needs: [linux-cross, prepare]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -389,7 +389,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Checkout llvm-project
         env:
-          LLVM_VERSION: ${{needs.get-versions.outputs.LLVM_VERSION}}
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
           git config --global core.autocrlf false
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
