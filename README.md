@@ -53,6 +53,9 @@ In addition to the downloadable toolchain packges, there are also
 prebuilt docker linux images containing the llvm-mingw toolchain,
 available from [Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/).
 
+There are also [nightly builds](https://github.com/mstorsjo/llvm-mingw/releases/tag/nightly)
+with the very latest versions of LLVM and mingw-w64 from git.
+
 Building from source
 --------------------
 
