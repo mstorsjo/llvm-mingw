@@ -80,7 +80,7 @@ jobs:
           tar -Jcf ../$NAME.tar.xz $NAME
       - uses: actions/upload-artifact@v3
         with:
-          name: linux-toolchain
+          name: linux-ucrt-x86_64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
@@ -103,7 +103,7 @@ jobs:
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - uses: actions/download-artifact@v3
         with:
-          name: linux-toolchain
+          name: linux-ucrt-x86_64-toolchain
       - name: Unpack native toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
@@ -254,7 +254,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: linux-toolchain
+          name: linux-ucrt-x86_64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
