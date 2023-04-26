@@ -183,7 +183,7 @@ jobs:
   # Use the Linux cross compilers built in the first step to cross compile
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
-  linux-cross:
+  linux-cross-windows:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux, prepare]
     runs-on: ubuntu-latest
@@ -231,7 +231,7 @@ jobs:
   # toolchain from above.
   test-toolchain:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross]
+    needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
       run:
@@ -279,7 +279,7 @@ jobs:
     # The libcxxabi and libunwind tests don't pass on the pinned 16.x branch,
     # only on git main.
     if: false
-    needs: [linux-cross, prepare]
+    needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -334,7 +334,7 @@ jobs:
   test-openmp:
     # Only running these tests in scheduled builds.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross, prepare]
+    needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -396,7 +396,7 @@ jobs:
     # These tests don't pass on the pinned 16.x branch, but only on latest
     # git main - thus only run it for scheduled jobs.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross, prepare]
+    needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -523,7 +523,7 @@ jobs:
   # for scheduled builds.
   test-ffmpeg:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross]
+    needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
       run:
@@ -572,7 +572,7 @@ jobs:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     permissions:
       contents: write
-    needs: [linux, macos, linux-cross, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
