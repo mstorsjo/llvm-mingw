@@ -76,6 +76,47 @@ jobs:
             llvm-mingw-*.tar.xz
           retention-days: 7
 
+  # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
+  # libraries that were built in the 'linux' step above.
+  linux-cross-aarch64:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux, prepare]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+        run: |
+          sudo apt-get update && sudo apt-get install ninja-build g++-aarch64-linux-gnu
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --no-runtimes --host=aarch64-linux-gnu
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-toolchain
+      - name: Unpack native toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mv llvm-mingw* llvm-mingw-native
+      - name: Assemble the cross-built toolchain
+        env:
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
+          cd install
+          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
+          NAME=llvm-mingw-$TAG-ucrt-$DISTRO
+          mv llvm-mingw $NAME
+          tar -Jcf ../$NAME.tar.xz $NAME
+      - uses: actions/upload-artifact@v3
+        with:
+          name: linux-aarch64-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
+
   # Build a cross compiler for Linux, targeting Windows, with assertions enabled.
   #
   # The scheduled builds are made with the latest git version of llvm-project
@@ -572,7 +613,7 @@ jobs:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     permissions:
       contents: write
-    needs: [linux, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
