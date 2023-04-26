@@ -19,6 +19,7 @@ set -e
 LLVM_ARGS=""
 MINGW_ARGS=""
 CFGUARD_ARGS="--enable-cfguard"
+HOST_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -57,6 +58,9 @@ while [ $# -gt 0 ]; do
     --no-runtimes)
         NO_RUNTIMES=1
         ;;
+    --host=*)
+        HOST_ARGS="$HOST_ARGS $1"
+        ;;
     *)
         if [ -n "$PREFIX" ]; then
             echo Unrecognized parameter $1
@@ -79,15 +83,15 @@ for dep in git cmake; do
     fi
 done
 
-./build-llvm.sh $PREFIX $LLVM_ARGS
+./build-llvm.sh $PREFIX $LLVM_ARGS $HOST_ARGS
 if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
-    ./build-lldb-mi.sh $PREFIX
+    ./build-lldb-mi.sh $PREFIX $HOST_ARGS
 fi
 if [ -z "$FULL_LLVM" ]; then
     ./strip-llvm.sh $PREFIX
 fi
-./install-wrappers.sh $PREFIX
-./build-mingw-w64-tools.sh $PREFIX
+./install-wrappers.sh $PREFIX $HOST_ARGS
+./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS
 if [ -n "$NO_RUNTIMES" ]; then
     exit 0
 fi
