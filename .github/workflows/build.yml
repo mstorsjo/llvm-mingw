@@ -278,7 +278,7 @@ jobs:
           zip -9rq ../$NAME.zip $NAME
       - uses: actions/upload-artifact@v3
         with:
-          name: windows-${{matrix.arch}}-toolchain
+          name: windows-ucrt-${{matrix.arch}}-toolchain
           path: |
             llvm-mingw-*.zip
           retention-days: 7
@@ -307,7 +307,7 @@ jobs:
             make
       - uses: actions/download-artifact@v3
         with:
-          name: windows-${{matrix.arch}}-toolchain
+          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
           unzip -q llvm-mingw-*.zip
@@ -346,7 +346,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: windows-${{matrix.arch}}-toolchain
+          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
@@ -401,7 +401,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: windows-${{matrix.arch}}-toolchain
+          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
@@ -463,7 +463,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: windows-${{matrix.arch}}-toolchain
+          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
@@ -594,7 +594,7 @@ jobs:
             nasm:p
       - uses: actions/download-artifact@v3
         with:
-          name: windows-x86_64-toolchain
+          name: windows-ucrt-x86_64-toolchain
       - name: Unpack toolchain
         run: |
           unzip -q llvm-mingw-*.zip
