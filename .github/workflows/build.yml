@@ -326,9 +326,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - x86_64
-          - i686
+        include:
+          - { arch: i686, crt: ucrt }
+          - { arch: x86_64, crt: ucrt }
+          - { arch: i686, crt: msvcrt }
+          - { arch: x86_64, crt: msvcrt }
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -338,7 +340,7 @@ jobs:
             make
       - uses: actions/download-artifact@v3
         with:
-          name: windows-ucrt-${{matrix.arch}}-toolchain
+          name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
           unzip -q llvm-mingw-*.zip
