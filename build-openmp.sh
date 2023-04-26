@@ -63,8 +63,6 @@ else
     MINGW*)
         CMAKE_GENERATOR="MSYS Makefiles"
         ;;
-    *)
-        ;;
     esac
     BUILDCMD=make
 fi

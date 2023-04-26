@@ -68,8 +68,6 @@ else
     MINGW*)
         EXEEXT=.exe
         ;;
-    *)
-        ;;
     esac
 fi
 if [ -n "$MACOS_REDIST" ]; then

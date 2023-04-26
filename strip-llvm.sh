@@ -47,8 +47,6 @@ case $(uname) in
 MINGW*)
     EXEEXT=.exe
     ;;
-*)
-    ;;
 esac
 
 cd bin
