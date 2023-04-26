@@ -44,14 +44,18 @@ if [ -n "$HOST" ] && [ -z "$CC" ]; then
 fi
 : ${CC:=cc}
 
-case $(uname) in
-MINGW*)
-    EXEEXT=.exe
-    ;;
-esac
-
 if [ -n "$HOST" ]; then
-    EXEEXT=.exe
+    case $HOST in
+    *-mingw32)
+        EXEEXT=.exe
+        ;;
+    esac
+else
+    case $(uname) in
+    MINGW*)
+        EXEEXT=.exe
+        ;;
+    esac
 fi
 
 if [ -n "$MACOS_REDIST" ]; then
@@ -70,7 +74,7 @@ fi
 
 mkdir -p "$PREFIX/bin"
 cp wrappers/*-wrapper.sh "$PREFIX/bin"
-if [ -n "$HOST" ]; then
+if [ -n "$HOST" ] && [ -n "$EXEEXT" ]; then
     # TODO: If building natively on msys, pick up the default HOST value from there.
     WRAPPER_FLAGS="$WRAPPER_FLAGS -DDEFAULT_TARGET=\"$HOST\""
     for i in wrappers/*-wrapper.sh; do
@@ -94,7 +98,7 @@ for arch in $ARCHS; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
         for exec in addr2line ar ranlib nm objcopy readelf size strings strip llvm-ar llvm-ranlib; do
-            if [ -n "$HOST" ]; then
+            if [ -n "$EXEEXT" ]; then
                 link_target=llvm-wrapper
             else
                 case $exec in
