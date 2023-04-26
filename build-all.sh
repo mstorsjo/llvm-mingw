@@ -61,6 +61,12 @@ while [ $# -gt 0 ]; do
     --host=*)
         HOST_ARGS="$HOST_ARGS $1"
         ;;
+    --no-tools)
+        NO_TOOLS=1
+        ;;
+    --wipe-runtimes)
+        WIPE_RUNTIMES=1
+        ;;
     *)
         if [ -n "$PREFIX" ]; then
             echo Unrecognized parameter $1
@@ -72,7 +78,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] dest"
+    echo "$0 [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] dest"
     exit 1
 fi
 
@@ -83,17 +89,27 @@ for dep in git cmake; do
     fi
 done
 
-./build-llvm.sh $PREFIX $LLVM_ARGS $HOST_ARGS
-if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
-    ./build-lldb-mi.sh $PREFIX $HOST_ARGS
+if [ -z "$NO_TOOLS" ]; then
+    ./build-llvm.sh $PREFIX $LLVM_ARGS $HOST_ARGS
+    if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
+        ./build-lldb-mi.sh $PREFIX $HOST_ARGS
+    fi
+    if [ -z "$FULL_LLVM" ]; then
+        ./strip-llvm.sh $PREFIX
+    fi
+    ./install-wrappers.sh $PREFIX $HOST_ARGS
+    ./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS
 fi
-if [ -z "$FULL_LLVM" ]; then
-    ./strip-llvm.sh $PREFIX
-fi
-./install-wrappers.sh $PREFIX $HOST_ARGS
-./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS
 if [ -n "$NO_RUNTIMES" ]; then
     exit 0
+fi
+if [ -n "$WIPE_RUNTIMES" ]; then
+    # Remove the runtime code built previously.
+    #
+    # This roughly matches the setup as if --no-runtimes had been passed,
+    #  --no-runtimes, except that compiler-rt headers are left installed
+    # in lib/clang/*/include.
+    rm -rf $PREFIX/*-w64-mingw32 $PREFIX/lib/clang/*/lib
 fi
 ./build-mingw-w64.sh $PREFIX $MINGW_ARGS $CFGUARD_ARGS
 ./build-compiler-rt.sh $PREFIX $CFGUARD_ARGS
