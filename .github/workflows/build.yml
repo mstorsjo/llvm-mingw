@@ -270,20 +270,22 @@ jobs:
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux, prepare]
+    needs: [linux, linux-msvcrt, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - i686
-          - x86_64
-          - armv7
-          - aarch64
+        include:
+          - { arch: i686, crt: ucrt }
+          - { arch: x86_64, crt: ucrt }
+          - { arch: armv7, crt: ucrt }
+          - { arch: aarch64, crt: ucrt }
+          - { arch: i686, crt: msvcrt }
+          - { arch: x86_64, crt: msvcrt }
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: linux-ucrt-x86_64-toolchain
+          name: linux-${{matrix.crt}}-x86_64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
@@ -302,12 +304,12 @@ jobs:
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
-          NAME=llvm-mingw-$TAG-ucrt-${{matrix.arch}}
+          NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
           mv llvm-mingw $NAME
           zip -9rq ../$NAME.zip $NAME
       - uses: actions/upload-artifact@v3
         with:
-          name: windows-ucrt-${{matrix.arch}}-toolchain
+          name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
           path: |
             llvm-mingw-*.zip
           retention-days: 7
