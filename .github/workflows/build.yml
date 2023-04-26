@@ -579,7 +579,8 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Rearrange files
         run: |
-          mv windows-*-toolchain/*.zip linux-toolchain/*.tar.xz macos-toolchain/*.tar.xz .
+          rm -rf linux-asserts*
+          mv *-toolchain/*.zip *-toolchain/*.tar.xz .
       - name: Upload binaries
         env:
           GITHUB_TOKEN: ${{github.token}}
