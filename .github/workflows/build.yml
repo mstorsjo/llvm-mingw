@@ -124,6 +124,43 @@ jobs:
             llvm-mingw-*.tar.xz
           retention-days: 7
 
+  # Build a new toolchain with a different CRT choice.
+  linux-msvcrt:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux, prepare]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-toolchain
+      - name: Unpack original toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+      - name: Build
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          sudo apt-get update && sudo apt-get install ninja-build
+          ./build-all.sh $(pwd)/install/llvm-mingw --no-tools --wipe-runtimes --with-default-msvcrt=msvcrt
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+          cd install
+          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
+          NAME=llvm-mingw-$TAG-msvcrt-$DISTRO
+          mv llvm-mingw $NAME
+          tar -Jcf ../$NAME.tar.xz $NAME
+      - uses: actions/upload-artifact@v3
+        with:
+          name: linux-msvcrt-x86_64-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
+
   # Build a cross compiler for Linux, targeting Windows, with assertions enabled.
   #
   # The scheduled builds are made with the latest git version of llvm-project
@@ -613,7 +650,7 @@ jobs:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-msvcrt, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
