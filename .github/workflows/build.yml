@@ -510,14 +510,7 @@ jobs:
             -DCOMPILER_RT_BUILD_LIBFUZZER=OFF `
             -DCOMPILER_RT_BUILD_ORC=OFF
           ninja
-          # Ideally we'd run check-compiler-rt here, to include all potential
-          # tests. However, for i686 we want to skip check-asan-dynamic
-          # (which has stray failures) and check-interception (which always
-          # seems to fail in mingw i686 configurations). For x86_64, we also
-          # specify the individual testsuites to run, since check-compiler-rt
-          # also includes check-asan, which tests asan for the static CRT,
-          # which isn't supported on mingw targets.
-          ninja ${{ (matrix.arch == 'x86_64') && 'check-asan-dynamic check-interception' || '' }} check-builtins check-profile check-sanitizer check-ubsan
+          ninja check-compiler-rt
 
   # Test cross-building ffmpeg for all 4 targeted architectures from linux.
   # This is done only on scheduled builds, with a toolchain with assertions
