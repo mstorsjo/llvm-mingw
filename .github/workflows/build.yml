@@ -101,10 +101,16 @@ jobs:
           rm llvm-mingw-*.tar.xz
           mv llvm-mingw* llvm-mingw-native
       - name: Assemble the cross-built toolchain
+        run: |
+          ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
+      - name: Test using the cross-built assembled toolchain
+        run: |
+          sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
+          QEMU_LD_PREFIX=/usr/aarch64-linux-gnu RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
+      - name: Package the toolchain
         env:
           TAG: ${{needs.prepare.outputs.TAG}}
         run: |
-          ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
           cd install
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
