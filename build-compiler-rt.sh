@@ -110,6 +110,8 @@ for arch in $ARCHS; do
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
+        -DCMAKE_C_COMPILER_WORKS=1 \
+        -DCMAKE_CXX_COMPILER_WORKS=1 \
         -DCMAKE_C_COMPILER_TARGET=$arch-windows-gnu \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
         -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
