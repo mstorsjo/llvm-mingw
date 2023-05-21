@@ -14,7 +14,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-DIR="$(cd "$(dirname "$0")" && pwd)"
+DIR="$(cd "$(dirname $(readlink -f "$0"))" && pwd)"
 BASENAME="$(basename "$0")"
 TARGET="${BASENAME%-*}"
 EXE="${BASENAME##*-}"
