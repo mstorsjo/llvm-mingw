@@ -14,7 +14,17 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-DIR="$(cd "$(dirname $(readlink -f "$0"))" && pwd)"
+get_dir() {
+    target="$1"
+    while [ -L "$target" ]; do
+        cd "$(dirname "$target")"
+        target="$(readlink "$(basename "$target")")"
+    done
+    cd "$(dirname "$target")"
+    pwd
+}
+
+DIR="$(get_dir "$0")"
 export PATH="$DIR":"$PATH"
 
 BASENAME="$(basename "$0")"
