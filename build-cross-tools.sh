@@ -34,6 +34,10 @@ while [ $# -gt 0 ]; do
     --disable-mingw-w64-tools)
         NO_MINGW_W64_TOOLS=1
         ;;
+    --full-llvm)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        FULL_LLVM=1
+        ;;
     --disable-make)
         NO_MAKE=1
         ;;
@@ -78,7 +82,9 @@ if [ -n "$PYTHON" ]; then
     LLVM_ARGS="$LLVM_ARGS --with-python"
 fi
 
-./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
+if [ -z "$FULL_LLVM" ]; then
+    ./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
+fi
 if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
     ./build-lldb-mi.sh $PREFIX --host=$HOST
 fi
