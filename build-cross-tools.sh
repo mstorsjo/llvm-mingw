@@ -82,13 +82,13 @@ if [ -n "$PYTHON" ]; then
     LLVM_ARGS="$LLVM_ARGS --with-python"
 fi
 
-if [ -z "$FULL_LLVM" ]; then
-    ./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
-fi
+./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
 if [ -z "$NO_LLDB" ] && [ -z "$NO_LLDB_MI" ]; then
     ./build-lldb-mi.sh $PREFIX --host=$HOST
 fi
-./strip-llvm.sh $PREFIX --host=$HOST
+if [ -z "$FULL_LLVM" ]; then
+    ./strip-llvm.sh $PREFIX --host=$HOST
+fi
 if [ -z "$NO_MINGW_W64_TOOLS" ]; then
     ./build-mingw-w64-tools.sh $PREFIX --skip-include-triplet-prefix --host=$HOST
 fi
