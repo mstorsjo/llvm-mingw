@@ -11,8 +11,8 @@ RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
 # LLVM requires CMake 3.13.4, while Ubuntu 18.04 ships with 3.10.2. If
 # updating to a newer distribution, this can be dropped.
 RUN cd /opt && \
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-Linux-$(uname -m).tar.gz && \
-    tar -zxvf cmake-*.tar.gz && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-Linux-$(uname -m).tar.gz && \
+    tar -zxf cmake-*.tar.gz && \
     rm cmake-*.tar.gz && \
     mv cmake-* cmake
 ENV PATH=/opt/cmake/bin:$PATH
