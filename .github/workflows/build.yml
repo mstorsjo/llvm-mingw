@@ -127,7 +127,7 @@ jobs:
           tar -Jcf ../$NAME.tar.xz $NAME
       - uses: actions/upload-artifact@v3
         with:
-          name: linux-aarch64-toolchain
+          name: linux-ucrt-aarch64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
