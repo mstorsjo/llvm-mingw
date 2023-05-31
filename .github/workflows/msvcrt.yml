@@ -1,0 +1,186 @@
+name: Build msvcrt toolchains
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit to extract from'
+        type: string
+      branch:
+        description: 'Branch to extract from'
+        type: string
+      upload:
+        description: 'Upload the artifacts'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
+      MINGW_W64_VERSION: ${{steps.get-parameters.outputs.MINGW_W64_VERSION}}
+      PYTHON_VERSION_MINGW: ${{steps.get-parameters.outputs.PYTHON_VERSION_MINGW}}
+      TAG: ${{steps.get-parameters.outputs.TAG}}
+    steps:
+      - name: Download artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
+          event: push
+          name: parameters
+      - name: Fetch build variables
+        id: get-parameters
+        run: |
+          cat parameters.txt >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
+
+  # Build a new toolchain with a different CRT choice.
+  linux-msvcrt:
+    needs: [prepare]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+      - name: Download artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
+          event: push
+          name: linux-ucrt-x86_64-toolchain
+      - name: Unpack original toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+      - name: Build
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          sudo apt-get update && sudo apt-get install ninja-build
+          ./build-all.sh $(pwd)/install/llvm-mingw --no-tools --wipe-runtimes --with-default-msvcrt=msvcrt
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+          cd install
+          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
+          NAME=llvm-mingw-$TAG-msvcrt-$DISTRO
+          mv llvm-mingw $NAME
+          tar -Jcf ../$NAME.tar.xz $NAME
+      - uses: actions/upload-artifact@v3
+        with:
+          name: linux-msvcrt-x86_64-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
+
+  linux-cross-windows:
+    needs: [linux-msvcrt, prepare]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: i686, crt: msvcrt }
+          - { arch: x86_64, crt: msvcrt }
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-${{matrix.crt}}-x86_64-toolchain
+      - name: Unpack cross toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          sudo mv llvm-mingw* /opt/llvm-mingw
+          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+      - name: Build
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          PYTHON_VERSION_MINGW: ${{needs.prepare.outputs.PYTHON_VERSION_MINGW}}
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
+          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+          cd install
+          NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
+          mv llvm-mingw $NAME
+          zip -9rq ../$NAME.zip $NAME
+      - uses: actions/upload-artifact@v3
+        with:
+          name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
+          path: |
+            llvm-mingw-*.zip
+          retention-days: 7
+
+  # Run llvm-mingw's tests on x86_64 and i686 with the cross-built corresponding
+  # toolchains from above.
+  test-toolchain:
+    needs: [linux-cross-windows]
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: i686, crt: msvcrt }
+          - { arch: x86_64, crt: msvcrt }
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          install: >-
+            unzip
+            make
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
+      - name: Unpack toolchain
+        run: |
+          unzip -q llvm-mingw-*.zip
+          rm llvm-mingw-*.zip
+          mv llvm-mingw-* /llvm-mingw
+          echo /llvm-mingw/bin >> $GITHUB_PATH
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+      - name: Run tests
+        run: |
+          ./run-tests.sh /llvm-mingw
+          ./run-lldb-tests.sh /llvm-mingw
+
+  upload:
+    if: ${{inputs.upload}}
+    permissions:
+      contents: write
+    needs: [linux-msvcrt, linux-cross-windows, test-toolchain, prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      - name: Rearrange files
+        run: |
+          rm -rf linux-asserts*
+          mv *-toolchain/*.zip *-toolchain/*.tar.xz .
+      - name: Upload binaries
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          gh release upload $TAG *.tar.xz *.zip --clobber -R ${{github.repository}}
