@@ -26,6 +26,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{inputs.commit}}
+          event: push
       - name: Rearrange files
         run: |
           rm -rf linux-asserts*
