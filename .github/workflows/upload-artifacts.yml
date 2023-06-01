@@ -9,9 +9,24 @@ on:
         description: 'Branch to extract from'
         type: string
       tag:
-        description: 'Tag to upload to'
+        description: 'Tag to create/upload to'
         required: true
         type: string
+      title:
+        description: 'Release title'
+        type: string
+      make_tag:
+        description: 'Make a tag'
+        type: boolean
+        default: true
+      create_release:
+        description: 'Create release'
+        type: boolean
+        default: true
+      prerelease:
+        description: 'Set as pre-release'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,8 +49,41 @@ jobs:
         run: |
           rm -rf linux-asserts*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
-      - name: Upload binaries
+      - name: Set environment
+        run: |
+          cat parameters/parameters.txt >> $GITHUB_ENV
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+          path: repo
+      - name: Make a tag
+        if: ${{inputs.make_tag}}
+        run: |
+          if [ "$TAG" != "${{inputs.tag}}" ]; then
+              echo Tag mismatch, \"$TAG\" in workflow vs \"${{inputs.tag}}\" as input
+              exit 1
+          fi
+          cd repo
+          git config --global user.name "GitHub Actions"
+          git config --global user.email martin@martin.st
+          git tag -a ${{inputs.tag}} -m "${{inputs.title}}"
+          # If the commit isn't the tip of a branch, and there are
+          # differences in workflow files compared with the tip of the
+          # branch, GitHub rejects this push with "refusing to allow a
+          # GitHub App to create or update workflow
+          # `.github/workflows/build.yml` without `workflows` permission".
+          # In such cases, manually create and push the tag and rerun with
+          # make_tag set to false.
+          git push origin ${{inputs.tag}}
+      - name: Create release and upload binaries
         env:
           GITHUB_TOKEN: ${{github.token}}
         run: |
-          gh release upload ${{inputs.tag}} *.tar.xz *.zip --clobber -R ${{github.repository}}
+          if ${{inputs.prerelease}}; then
+              prerelease="--prerelease"
+          fi
+          if ${{inputs.create_release}}; then
+              gh release create ${{inputs.tag}} --verify-tag $prerelease --title "${{inputs.title}}" --notes "" *.tar.xz *.zip -R ${{github.repository}}
+          else
+              gh release upload ${{inputs.tag}} *.tar.xz *.zip --clobber -R ${{github.repository}}
+          fi
