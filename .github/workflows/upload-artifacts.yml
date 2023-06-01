@@ -4,7 +4,9 @@ on:
     inputs:
       commit:
         description: 'Commit to extract from'
-        required: true
+        type: string
+      branch:
+        description: 'Branch to extract from'
         type: string
       tag:
         description: 'Tag to upload to'
@@ -26,6 +28,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
           event: push
       - name: Rearrange files
         run: |
