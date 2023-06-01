@@ -275,8 +275,8 @@ jobs:
             llvm-mingw-*.zip
           retention-days: 7
 
-  # Run llvm-mingw's tests on x86_64 (and i686) with the cross-built x86_64
-  # toolchain from above.
+  # Run llvm-mingw's tests on x86_64 and i686 with the cross-built corresponding
+  # toolchains from above.
   test-toolchain:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows]
