@@ -37,6 +37,7 @@ jobs:
           fi
           echo TAG=$TAG >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT >> parameters.txt
       - name: Check latest version
         if: github.event_name == 'schedule'
         id: get-versions
@@ -45,6 +46,13 @@ jobs:
           echo MINGW_W64_VERSION=$(git ls-remote https://github.com/mingw-w64/mingw-w64.git | grep 'refs/heads/master$' | awk '{print $1}') >> $GITHUB_OUTPUT
           echo PYTHON_VERSION_MINGW=$(git ls-remote https://github.com/msys2-contrib/cpython-mingw.git | grep 'refs/heads/mingw-v3.10.11$' | awk '{print $1}') >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT >> parameters.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: parameters
+          path: |
+            parameters.txt
+          retention-days: 7
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
