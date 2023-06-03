@@ -1,4 +1,4 @@
-name: Upload artifacts
+name: Make a release, upload artifacts
 on:
   workflow_dispatch:
     inputs:
