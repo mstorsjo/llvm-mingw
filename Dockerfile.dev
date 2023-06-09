@@ -8,6 +8,17 @@ RUN apt-get update -qq && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
+# Manually install a newer version of CMake; this is needed since building
+# LLVM requires CMake 3.20, while Ubuntu 20.04 ships with 3.16.3. If
+# updating to a newer distribution, this can be dropped.
+RUN cd /opt && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-Linux-$(uname -m).tar.gz && \
+    tar -zxf cmake-*.tar.gz && \
+    rm cmake-*.tar.gz && \
+    mv cmake-* cmake
+ENV PATH=/opt/cmake/bin:$PATH
+
+
 RUN git config --global user.name "LLVM MinGW" && \
     git config --global user.email root@localhost
 
