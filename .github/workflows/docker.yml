@@ -1,5 +1,6 @@
 name: Build docker images
 on:
+  push:
   workflow_dispatch:
     inputs:
       ref:
@@ -22,6 +23,7 @@ jobs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
       - name: Download build parameters
+        if: github.event_name == 'workflow_dispatch'
         uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
@@ -32,7 +34,11 @@ jobs:
       - name: Get build parameters
         id: get-parameters
         run: |
-          cat parameters.txt >> $GITHUB_OUTPUT
+          if [ -f parameters.txt ]; then
+              cat parameters.txt >> $GITHUB_OUTPUT
+          else
+              echo TAG=test >> $GITHUB_OUTPUT
+          fi
           cat $GITHUB_OUTPUT
 
   docker-build-dev:
@@ -52,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{inputs.push}}
+          push: ${{ inputs.push || false }}
           file: ./Dockerfile.dev
           tags: |
             mstorsjo/llvm-mingw:dev
@@ -73,8 +79,8 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          ref: ${{inputs.ref}}
-          event: push
+          ref: master
+          event: schedule
           name: linux-ucrt-.*
           name_is_regexp: true
           path: toolchain
@@ -93,7 +99,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{inputs.push}}
+          push: ${{ (github.event_name == 'workflow_dispatch' && inputs.push) || false }}
           file: ./Dockerfile.toolchain
           tags: |
             mstorsjo/llvm-mingw:latest
