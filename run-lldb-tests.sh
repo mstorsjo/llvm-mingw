@@ -55,7 +55,7 @@ $STRIP $TEST_DIR/hello-exception-pdb.exe
 cp $TEST_DIR/hello-exception-dwarf.exe $TEST_DIR/hello-exception-split.exe
 $OBJCOPY --only-keep-debug $TEST_DIR/hello-exception-split.exe $TEST_DIR/hello-exception-split.dbg
 $OBJCOPY --strip-all $TEST_DIR/hello-exception-split.exe
-objcopy.exe --add-gnu-debuglink=$TEST_DIR/hello-exception-split.dbg $TEST_DIR/hello-exception-split.exe
+$OBJCOPY --add-gnu-debuglink=$TEST_DIR/hello-exception-split.dbg $TEST_DIR/hello-exception-split.exe
 
 for i in libc++ libunwind; do
     if [ -f $PREFIX/$ARCH-w64-mingw32/bin/$i.dll ]; then
