@@ -66,6 +66,8 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
         ;;
     clang++|clang-*.*|clang-cpp)
         ;;
+    clang-format|git-clang-format)
+        ;;
     clangd)
         ;;
     clang-tidy)
@@ -119,7 +121,18 @@ fi
 cd ..
 rm -rf libexec
 cd share
-rm -rf clang opt-viewer scan-build scan-view
+cd clang
+for i in *; do
+    case $i in
+    clang-format*)
+        ;;
+    *)
+        rm -rf $i
+        ;;
+    esac
+done
+cd ..
+rm -rf opt-viewer scan-build scan-view
 rm -rf man/man1/scan-build*
 cd ..
 cd include
