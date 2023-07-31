@@ -17,8 +17,8 @@
 set -e
 
 : ${LIBFFI_VERSION:=v3.4.2}
-: ${PYTHON_VERSION:=v3.10.11}
-: ${PYTHON_VERSION_MINGW:=bb0b6e3c0d52fe6d4b3bea482f00b070275ce57f}
+: ${PYTHON_VERSION:=v3.11.4}
+: ${PYTHON_VERSION_MINGW:=95b1546da60ce10fc038f51790bf799d3780d37a}
 
 unset HOST
 
@@ -140,12 +140,16 @@ cd cpython-mingw
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 BUILD=$(../config.guess) # Python configure requires build triplet for cross compilation
+# Locate the native python3 that we've built before, from the path
+NATIVE_PYTHON="$(command -v python3)"
 
 export CC=$HOST-gcc
 export CXX=$HOST-g++
 
 ../configure --prefix="$PREFIX" --build=$BUILD --host=$HOST \
     CFLAGS="-I$PREFIX/include" CXXFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib -Wl,-s" \
+    PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig" \
+    --with-build-python="$NATIVE_PYTHON" \
     --enable-shared             \
     --with-system-ffi           \
     --without-ensurepip         \
