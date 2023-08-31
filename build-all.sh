@@ -73,6 +73,9 @@ while [ $# -gt 0 ]; do
     --wipe-runtimes)
         WIPE_RUNTIMES=1
         ;;
+    --clean-runtimes)
+        CLEAN_RUNTIMES=1
+        ;;
     *)
         if [ -n "$PREFIX" ]; then
             echo Unrecognized parameter $1
@@ -84,7 +87,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--host-clang[=clang]] [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] dest"
+    echo "$0 [--host-clang[=clang]] [--enable-asserts] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] [--clean-runtimes] dest"
     exit 1
 fi
 
@@ -122,6 +125,9 @@ if [ -n "$WIPE_RUNTIMES" ]; then
     #  --no-runtimes, except that compiler-rt headers are left installed
     # in lib/clang/*/include.
     rm -rf $PREFIX/*-w64-mingw32 $PREFIX/lib/clang/*/lib
+fi
+if [ -n "$CLEAN_RUNTIMES" ]; then
+    export CLEAN=1
 fi
 ./build-mingw-w64.sh $PREFIX $MINGW_ARGS $CFGUARD_ARGS
 ./build-compiler-rt.sh $PREFIX $CFGUARD_ARGS
