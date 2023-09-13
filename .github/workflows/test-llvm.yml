@@ -1,0 +1,90 @@
+name: Run LLVM tests
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit to extract from'
+        type: string
+      branch:
+        description: 'Branch to extract from'
+        type: string
+      pipeline_type:
+        description: 'Pipeline type'
+        required: true
+        default: 'push'
+        type: choice
+        options:
+        - push
+        - schedule
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
+    steps:
+      - name: Download build parameters
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
+          event: ${{inputs.pipeline_type}}
+          name: parameters
+      - name: Get build parameters
+        id: get-parameters
+        run: |
+          cat parameters.txt >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
+
+  test-llvm:
+    needs: [prepare]
+    runs-on: windows-latest
+    steps:
+      - name: Download toolchain
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
+          event: ${{inputs.pipeline_type}}
+          name: windows-ucrt-x86_64-toolchain
+      - name: Unpack toolchain
+        run: |
+          Expand-Archive llvm-mingw-*.zip -DestinationPath .
+          del llvm-mingw-*.zip
+          mv llvm-mingw-* c:\llvm-mingw
+          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - uses: actions/checkout@v3
+      - name: Checkout llvm-project
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+        run: |
+          git config --global core.autocrlf false
+          bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
+      # Not passing -DPython3_EXECUTABLE="$Env:PYTHON_EXE" here. The bundled Python doesn't normally have
+      # zlib enabled, which some tests require.
+      - name: Build the project and unittests
+        run: |
+          cd llvm-project
+          mkdir build
+          cd build
+          cmake ../llvm `
+            -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DLLVM_TARGETS_TO_BUILD=X86 `
+            -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" `
+            -DLLVM_WINDOWS_PREFER_FORWARD_SLASH=OFF `
+            -DCMAKE_C_COMPILER=clang `
+            -DCMAKE_CXX_COMPILER=clang++ `
+            -DLLVM_LIT_ARGS="-v --time-tests"
+          ninja test-depends
+      - name: Run tests
+        run: |
+          cd llvm-project
+          cd build
+          ninja check
