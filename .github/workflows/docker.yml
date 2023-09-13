@@ -23,7 +23,7 @@ jobs:
     outputs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
-      - name: Download artifacts
+      - name: Download build parameters
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
@@ -32,7 +32,7 @@ jobs:
           branch: ${{inputs.branch}}
           event: push
           name: parameters
-      - name: Fetch build variables
+      - name: Get build parameters
         id: get-parameters
         run: |
           cat parameters.txt >> $GITHUB_OUTPUT

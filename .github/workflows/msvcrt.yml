@@ -25,7 +25,7 @@ jobs:
       PYTHON_VERSION_MINGW: ${{steps.get-parameters.outputs.PYTHON_VERSION_MINGW}}
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
-      - name: Download artifacts
+      - name: Download build parameters
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
@@ -34,7 +34,7 @@ jobs:
           branch: ${{inputs.branch}}
           event: push
           name: parameters
-      - name: Fetch build variables
+      - name: Get build parameters
         id: get-parameters
         run: |
           cat parameters.txt >> $GITHUB_OUTPUT
@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
-      - name: Download artifacts
+      - name: Download toolchain
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
