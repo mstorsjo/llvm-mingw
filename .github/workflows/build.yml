@@ -342,6 +342,9 @@ jobs:
           - x86_64
           - i686
     steps:
+      - name: Install dependencies
+        run: |
+          choco install ninja
       - uses: actions/download-artifact@v3
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
@@ -397,6 +400,9 @@ jobs:
           - { arch: i686, asmflag: }
           - { arch: x86_64, asmflag: -m64 }
     steps:
+      - name: Install dependencies
+        run: |
+          choco install ninja
       - uses: actions/download-artifact@v3
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
@@ -458,6 +464,9 @@ jobs:
           - x86_64
           - i686
     steps:
+      - name: Install dependencies
+        run: |
+          choco install ninja
       - uses: actions/download-artifact@v3
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
