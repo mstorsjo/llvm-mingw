@@ -53,7 +53,6 @@ fi
 
 if command -v ninja >/dev/null; then
     CMAKE_GENERATOR="Ninja"
-    BUILDCMD=ninja
 else
     : ${CORES:=$(nproc 2>/dev/null)}
     : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
@@ -64,7 +63,6 @@ else
         CMAKE_GENERATOR="MSYS Makefiles"
         ;;
     esac
-    BUILDCMD=make
 fi
 
 export LLVM_DIR="$PREFIX"
@@ -147,4 +145,5 @@ cmake \
     $CMAKEFLAGS \
     ..
 
-$BUILDCMD ${CORES:+-j${CORES}} install/strip
+cmake --build . ${CORES:+-j${CORES}}
+cmake --install . --strip
