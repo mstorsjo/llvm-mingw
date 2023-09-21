@@ -52,7 +52,6 @@ cd llvm-project/openmp
 
 if command -v ninja >/dev/null; then
     CMAKE_GENERATOR="Ninja"
-    NINJA=1
     BUILDCMD=ninja
 else
     : ${CORES:=$(nproc 2>/dev/null)}
