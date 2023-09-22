@@ -95,7 +95,7 @@ for arch in $ARCHS; do
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         $CMAKEFLAGS \
         ..
-    $BUILDCMD ${CORES+-j$CORES}
+    $BUILDCMD ${CORES:+-j${CORES}}
     $BUILDCMD install
     rm -f $PREFIX/$arch-w64-mingw32/bin/*iomp5md*
     rm -f $PREFIX/$arch-w64-mingw32/lib/*iomp5md*

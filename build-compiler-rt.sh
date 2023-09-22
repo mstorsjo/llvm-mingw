@@ -123,7 +123,7 @@ for arch in $ARCHS; do
         -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         $SRC_DIR
-    $BUILDCMD ${CORES+-j$CORES}
+    $BUILDCMD ${CORES:+-j${CORES}}
     $BUILDCMD install
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then

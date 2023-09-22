@@ -114,7 +114,7 @@ for arch in $ARCHS; do
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         ..
 
-    $BUILDCMD ${CORES+-j$CORES}
+    $BUILDCMD ${CORES:+-j${CORES}}
     $BUILDCMD install
     cd ..
 done
