@@ -147,4 +147,4 @@ cmake \
     $CMAKEFLAGS \
     ..
 
-$BUILDCMD ${CORES+-j$CORES} install/strip
+$BUILDCMD ${CORES:+-j${CORES}} install/strip
