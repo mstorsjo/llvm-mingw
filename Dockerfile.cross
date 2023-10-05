@@ -16,6 +16,18 @@ RUN apt-get update -qq && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Autoconf 2.71. Ubuntu 20.04 comes with Autoconf 2.69, but
+# libffi 3.4.3 or newer requres Autoconf 2.71.
+RUN curl -LO https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.xz && \
+    tar -Jxvf autoconf-*.tar.xz && \
+    rm autoconf-*.tar.xz && \
+    cd autoconf-* && \
+    ./configure --prefix=/opt/autotools && \
+    make -j$(nproc) install && \
+    rm -rf autoconf-*
+
+ENV PATH=/opt/autotools/bin:$PATH
+
 COPY build-python.sh .
 
 ARG WITH_PYTHON
