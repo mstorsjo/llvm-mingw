@@ -17,9 +17,15 @@
 set -e
 
 unset HOST
+unset HOST_CLANG
 
 while [ $# -gt 0 ]; do
     case "$1" in
+    --host-clang|--host-clang=*)
+        HOST_CLANG=${1#--host-clang}
+        HOST_CLANG=${HOST_CLANG#=}
+        HOST_CLANG=${HOST_CLANG:-clang}
+        ;;
     --host=*)
         HOST="${1#*=}"
         ;;
@@ -30,7 +36,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo $0 [--host=triple] dest
+    echo $0 [--host=triple] [--host-clang[=clang]] dest
     exit 1
 fi
 mkdir -p "$PREFIX"
@@ -56,6 +62,44 @@ else
         EXEEXT=.exe
         ;;
     esac
+fi
+
+if [ -n "${HOST_CLANG}" ]; then
+    HOST_CLANG_EXE=$(command -v $HOST_CLANG)
+    HOST_CLANG_VER=$(echo "__clang_major__ __clang_minor__ __clang_patchlevel__" | $HOST_CLANG_EXE -E -P -x c - | xargs printf '%d.%d.%d')
+
+    mkdir -p $PREFIX/bin
+
+    # ex. /usr/lib/llvm-17/lib/clang/17
+    resdir=$($HOST_CLANG -print-resource-dir)
+    # ex. /usr/lib/llvm-17
+    llvmdir=${resdir%/lib/clang/*}
+    # ex /lib/clang/17
+    clangres=${resdir#$llvmdir}
+
+    mkdir -p $PREFIX$clangres
+
+    # link the header directory, prevent modification
+    ln -snf $resdir/include $PREFIX$clangres/include
+
+    # Note: clang will detect the "InstalledDir" based on the path that was used to invoke the tools
+    # This might still have some hidden effects
+    printf '#!/bin/sh\nsr=$(dirname "$(dirname "$(readlink -f "$0")")")\nexec %s -resource-dir="$sr"%s --sysroot="$sr" "$@"\n' "$HOST_CLANG_EXE" "$clangres" > $PREFIX/bin/clang
+    # printf '#!/bin/sh\nsr=$(dirname "$(dirname "$(readlink -f "$0")")")\nexec %s -resource-dir="$sr"%s --sysroot="$sr" "$@"\n' "$(readlink -f "$HOST_CLANG_EXE")" "$clangres" > $PREFIX/bin/clang
+    chmod 755 $PREFIX/bin/clang
+    ln -sf clang $PREFIX/bin/clang++
+    ln -sf clang $PREFIX/bin/clang-cpp
+
+    echo "Using existing clang $HOST_CLANG_EXE ($HOST_CLANG_VER)"
+    $PREFIX/bin/clang -v
+
+    # prefer system llvm installation, but search in llvm private paths (eg. debian does not symlink all tools into /usr/bin)
+    llvmexec="$PATH:$llvmdir/bin"
+
+    for exec in ld.lld llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-strip llvm-rc llvm-cvtres \
+                llvm-addr2line llvm-dlltool llvm-readelf llvm-size llvm-strings llvm-addr2line llvm-windres llvm-ml; do
+        execpath=$(PATH=$llvmexec command -v $exec) && ln -sf $execpath $PREFIX/bin/$exec
+    done
 fi
 
 if [ -n "$MACOS_REDIST" ]; then
