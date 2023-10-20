@@ -81,6 +81,8 @@ else
 fi
 
 cd llvm-project/compiler-rt
+# Use a staging directory in case parts of the resource dir are immutable
+WORKDIR=$(mktemp -d); trap "rm -rf $WORKDIR" 0
 
 for arch in $ARCHS; do
     if [ -n "$SANITIZERS" ]; then
@@ -122,10 +124,16 @@ for arch in $ARCHS; do
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         $SRC_DIR
     cmake --build . ${CORES:+-j${CORES}}
-    cmake --install .
+    cmake --install . --prefix "${WORKDIR}/install"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then
-        mv "$CLANG_RESOURCE_DIR/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        mv "${WORKDIR}/install/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     cd ..
 done
+
+if [ -h "$CLANG_RESOURCE_DIR/include" ]; then
+    # symlink to system headers - skip copy
+    rm -rf ${WORKDIR}/install/include
+fi
+cp -r ${WORKDIR}/install/. $CLANG_RESOURCE_DIR
