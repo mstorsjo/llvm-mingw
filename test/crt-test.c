@@ -205,12 +205,8 @@ double int_to_double(uint64_t i) {
     return u.d;
 }
 
-int main(int argc, char* argv[]) {
-    // The plain "NAN" constant in MSVC is negative, while it is positive
-    // in other environments.
-    double pNAN = int_to_double(0x7ff8000000000000ULL);
-    double nNAN = int_to_double(0xfff8000000000000ULL);
 
+void test_strings() {
     char buf[200];
     int i;
     uint64_t myconst = 0xbaadf00dcafe;
@@ -455,7 +451,9 @@ int main(int argc, char* argv[]) {
     }
     tests++;
 #endif
+}
 
+void test_parse_numbers() {
 #ifdef _WIN32
     _set_invalid_parameter_handler(invalid_parameter);
 #endif
@@ -529,7 +527,9 @@ int main(int argc, char* argv[]) {
     TEST_STRTOD_64B_RANGE(strtold, );
     TEST_STRTOD_64B_RANGE(wcstold, L);
 #endif
+}
 
+void test_environment() {
     int env_ok = 0;
     putenv("CRT_TEST_VAR=1");
     for (char **ptr = environ; *ptr; ptr++)
@@ -550,6 +550,15 @@ int main(int argc, char* argv[]) {
         printf("Variable updated by putenv not found found in environ\n");
     }
     tests++;
+}
+
+void test_math() {
+    // The plain "NAN" constant in MSVC is negative, while it is positive
+    // in other environments.
+    double pNAN = int_to_double(0x7ff8000000000000ULL);
+    double nNAN = int_to_double(0xfff8000000000000ULL);
+
+    int i;
 
 #define TEST_FLOOR(floor) \
     TEST_FLT(floor(F(3.9)), 3.0); \
@@ -1700,7 +1709,9 @@ int main(int argc, char* argv[]) {
     TEST_FLT_NAN(_chgsignl(F(NAN)), -F(NAN));
     TEST_FLT_NAN(_chgsignl(-F(NAN)), F(NAN));
 #endif
+}
 
+void test_compiler_helpers() {
     TEST_INT(L(7) / L(7), 1); // __rt_sdiv
     TEST_INT(L(-7) / L(7), -1); // __rt_sdiv
     TEST_INT(L(-7) / L(-7), 1); // __rt_sdiv
@@ -1889,7 +1900,9 @@ int main(int argc, char* argv[]) {
     TEST_FLT((float)(__uint128_t)ULL(17293822569102704640), 17293822569102704640.0);
     TEST_FLT((long double)(__uint128_t)ULL(17293822569102704640), 17293822569102704640.0);
 #endif
+}
 
+void test_win32_intrinsics() {
 #ifdef _WIN32
     long value = 0;
     __int64 ret;
@@ -2092,7 +2105,15 @@ int main(int argc, char* argv[]) {
     TEST_FUNC(_BitScanReverse64(&idx, ULL(0x8000000000000000)), idx, 63, 1);
 #endif
 #endif
+}
 
+int main(int argc, char* argv[]) {
+    test_strings();
+    test_parse_numbers();
+    test_environment();
+    test_math();
+    test_compiler_helpers();
+    test_win32_intrinsics();
     printf("%d tests, %d failures\n", tests, fails);
     return fails > 0;
 }
