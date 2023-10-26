@@ -552,7 +552,7 @@ void test_environment() {
     tests++;
 }
 
-void test_math() {
+void test_math_rounding() {
     // The plain "NAN" constant in MSVC is negative, while it is positive
     // in other environments.
     double pNAN = int_to_double(0x7ff8000000000000ULL);
@@ -604,174 +604,6 @@ void test_math() {
     TEST_TRUNC(trunc);
     TEST_TRUNC(truncf);
     TEST_TRUNC(truncl);
-
-#define TEST_SQRT(sqrt) \
-    TEST_FLT(sqrt(F(9)), 3.0); \
-    TEST_FLT(sqrt(F(0.25)), 0.5); \
-    TEST_FLT(sqrt(F(INFINITY)), INFINITY); \
-    TEST_FLT_NAN_ANY(sqrt(F(-1.0))); \
-    TEST_FLT_NAN_ANY(sqrt(F(-INFINITY))); \
-    TEST_FLT_NAN(sqrt(F(NAN)), F(NAN)); \
-    TEST_FLT_NAN(sqrt(-F(NAN)), -F(NAN))
-
-    TEST_SQRT(sqrt);
-    TEST_SQRT(sqrtf);
-    TEST_SQRT(sqrtl);
-
-#define TEST_CBRT(cbrt) \
-    TEST_FLT_ACCURACY(cbrt(F(27)), 3.0, 0.001); \
-    TEST_FLT_ACCURACY(cbrt(F(-27)), -3.0, 0.001); \
-    TEST_FLT_ACCURACY(cbrt(F(0.125)), 0.5, 0.001); \
-    TEST_FLT_ACCURACY(cbrt(F(-0.125)), -0.5, 0.001); \
-    TEST_FLT(cbrt(F(INFINITY)), INFINITY); \
-    TEST_FLT(cbrt(F(-INFINITY)), -INFINITY); \
-    TEST_FLT_NAN(cbrt(F(NAN)), F(NAN)); \
-    TEST_FLT_NAN(cbrt(-F(NAN)), -F(NAN))
-
-    TEST_CBRT(cbrt);
-    TEST_CBRT(cbrtf);
-    TEST_CBRT(cbrtl);
-
-#define TEST_HYPOT(hypot) \
-    TEST_FLT_ACCURACY(hypot(F(1.0), F(1.0)), 1.414214, 0.001); \
-    TEST_FLT_ACCURACY(hypot(F(-1.0), F(1.0)), 1.414214, 0.001); \
-    TEST_FLT_ACCURACY(hypot(F(1.0), F(-1.0)), 1.414214, 0.001); \
-    TEST_FLT_ACCURACY(hypot(F(-1.0), F(-1.0)), 1.414214, 0.001); \
-    TEST_FLT(hypot(F(INFINITY), F(0.0)), INFINITY); \
-    TEST_FLT(hypot(F(-INFINITY), F(0.0)), INFINITY); \
-    TEST_FLT(hypot(F(0.0), F(INFINITY)), INFINITY); \
-    TEST_FLT(hypot(F(0.0), F(-INFINITY)), INFINITY); \
-    TEST_FLT_NAN_ANY(hypot(F(NAN), F(0.0))); \
-    TEST_FLT_NAN_ANY(hypot(F(0.0), F(NAN)))
-
-    TEST_HYPOT(hypot);
-    TEST_HYPOT(hypotf);
-    TEST_HYPOT(hypotl);
-
-#define TEST_FMA(fma) \
-    TEST_FLT(fma(F(2), F(3), F(4)), 10); \
-    TEST_FLT_NAN(fma(F(NAN), F(3), F(4)), F(NAN)); \
-    TEST_FLT_NAN(fma(F(2), F(NAN), F(4)), F(NAN)); \
-    TEST_FLT_NAN(fma(F(2), F(3), F(NAN)), F(NAN))
-
-    TEST_FMA(fma);
-    TEST_FMA(fmaf);
-    TEST_FMA(fmal);
-
-    double retd;
-    float retf;
-    long double retl;
-#define TEST_MODF(modf, retd) \
-    TEST_FLT_ACCURACY(modf(F(2.1), &retd), 0.1, 0.001); \
-    TEST_FLT(retd, 2); \
-    TEST_FLT_ACCURACY(modf(F(-2.1), &retd), -0.1, 0.001); \
-    TEST_FLT(retd, -2); \
-    TEST_FLT(modf(F(17179869184.0), &retd), 0); \
-    TEST_FLT(retd, 17179869184.0); \
-    TEST_FLT(modf(F(1329227995784915872903807060280344576.0), &retd), 0); \
-    TEST_FLT(retd, 1329227995784915872903807060280344576.0); \
-    TEST_FLT(modf(F(INFINITY), &retd), 0); \
-    TEST_FLT(retd, INFINITY); \
-    TEST_FLT(modf(F(-INFINITY), &retd), 0); \
-    TEST_FLT(retd, -INFINITY); \
-    TEST_FLT_NAN(modf(F(NAN), &retd), F(NAN)); \
-    TEST_FLT_NAN(retd, F(NAN)); \
-    TEST_FLT_NAN(modf(-F(NAN), &retd), -F(NAN)); \
-    TEST_FLT_NAN(retd, -F(NAN))
-
-    TEST_MODF(modf, retd);
-    TEST_MODF(modff, retf);
-    TEST_MODF(modfl, retl);
-
-#define TEST_FMOD(fmod) \
-    TEST_FLT_ACCURACY(fmod(F(3.9), F(4.0)), 3.9, 0.001); \
-    TEST_FLT_ACCURACY(fmod(F(7.9), F(4.0)), 3.9, 0.001); \
-    TEST_FLT_ACCURACY(fmod(F(-3.9), F(4.0)), -3.9, 0.001); \
-    TEST_FLT_ACCURACY(fmod(F(3.9), F(-4.0)), 3.9, 0.001); \
-    TEST_FLT_ACCURACY(fmod(F(7.9), F(-4.0)), 3.9, 0.001); \
-    TEST_FLT_ACCURACY(fmod(F(-3.9), F(-4.0)), -3.9, 0.001); \
-    TEST_FLT(fmod(F(17179869184.0), F(17180917760.0)), 17179869184.0); \
-    TEST_FLT(fmod(F(17179869184.0), F(1.0)), 0.0); \
-    TEST_FLT(fmod(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0)), 1329227995784915872903807060280344576.0); \
-    TEST_FLT(fmod(F(1329227995784915872903807060280344576.0), F(1.0)), 0.0); \
-    TEST_FLT_NAN_ANY(fmod(F(INFINITY), F(4.0))); \
-    TEST_FLT_NAN_ANY(fmod(F(-INFINITY), F(4.0))); \
-    TEST_FLT_NAN(fmod(F(0), F(NAN)), F(NAN)); \
-    TEST_FLT_NAN(fmod(F(0), -F(NAN)), -F(NAN)); \
-    TEST_FLT_NAN(fmod(F(NAN), F(1)), F(NAN)); \
-    TEST_FLT_NAN(fmod(-F(NAN), F(1)), -F(NAN)); \
-    TEST_FLT_NAN_ANY(fmod(F(3.9), F(0))); \
-    TEST_FLT_ACCURACY(fmod(F(3.9), F(INFINITY)), 3.9, 0.001); \
-    TEST_FLT_ACCURACY(fmod(F(3.9), F(-INFINITY)), 3.9, 0.001)
-
-    TEST_FMOD(fmod);
-    TEST_FMOD(fmodf);
-    TEST_FMOD(fmodl);
-
-#define TEST_REMAINDER(remainder) \
-    TEST_FLT_ACCURACY(remainder(F(1.9), F(4.0)), 1.9, 0.001); \
-    TEST_FLT(remainder(F(2.0), F(4.0)), 2.0); \
-    TEST_FLT(remainder(F(6.0), F(4.0)), -2.0); \
-    TEST_FLT(remainder(F(-6.0), F(4.0)), 2.0); \
-    TEST_FLT_ACCURACY(remainder(F(3.9), F(4.0)), -0.1, 0.001); \
-    TEST_FLT_ACCURACY(remainder(F(-2.0), F(4.0)), -2.0, 0.001); \
-    TEST_FLT_ACCURACY(remainder(F(-3.9), F(4.0)), 0.1, 0.001); \
-    TEST_FLT_ACCURACY(remainder(F(-4.1), F(4.0)), -0.1, 0.001); \
-    TEST_FLT_ACCURACY(remainder(F(3.9), F(-4.0)), -0.1, 0.001); \
-    TEST_FLT_ACCURACY(remainder(F(-3.9), F(-4.0)), 0.1, 0.001); \
-    TEST_FLT(remainder(F(17179869184.0), F(17180917760.0)), -1048576.0); \
-    TEST_FLT(remainder(F(17179869184.0), F(1.0)), 0.0); \
-    TEST_FLT(remainder(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0)), -1298074214633706907132624082305024.0); \
-    TEST_FLT(remainder(F(1329227995784915872903807060280344576.0), F(1.0)), 0.0); \
-    TEST_FLT_NAN_ANY(remainder(F(INFINITY), F(4.0))); \
-    TEST_FLT_NAN_ANY(remainder(F(-INFINITY), F(4.0))); \
-    TEST_FLT_NAN(remainder(F(0), F(NAN)), F(NAN)); \
-    TEST_FLT_NAN(remainder(F(0), -F(NAN)), -F(NAN)); \
-    TEST_FLT_NAN(remainder(F(NAN), F(1)), F(NAN)); \
-    TEST_FLT_NAN(remainder(-F(NAN), F(1)), -F(NAN)); \
-    TEST_FLT_NAN_ANY(remainder(F(1.9), F(0)))
-
-    TEST_REMAINDER(remainder);
-    TEST_REMAINDER(remainderf);
-    TEST_REMAINDER(remainderl);
-
-    int quo = 42;
-#define TEST_REMQUO(remquo) \
-    TEST_FLT_ACCURACY(remquo(F(1.9), F(4.0), &quo), 1.9, 0.001); \
-    TEST_INT(quo, 0); \
-    TEST_FLT(remquo(F(2.0), F(4.0), &quo), 2.0); \
-    TEST_INT(quo, 0); \
-    TEST_FLT(remquo(F(6.0), F(4.0), &quo), -2.0); \
-    TEST_INT(quo, 2); \
-    TEST_FLT(remquo(F(-6.0), F(4.0), &quo), 2.0); \
-    TEST_INT(quo, -2); \
-    TEST_FLT(remquo(F(17179869184.0), F(17180917760.0), &quo), -1048576.0); \
-    TEST_INT(quo, 1); \
-    TEST_FLT(remquo(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0), &quo), -1298074214633706907132624082305024.0); \
-    TEST_INT(quo, 1); \
-    TEST_FLT_ACCURACY(remquo(F(3.9), F(4.0), &quo), -0.1, 0.001); \
-    TEST_INT(quo, 1); \
-    TEST_FLT_ACCURACY(remquo(F(-2.0), F(4.0), &quo), -2.0, 0.001); \
-    TEST_INT(quo, 0); \
-    TEST_FLT_ACCURACY(remquo(F(-3.9), F(4.0), &quo), 0.1, 0.001); \
-    TEST_INT(quo, -1); \
-    TEST_FLT_ACCURACY(remquo(F(-4.1), F(4.0), &quo), -0.1, 0.001); \
-    TEST_INT(quo, -1); \
-    TEST_FLT_ACCURACY(remquo(F(3.9), F(-4.0), &quo), -0.1, 0.001); \
-    TEST_INT(quo, -1); \
-    TEST_FLT_ACCURACY(remquo(F(-3.9), F(-4.0), &quo), 0.1, 0.001); \
-    TEST_INT(quo, 1); \
-    TEST_FLT_NAN_ANY(remquo(F(INFINITY), F(4.0), &quo)); \
-    TEST_FLT_NAN_ANY(remquo(F(-INFINITY), F(4.0), &quo)); \
-    TEST_FLT_NAN(remquo(F(0), F(NAN), &quo), F(NAN)); \
-    TEST_FLT_NAN(remquo(F(0), -F(NAN), &quo), -F(NAN)); \
-    TEST_FLT_NAN(remquo(F(NAN), F(0), &quo), F(NAN)); \
-    TEST_FLT_NAN(remquo(-F(NAN), F(0), &quo), -F(NAN)); \
-    TEST_FLT_NAN_ANY(remquo(F(1.9), F(0), &quo));
-
-    TEST_REMQUO(remquo);
-    TEST_REMQUO(remquof);
-    TEST_REMQUO(remquol);
 
     for (i = 0; i < 2; i++) {
         if (i == 0) {
@@ -919,6 +751,215 @@ void test_math() {
     context = "";
     fesetround(FE_TONEAREST);
 
+#define TEST_LROUND(lround) \
+    TEST_INT(lround(F(3.3)), 3); \
+    TEST_INT(lround(F(3.6)), 4); \
+    TEST_INT(lround(F(3.5)), 4); \
+    TEST_INT(lround(F(4.5)), 5); \
+    TEST_INT(lround(F(1073741824.0)), 1073741824); \
+    TEST_INT(lround(F(-3.3)), -3); \
+    TEST_INT(lround(F(-3.6)), -4); \
+    TEST_INT(lround(F(-3.5)), -4); \
+    TEST_INT(lround(F(-4.5)), -5)
+
+#define TEST_LLROUND(llrint) \
+        TEST_INT(llround(F(17179869184.0)), 17179869184); \
+        TEST_INT(llround(F(1152921504606846976.0)), 1152921504606846976)
+
+    TEST_LROUND(llround);
+    TEST_LROUND(llroundf);
+    TEST_LROUND(llroundl);
+    TEST_LROUND(lround);
+    TEST_LROUND(lroundf);
+    TEST_LROUND(lroundl);
+    TEST_LLROUND(llround);
+    TEST_LLROUND(llroundf);
+    TEST_LLROUND(llroundl);
+
+#define TEST_ROUND(round) \
+    TEST_FLT(round(F(3.3)), 3.0); \
+    TEST_FLT(round(F(3.6)), 4.0); \
+    TEST_FLT(round(F(3.5)), 4.0); \
+    TEST_FLT(round(F(4.5)), 5.0); \
+    TEST_FLT(round(F(17179869184.0)), 17179869184.0); \
+    TEST_FLT(round(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
+    TEST_FLT(round(F(INFINITY)), INFINITY); \
+    TEST_FLT_NAN(round(F(NAN)), F(NAN)); \
+    TEST_FLT(round(F(-3.3)), -3.0); \
+    TEST_FLT(round(F(-3.6)), -4.0); \
+    TEST_FLT(round(F(-3.5)), -4.0); \
+    TEST_FLT(round(F(-4.5)), -5.0); \
+    TEST_FLT(round(F(-INFINITY)), -INFINITY); \
+    TEST_FLT_NAN(round(-F(NAN)), -F(NAN))
+
+    TEST_ROUND(round);
+    TEST_ROUND(roundf);
+    TEST_ROUND(roundl);
+}
+
+void test_math_roots() {
+#define TEST_SQRT(sqrt) \
+    TEST_FLT(sqrt(F(9)), 3.0); \
+    TEST_FLT(sqrt(F(0.25)), 0.5); \
+    TEST_FLT(sqrt(F(INFINITY)), INFINITY); \
+    TEST_FLT_NAN_ANY(sqrt(F(-1.0))); \
+    TEST_FLT_NAN_ANY(sqrt(F(-INFINITY))); \
+    TEST_FLT_NAN(sqrt(F(NAN)), F(NAN)); \
+    TEST_FLT_NAN(sqrt(-F(NAN)), -F(NAN))
+
+    TEST_SQRT(sqrt);
+    TEST_SQRT(sqrtf);
+    TEST_SQRT(sqrtl);
+
+#define TEST_CBRT(cbrt) \
+    TEST_FLT_ACCURACY(cbrt(F(27)), 3.0, 0.001); \
+    TEST_FLT_ACCURACY(cbrt(F(-27)), -3.0, 0.001); \
+    TEST_FLT_ACCURACY(cbrt(F(0.125)), 0.5, 0.001); \
+    TEST_FLT_ACCURACY(cbrt(F(-0.125)), -0.5, 0.001); \
+    TEST_FLT(cbrt(F(INFINITY)), INFINITY); \
+    TEST_FLT(cbrt(F(-INFINITY)), -INFINITY); \
+    TEST_FLT_NAN(cbrt(F(NAN)), F(NAN)); \
+    TEST_FLT_NAN(cbrt(-F(NAN)), -F(NAN))
+
+    TEST_CBRT(cbrt);
+    TEST_CBRT(cbrtf);
+    TEST_CBRT(cbrtl);
+
+#define TEST_HYPOT(hypot) \
+    TEST_FLT_ACCURACY(hypot(F(1.0), F(1.0)), 1.414214, 0.001); \
+    TEST_FLT_ACCURACY(hypot(F(-1.0), F(1.0)), 1.414214, 0.001); \
+    TEST_FLT_ACCURACY(hypot(F(1.0), F(-1.0)), 1.414214, 0.001); \
+    TEST_FLT_ACCURACY(hypot(F(-1.0), F(-1.0)), 1.414214, 0.001); \
+    TEST_FLT(hypot(F(INFINITY), F(0.0)), INFINITY); \
+    TEST_FLT(hypot(F(-INFINITY), F(0.0)), INFINITY); \
+    TEST_FLT(hypot(F(0.0), F(INFINITY)), INFINITY); \
+    TEST_FLT(hypot(F(0.0), F(-INFINITY)), INFINITY); \
+    TEST_FLT_NAN_ANY(hypot(F(NAN), F(0.0))); \
+    TEST_FLT_NAN_ANY(hypot(F(0.0), F(NAN)))
+
+    TEST_HYPOT(hypot);
+    TEST_HYPOT(hypotf);
+    TEST_HYPOT(hypotl);
+}
+
+void test_math_mod() {
+    double retd;
+    float retf;
+    long double retl;
+#define TEST_MODF(modf, retd) \
+    TEST_FLT_ACCURACY(modf(F(2.1), &retd), 0.1, 0.001); \
+    TEST_FLT(retd, 2); \
+    TEST_FLT_ACCURACY(modf(F(-2.1), &retd), -0.1, 0.001); \
+    TEST_FLT(retd, -2); \
+    TEST_FLT(modf(F(17179869184.0), &retd), 0); \
+    TEST_FLT(retd, 17179869184.0); \
+    TEST_FLT(modf(F(1329227995784915872903807060280344576.0), &retd), 0); \
+    TEST_FLT(retd, 1329227995784915872903807060280344576.0); \
+    TEST_FLT(modf(F(INFINITY), &retd), 0); \
+    TEST_FLT(retd, INFINITY); \
+    TEST_FLT(modf(F(-INFINITY), &retd), 0); \
+    TEST_FLT(retd, -INFINITY); \
+    TEST_FLT_NAN(modf(F(NAN), &retd), F(NAN)); \
+    TEST_FLT_NAN(retd, F(NAN)); \
+    TEST_FLT_NAN(modf(-F(NAN), &retd), -F(NAN)); \
+    TEST_FLT_NAN(retd, -F(NAN))
+
+    TEST_MODF(modf, retd);
+    TEST_MODF(modff, retf);
+    TEST_MODF(modfl, retl);
+
+#define TEST_FMOD(fmod) \
+    TEST_FLT_ACCURACY(fmod(F(3.9), F(4.0)), 3.9, 0.001); \
+    TEST_FLT_ACCURACY(fmod(F(7.9), F(4.0)), 3.9, 0.001); \
+    TEST_FLT_ACCURACY(fmod(F(-3.9), F(4.0)), -3.9, 0.001); \
+    TEST_FLT_ACCURACY(fmod(F(3.9), F(-4.0)), 3.9, 0.001); \
+    TEST_FLT_ACCURACY(fmod(F(7.9), F(-4.0)), 3.9, 0.001); \
+    TEST_FLT_ACCURACY(fmod(F(-3.9), F(-4.0)), -3.9, 0.001); \
+    TEST_FLT(fmod(F(17179869184.0), F(17180917760.0)), 17179869184.0); \
+    TEST_FLT(fmod(F(17179869184.0), F(1.0)), 0.0); \
+    TEST_FLT(fmod(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0)), 1329227995784915872903807060280344576.0); \
+    TEST_FLT(fmod(F(1329227995784915872903807060280344576.0), F(1.0)), 0.0); \
+    TEST_FLT_NAN_ANY(fmod(F(INFINITY), F(4.0))); \
+    TEST_FLT_NAN_ANY(fmod(F(-INFINITY), F(4.0))); \
+    TEST_FLT_NAN(fmod(F(0), F(NAN)), F(NAN)); \
+    TEST_FLT_NAN(fmod(F(0), -F(NAN)), -F(NAN)); \
+    TEST_FLT_NAN(fmod(F(NAN), F(1)), F(NAN)); \
+    TEST_FLT_NAN(fmod(-F(NAN), F(1)), -F(NAN)); \
+    TEST_FLT_NAN_ANY(fmod(F(3.9), F(0))); \
+    TEST_FLT_ACCURACY(fmod(F(3.9), F(INFINITY)), 3.9, 0.001); \
+    TEST_FLT_ACCURACY(fmod(F(3.9), F(-INFINITY)), 3.9, 0.001)
+
+    TEST_FMOD(fmod);
+    TEST_FMOD(fmodf);
+    TEST_FMOD(fmodl);
+
+#define TEST_REMAINDER(remainder) \
+    TEST_FLT_ACCURACY(remainder(F(1.9), F(4.0)), 1.9, 0.001); \
+    TEST_FLT(remainder(F(2.0), F(4.0)), 2.0); \
+    TEST_FLT(remainder(F(6.0), F(4.0)), -2.0); \
+    TEST_FLT(remainder(F(-6.0), F(4.0)), 2.0); \
+    TEST_FLT_ACCURACY(remainder(F(3.9), F(4.0)), -0.1, 0.001); \
+    TEST_FLT_ACCURACY(remainder(F(-2.0), F(4.0)), -2.0, 0.001); \
+    TEST_FLT_ACCURACY(remainder(F(-3.9), F(4.0)), 0.1, 0.001); \
+    TEST_FLT_ACCURACY(remainder(F(-4.1), F(4.0)), -0.1, 0.001); \
+    TEST_FLT_ACCURACY(remainder(F(3.9), F(-4.0)), -0.1, 0.001); \
+    TEST_FLT_ACCURACY(remainder(F(-3.9), F(-4.0)), 0.1, 0.001); \
+    TEST_FLT(remainder(F(17179869184.0), F(17180917760.0)), -1048576.0); \
+    TEST_FLT(remainder(F(17179869184.0), F(1.0)), 0.0); \
+    TEST_FLT(remainder(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0)), -1298074214633706907132624082305024.0); \
+    TEST_FLT(remainder(F(1329227995784915872903807060280344576.0), F(1.0)), 0.0); \
+    TEST_FLT_NAN_ANY(remainder(F(INFINITY), F(4.0))); \
+    TEST_FLT_NAN_ANY(remainder(F(-INFINITY), F(4.0))); \
+    TEST_FLT_NAN(remainder(F(0), F(NAN)), F(NAN)); \
+    TEST_FLT_NAN(remainder(F(0), -F(NAN)), -F(NAN)); \
+    TEST_FLT_NAN(remainder(F(NAN), F(1)), F(NAN)); \
+    TEST_FLT_NAN(remainder(-F(NAN), F(1)), -F(NAN)); \
+    TEST_FLT_NAN_ANY(remainder(F(1.9), F(0)))
+
+    TEST_REMAINDER(remainder);
+    TEST_REMAINDER(remainderf);
+    TEST_REMAINDER(remainderl);
+
+    int quo = 42;
+#define TEST_REMQUO(remquo) \
+    TEST_FLT_ACCURACY(remquo(F(1.9), F(4.0), &quo), 1.9, 0.001); \
+    TEST_INT(quo, 0); \
+    TEST_FLT(remquo(F(2.0), F(4.0), &quo), 2.0); \
+    TEST_INT(quo, 0); \
+    TEST_FLT(remquo(F(6.0), F(4.0), &quo), -2.0); \
+    TEST_INT(quo, 2); \
+    TEST_FLT(remquo(F(-6.0), F(4.0), &quo), 2.0); \
+    TEST_INT(quo, -2); \
+    TEST_FLT(remquo(F(17179869184.0), F(17180917760.0), &quo), -1048576.0); \
+    TEST_INT(quo, 1); \
+    TEST_FLT(remquo(F(1329227995784915872903807060280344576.0), F(1330526069999549579810939684362649600.0), &quo), -1298074214633706907132624082305024.0); \
+    TEST_INT(quo, 1); \
+    TEST_FLT_ACCURACY(remquo(F(3.9), F(4.0), &quo), -0.1, 0.001); \
+    TEST_INT(quo, 1); \
+    TEST_FLT_ACCURACY(remquo(F(-2.0), F(4.0), &quo), -2.0, 0.001); \
+    TEST_INT(quo, 0); \
+    TEST_FLT_ACCURACY(remquo(F(-3.9), F(4.0), &quo), 0.1, 0.001); \
+    TEST_INT(quo, -1); \
+    TEST_FLT_ACCURACY(remquo(F(-4.1), F(4.0), &quo), -0.1, 0.001); \
+    TEST_INT(quo, -1); \
+    TEST_FLT_ACCURACY(remquo(F(3.9), F(-4.0), &quo), -0.1, 0.001); \
+    TEST_INT(quo, -1); \
+    TEST_FLT_ACCURACY(remquo(F(-3.9), F(-4.0), &quo), 0.1, 0.001); \
+    TEST_INT(quo, 1); \
+    TEST_FLT_NAN_ANY(remquo(F(INFINITY), F(4.0), &quo)); \
+    TEST_FLT_NAN_ANY(remquo(F(-INFINITY), F(4.0), &quo)); \
+    TEST_FLT_NAN(remquo(F(0), F(NAN), &quo), F(NAN)); \
+    TEST_FLT_NAN(remquo(F(0), -F(NAN), &quo), -F(NAN)); \
+    TEST_FLT_NAN(remquo(F(NAN), F(0), &quo), F(NAN)); \
+    TEST_FLT_NAN(remquo(-F(NAN), F(0), &quo), -F(NAN)); \
+    TEST_FLT_NAN_ANY(remquo(F(1.9), F(0), &quo));
+
+    TEST_REMQUO(remquo);
+    TEST_REMQUO(remquof);
+    TEST_REMQUO(remquol);
+}
+
+void test_math_log_exp() {
 #define TEST_LOG(log, HUGE_VAL) \
     TEST_FLT_ACCURACY(log(F(1.0)), 0.0, 0.001); \
     TEST_FLT_ACCURACY(log(F(2.7182818)), 1.0, 0.001); \
@@ -1037,7 +1078,9 @@ void test_math() {
     TEST_EXPM1(expm1);
     TEST_EXPM1(expm1f);
     TEST_EXPM1(expm1l);
+}
 
+void test_math_inspect_manipulate() {
 #define TEST_LDEXP(ldexp) \
     TEST_FLT_ACCURACY(ldexp(F(0.0), 1), 0.0, 0.001); \
     TEST_FLT_ACCURACY(ldexp(F(2.0), 2), 8.0, 0.001); \
@@ -1130,52 +1173,9 @@ void test_math() {
     TEST_FLT(logbl(3.49514e-308), -1022.0);
     TEST_FLT(logbl(1.74757e-308), -1023.0);
     TEST_FLT(logbl(9.8813e-324), -1073.0);
+}
 
-#define TEST_LROUND(lround) \
-    TEST_INT(lround(F(3.3)), 3); \
-    TEST_INT(lround(F(3.6)), 4); \
-    TEST_INT(lround(F(3.5)), 4); \
-    TEST_INT(lround(F(4.5)), 5); \
-    TEST_INT(lround(F(1073741824.0)), 1073741824); \
-    TEST_INT(lround(F(-3.3)), -3); \
-    TEST_INT(lround(F(-3.6)), -4); \
-    TEST_INT(lround(F(-3.5)), -4); \
-    TEST_INT(lround(F(-4.5)), -5)
-
-#define TEST_LLROUND(llrint) \
-        TEST_INT(llround(F(17179869184.0)), 17179869184); \
-        TEST_INT(llround(F(1152921504606846976.0)), 1152921504606846976)
-
-    TEST_LROUND(llround);
-    TEST_LROUND(llroundf);
-    TEST_LROUND(llroundl);
-    TEST_LROUND(lround);
-    TEST_LROUND(lroundf);
-    TEST_LROUND(lroundl);
-    TEST_LLROUND(llround);
-    TEST_LLROUND(llroundf);
-    TEST_LLROUND(llroundl);
-
-#define TEST_ROUND(round) \
-    TEST_FLT(round(F(3.3)), 3.0); \
-    TEST_FLT(round(F(3.6)), 4.0); \
-    TEST_FLT(round(F(3.5)), 4.0); \
-    TEST_FLT(round(F(4.5)), 5.0); \
-    TEST_FLT(round(F(17179869184.0)), 17179869184.0); \
-    TEST_FLT(round(F(1329227995784915872903807060280344576.0)), 1329227995784915872903807060280344576.0); \
-    TEST_FLT(round(F(INFINITY)), INFINITY); \
-    TEST_FLT_NAN(round(F(NAN)), F(NAN)); \
-    TEST_FLT(round(F(-3.3)), -3.0); \
-    TEST_FLT(round(F(-3.6)), -4.0); \
-    TEST_FLT(round(F(-3.5)), -4.0); \
-    TEST_FLT(round(F(-4.5)), -5.0); \
-    TEST_FLT(round(F(-INFINITY)), -INFINITY); \
-    TEST_FLT_NAN(round(-F(NAN)), -F(NAN))
-
-    TEST_ROUND(round);
-    TEST_ROUND(roundf);
-    TEST_ROUND(roundl);
-
+void test_math_pow() {
 #define TEST_POW(pow) \
     TEST_FLT(pow(F(2.0), F(0.0)), 1.0); \
     TEST_FLT(pow(F(2.0), F(0.0)), 1.0); \
@@ -1219,7 +1219,9 @@ void test_math() {
     TEST_POW(pow);
     TEST_POW(powf);
     TEST_POW(powl);
+}
 
+void test_math_trig() {
 #define TEST_COS(cos) \
     TEST_FLT_ACCURACY(cos(F(0.0)), 1.0, 0.01); \
     TEST_FLT_ACCURACY(cos(F(3.141592654)/2), 0.0, 0.01); \
@@ -1354,7 +1356,9 @@ void test_math() {
     TEST_SINCOS(sincosf, outSinf, outCosf);
     TEST_SINCOS(sincosl, outSinl, outCosl);
 #endif
+}
 
+void test_math_trig_hyp() {
 #define TEST_ACOSH(acosh) \
     TEST_FLT_ACCURACY(acosh(F(1.0)), 0.0, 0.01); \
     TEST_FLT_ACCURACY(acosh(F(2.0)), 1.316958, 0.01); \
@@ -1439,6 +1443,23 @@ void test_math() {
     TEST_TANH(tanh);
     TEST_TANH(tanhf);
     TEST_TANH(tanhl);
+}
+
+void test_math_misc() {
+    // The plain "NAN" constant in MSVC is negative, while it is positive
+    // in other environments.
+    double pNAN = int_to_double(0x7ff8000000000000ULL);
+    double nNAN = int_to_double(0xfff8000000000000ULL);
+
+#define TEST_FMA(fma) \
+    TEST_FLT(fma(F(2), F(3), F(4)), 10); \
+    TEST_FLT_NAN(fma(F(NAN), F(3), F(4)), F(NAN)); \
+    TEST_FLT_NAN(fma(F(2), F(NAN), F(4)), F(NAN)); \
+    TEST_FLT_NAN(fma(F(2), F(3), F(NAN)), F(NAN))
+
+    TEST_FMA(fma);
+    TEST_FMA(fmaf);
+    TEST_FMA(fmal);
 
 #define TEST_FABS(fabs, double) \
     TEST_FLT_SIGN(fabs((double)F(0.0)), 0.0); \
@@ -2111,7 +2132,15 @@ int main(int argc, char* argv[]) {
     test_strings();
     test_parse_numbers();
     test_environment();
-    test_math();
+    test_math_rounding();
+    test_math_roots();
+    test_math_mod();
+    test_math_log_exp();
+    test_math_inspect_manipulate();
+    test_math_pow();
+    test_math_trig();
+    test_math_trig_hyp();
+    test_math_misc();
     test_compiler_helpers();
     test_win32_intrinsics();
     printf("%d tests, %d failures\n", tests, fails);
