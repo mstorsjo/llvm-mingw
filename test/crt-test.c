@@ -1064,6 +1064,7 @@ int main(int argc, char* argv[]) {
     TEST_FLT(frexp(F(-INFINITY), &iret), -INFINITY); \
     TEST_FLT_NAN(frexp(F(NAN), &iret), F(NAN)); \
     TEST_FLT_NAN(frexp(-F(NAN), &iret), -F(NAN)); \
+    iret = 0; \
     TEST_FLT(frexp(F(0x1.4p+42), &iret), 0.625); \
     TEST_INT(iret, 43)
 
