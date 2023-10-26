@@ -1283,7 +1283,7 @@ void test_math_trig() {
     TEST_FLT_NAN_ANY(acos(F(INFINITY))); \
     TEST_FLT_NAN_ANY(acos(F(-INFINITY))); \
     TEST_FLT_NAN(acos(F(NAN)), F(NAN)); \
-    /* TEST_FLT_NAN(acos(-F(NAN)), -F(NAN)) - This fails on glibc/x86_64 for acosl */
+    TEST_FLT_NAN(acos(-F(NAN)), -F(NAN))
 
     TEST_ACOS(acos);
     TEST_ACOS(acosf);
