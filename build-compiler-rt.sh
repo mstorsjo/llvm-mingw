@@ -21,6 +21,7 @@ BUILD_SUFFIX=
 BUILD_BUILTINS=TRUE
 ENABLE_CFGUARD=1
 CFGUARD_CFLAGS="-mguard=cf"
+LTO_CFLAGS=""
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--build-sanitizers" ]; then
@@ -40,13 +41,15 @@ while [ $# -gt 0 ]; do
     elif [ "$1" = "--disable-cfguard" ]; then
         CFGUARD_CFLAGS=
         ENABLE_CFGUARD=
+    elif [ "$1" = "--enable-lto" ]; then
+        LTO_CFLAGS="-flto=thin"
     else
         PREFIX="$1"
     fi
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--build-sanitizers] [--enable-cfguard|--disable-cfguard] dest"
+    echo "$0 [--build-sanitizers] [--enable-cfguard|--disable-cfguard] [--enable-lto] dest"
     exit 1
 fi
 if [ -n "$SANITIZERS" ] && [ -n "$ENABLE_CFGUARD" ]; then
@@ -118,8 +121,8 @@ for arch in $ARCHS; do
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
         -DSANITIZER_CXX_ABI=libc++ \
-        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
-        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
+        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS $LTO_CFLAGS" \
+        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS $LTO_CFLAGS" \
         $SRC_DIR
     cmake --build . ${CORES:+-j${CORES}}
     cmake --install . --prefix "$INSTALL_PREFIX"

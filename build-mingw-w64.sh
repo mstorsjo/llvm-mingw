@@ -21,6 +21,7 @@ set -e
 : ${MINGW_W64_VERSION:=be91da60c4ae62a76099279500810c8ffbef4da1}
 
 CFGUARD_FLAGS="--enable-cfguard"
+LTO_FLAGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -39,6 +40,9 @@ while [ $# -gt 0 ]; do
     --disable-cfguard)
         CFGUARD_FLAGS=
         ;;
+    --enable-lto)
+        LTO_FLAGS="-flto=thin"
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -47,7 +51,7 @@ while [ $# -gt 0 ]; do
 done
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo "$0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] dest"
+        echo "$0 [--skip-include-triplet-prefix] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--enable-lto] dest"
         exit 1
     fi
 
@@ -132,7 +136,7 @@ for arch in $ARCHS; do
         ;;
     esac
     FLAGS="$FLAGS --with-default-msvcrt=$DEFAULT_MSVCRT"
-    ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS $CFGUARD_FLAGS $CRT_CONFIG_FLAGS
+    ../configure --host=$arch-w64-mingw32 --prefix="$PREFIX/$arch-w64-mingw32" $FLAGS $CFGUARD_FLAGS $CRT_CONFIG_FLAGS ${LTO_FLAGS+CFLAGS="-g -O2 $LTO_FLAGS"}
     $MAKE -j$CORES
     $MAKE install
     cd ..

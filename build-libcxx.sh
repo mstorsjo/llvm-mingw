@@ -19,6 +19,7 @@ set -e
 BUILD_STATIC=ON
 BUILD_SHARED=ON
 CFGUARD_CFLAGS="-mguard=cf"
+LTO_CFLAGS=""
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--disable-shared" ]; then
@@ -33,13 +34,15 @@ while [ $# -gt 0 ]; do
         CFGUARD_CFLAGS="-mguard=cf"
     elif [ "$1" = "--disable-cfguard" ]; then
         CFGUARD_CFLAGS=
+    elif [ "$1" = "--enable-lto" ]; then
+        LTO_CFLAGS="-flto=thin"
     else
         PREFIX="$1"
     fi
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--disable-shared] [--disable-static] [--enable-cfguard|--disable-cfguard] dest"
+    echo "$0 [--disable-shared] [--disable-static] [--enable-cfguard|--disable-cfguard] [--enable-lto] dest"
     exit 1
 fi
 
@@ -110,8 +113,8 @@ for arch in $ARCHS; do
         -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
         -DLIBCXXABI_ENABLE_SHARED=OFF \
         -DLIBCXXABI_LIBDIR_SUFFIX="" \
-        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
-        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
+        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS $LTO_CFLAGS" \
+        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS $LTO_CFLAGS" \
         ..
 
     cmake --build . ${CORES:+-j${CORES}}
