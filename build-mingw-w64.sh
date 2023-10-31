@@ -18,7 +18,7 @@ set -e
 
 : ${DEFAULT_WIN32_WINNT:=0x601}
 : ${DEFAULT_MSVCRT:=ucrt}
-: ${MINGW_W64_VERSION:=e51e84aaf7dd98c0fac7606c42f2ae4ca05c5fb1}
+: ${MINGW_W64_VERSION:=d6c07d9561a7af6c56ab2b0f6ee8c19e31ad9fd8}
 
 CFGUARD_FLAGS="--enable-cfguard"
 
