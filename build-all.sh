@@ -95,6 +95,10 @@ for dep in git cmake ${HOST_CLANG}; do
     fi
 done
 
+if [ -n "${HOST_CLANG}" ] && [ "${CFGUARD_ARGS}" = "--enable-cfguard"  ]; then
+    "${HOST_CLANG}" -c -x c -o - - -Werror -mguard=cf </dev/null >/dev/null 2>/dev/null || CFGUARD_ARGS="--disable-cfguard"
+fi
+
 if [ -z "$NO_TOOLS" ]; then
     if [ -z "${HOST_CLANG}" ]; then
         ./build-llvm.sh $PREFIX $LLVM_ARGS $HOST_ARGS
