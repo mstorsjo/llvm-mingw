@@ -90,7 +90,7 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
             rm $i
         fi
         ;;
-    lldb|lldb-server|lldb-argdumper|lldb-instr|lldb-mi|lldb-vscode)
+    lldb|lldb-server|lldb-argdumper|lldb-instr|lldb-mi|lldb-vscode|lldb-dap)
         ;;
     *)
         if [ -f $i ]; then
