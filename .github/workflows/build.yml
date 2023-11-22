@@ -356,7 +356,7 @@ jobs:
     # testing with the latest compiler instead of an older release).
     # Therefore, keep the test disabled by default; it's easy to enable
     # temporarily on a branch for testing.
-    if: false
+    if: true
     needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
