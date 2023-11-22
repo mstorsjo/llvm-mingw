@@ -221,6 +221,15 @@ elif [ -n "$STAGE2" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=clang"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=clang++"
     CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=lld"
+else
+    # Native compilation with the system default compiler.
+
+    # Use a faster linker, if available.
+    if command -v ld.lld >/dev/null; then
+        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=lld"
+    elif command -v ld.gold >/dev/null; then
+        CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_LINKER=gold"
+    fi
 fi
 
 if [ -n "$TARGET_WINDOWS" ]; then
