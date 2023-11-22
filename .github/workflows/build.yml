@@ -351,8 +351,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arch: x86_64, prefix: i686-w64-mingw32- }
-          - { arch: x86_64, prefix: }
+          - { arch: x86_64, shared: ON, prefix: }
+          - { arch: x86_64, shared: OFF, prefix: }
     steps:
       - name: Install dependencies
         run: |
@@ -390,12 +390,15 @@ jobs:
             -DLIBCXX_CXX_ABI=libcxxabi `
             -DCMAKE_C_COMPILER=${{matrix.prefix}}clang `
             -DCMAKE_CXX_COMPILER=${{matrix.prefix}}clang++ `
+            -DLIBCXX_ENABLE_SHARED=${{matrix.shared}} `
             -DLIBCXXABI_ENABLE_SHARED=NO `
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=YES `
             -DLIBCXX_USE_COMPILER_RT=YES `
             -DLIBCXXABI_USE_COMPILER_RT=YES `
             -DLIBUNWIND_USE_COMPILER_RT=YES `
             -DLIBCXXABI_USE_LLVM_UNWINDER=YES `
+            -DCMAKE_C_FLAGS_INIT="-flto=thin" `
+            -DCMAKE_CXX_FLAGS_INIT="-flto=thin" `
             -DLIBCXX_EXTRA_SITE_DEFINES="__USE_MINGW_ANSI_STDIO=1;TEST_IS_EXECUTED_IN_A_SLOW_ENVIRONMENT" `
             -DLIBCXX_TEST_PARAMS="large_tests=False" `
             -DLLVM_LIT_ARGS="-v --time-tests"
