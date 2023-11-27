@@ -16,7 +16,7 @@
 
 set -e
 
-: ${LLDB_MI_VERSION:=610d71a887bc12dabe5eed7979fd93ccc14953ea}
+: ${LLDB_MI_VERSION:=af31036c8348233952f41ee1297c132c52bc5cd3}
 BUILDDIR=build
 unset HOST
 
