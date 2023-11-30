@@ -159,4 +159,10 @@ $MAKE -j$CORES
 $MAKE install
 rm -rf $PREFIX/lib/python*/test
 find $PREFIX/lib/python* -name __pycache__ | xargs rm -rf
+
+# Provide a versionless executable as well; msys2 does something similar
+# (for python3, python3w, python3-config, idle3 and pydoc3) after installing
+# a Python version that is supposed to be the primary Python.
+cp -a $PREFIX/bin/python3.exe $PREFIX/bin/python.exe
+
 cd ../..
