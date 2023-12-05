@@ -92,6 +92,7 @@ ifneq ($(HAVE_CFGUARD),)
     TESTS_CFGUARD = cfguard-test
     TESTS_ASAN_CFGUARD = $(TESTS_ASAN)
 endif
+TESTS_ATOMIC = atomic-helpers
 
 TARGETS_C = $(addsuffix $(EXEEXT), $(TESTS_C))
 TARGETS_C_DLL = $(addsuffix $(DLLEXT), $(TESTS_C_DLL))
@@ -120,6 +121,7 @@ TARGETS_ASAN = $(addsuffix -asan$(EXEEXT), $(TESTS_ASAN))
 TARGETS_UBSAN = $(addsuffix $(EXEEXT), $(TESTS_UBSAN))
 TARGETS_ASAN_CFGUARD = $(addsuffix -asan-cfguard$(EXEEXT), $(TESTS_ASAN_CFGUARD))
 TARGETS_OMP = $(addsuffix $(EXEEXT), $(TESTS_OMP))
+TARGETS_ATOMIC = $(addsuffix $(EXEEXT), $(TESTS_ATOMIC))
 
 TARGETS = \
     $(TARGETS_C) $(TARGETS_C_DLL) $(TARGETS_C_LINK_DLL) $(TARGETS_C_NO_BUILTIN) $(TARGETS_C_ANSI_STDIO) \
@@ -128,7 +130,7 @@ TARGETS = \
     $(TARGETS_IDL) $(TARGETS_RES) \
     $(TARGETS_OTHER_TARGETS) $(TARGETS_UWP) $(TARGETS_UWP_FAIL) \
     $(TARGETS_ASAN) $(TARGETS_UBSAN) $(TARGETS_ASAN_CFGUARD) \
-    $(TARGETS_OMP)
+    $(TARGETS_OMP) $(TARGETS_ATOMIC)
 
 # crt-test-fortify doesn't trigger failures
 FAILURE_TESTS = \
@@ -196,6 +198,9 @@ $(TARGETS_ASAN_CFGUARD): %-asan-cfguard$(EXEEXT): %.c
 
 $(TARGETS_OMP): %$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fopenmp=libomp
+
+$(TARGETS_ATOMIC): %$(EXEEXT): %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -Wno-atomic-alignment
 
 %.h: %.idl
 	$(WIDL) $< -h -o $@
