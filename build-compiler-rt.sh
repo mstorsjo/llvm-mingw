@@ -19,6 +19,7 @@ set -e
 SRC_DIR=../lib/builtins
 BUILD_SUFFIX=
 BUILD_BUILTINS=TRUE
+USE_BUILTINS=FALSE
 ENABLE_CFGUARD=1
 CFGUARD_CFLAGS="-mguard=cf"
 
@@ -28,6 +29,7 @@ while [ $# -gt 0 ]; do
         BUILD_SUFFIX=-sanitizers
         SANITIZERS=1
         BUILD_BUILTINS=FALSE
+        USE_BUILTINS=TRUE
         # Override the default cfguard options here; this unfortunately
         # also overrides the user option if --enable-cfguard is passed
         # before --build-sanitizers (although that combination isn't
@@ -111,8 +113,9 @@ for arch in $ARCHS; do
         -DCMAKE_CXX_COMPILER_WORKS=1 \
         -DCMAKE_C_COMPILER_TARGET=$arch-w64-windows-gnu \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
-        -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
+        -DCOMPILER_RT_USE_BUILTINS_LIBRARY=$USE_BUILTINS \
         -DCOMPILER_RT_BUILD_BUILTINS=$BUILD_BUILTINS \
+        -DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=TRUE \
         -DLLVM_CONFIG_PATH="" \
         -DCMAKE_FIND_ROOT_PATH=$PREFIX/$arch-w64-mingw32 \
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
@@ -124,8 +127,9 @@ for arch in $ARCHS; do
     cmake --build . ${CORES:+-j${CORES}}
     cmake --install .
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
-    if [ -n "$SANITIZERS" ]; then
-        mv "$CLANG_RESOURCE_DIR/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+    mv "$CLANG_RESOURCE_DIR/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+    if [ -z "$SANITIZERS" ]; then
+        cp lib/windows/libclang_rt.atomic_dynamic-*.dll.a "$PREFIX/$arch-w64-mingw32/lib/libatomic.a"
     fi
     cd ..
 done
