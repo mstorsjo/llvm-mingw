@@ -17,6 +17,7 @@ SRC_PATH=$(word 1, $(dir $(MAKEFILE_LIST)))
 vpath %.c $(SRC_PATH)
 vpath %.cpp $(SRC_PATH)
 vpath %.idl $(SRC_PATH)
+vpath %.rc $(SRC_PATH)
 
 ifneq ($(filter %-mingw32, $(MAKE_HOST)),)
     # If we're running as mingw32-make, we're executing everything in
@@ -40,6 +41,7 @@ endif
 CC = $(CROSS)gcc$(TOOLEXT)
 CXX = $(CROSS)g++$(TOOLEXT)
 WIDL = $(CROSS)widl$(TOOLEXT)
+WINDRES = $(CROSS)windres$(TOOLEXT)
 CC_UWP = $(CROSS_UWP)clang$(TOOLEXT)
 
 ifneq ($(COPY),)
@@ -82,6 +84,7 @@ ifneq ($(HAVE_OPENMP),)
 endif
 TESTS_UWP = uwp-error
 TESTS_IDL = idltest
+TESTS_RES = hello-res
 ifneq ($(HAVE_UWP),)
     TESTS_OTHER_TARGETS = hello
 endif
@@ -105,6 +108,7 @@ TARGETS_SSP = $(addsuffix $(EXEEXT), $(TESTS_SSP))
 TARGETS_CFGUARD = $(addsuffix $(EXEEXT), $(TESTS_CFGUARD))
 TARGETS_FORTIFY = $(addsuffix -fortify$(EXEEXT), $(TESTS_FORTIFY))
 TARGETS_IDL = $(addsuffix $(EXEEXT), $(TESTS_IDL))
+TARGETS_RES = $(addsuffix $(EXEEXT), $(TESTS_RES))
 TARGETS_OTHER_TARGETS = $(addsuffix -mingw32uwp$(EXEEXT), $(TESTS_OTHER_TARGETS))
 TARGETS_UWP = $(addsuffix -mingw32$(EXEEXT), $(TESTS_UWP))
 ifneq ($(HAVE_UWP),)
@@ -121,7 +125,7 @@ TARGETS = \
     $(TARGETS_C) $(TARGETS_C_DLL) $(TARGETS_C_LINK_DLL) $(TARGETS_C_NO_BUILTIN) $(TARGETS_C_ANSI_STDIO) \
     $(TARGETS_CPP) $(TARGETS_CPP_EXCEPTIONS) $(TARGETS_CPP_EXCEPTIONS_OPT) $(TARGETS_CPP_STATIC) $(TARGETS_CPP_DLL) $(TARGETS_CPP_LINK_DLL) \
     $(TARGETS_SSP) $(TARGETS_CFGUARD) $(TARGETS_FORTIFY) \
-    $(TARGETS_IDL) \
+    $(TARGETS_IDL) $(TARGETS_RES) \
     $(TARGETS_OTHER_TARGETS) $(TARGETS_UWP) $(TARGETS_UWP_FAIL) \
     $(TARGETS_ASAN) $(TARGETS_UBSAN) $(TARGETS_ASAN_CFGUARD) \
     $(TARGETS_OMP)
@@ -136,6 +140,7 @@ EXTRAFILES = \
      $(addprefix lib, $(addsuffix .dll.a, $(TESTS_C_DLL))) \
      $(addprefix lib, $(addsuffix .dll.a, $(TESTS_CPP_DLL))) \
      $(addsuffix .h, $(TESTS_IDL)) \
+     $(addsuffix -rc.o, $(TESTS_RES)) \
      $(addsuffix -asan.pdb, $(TESTS_ASAN)) \
      $(addsuffix -asan-cfguard.pdb, $(TESTS_ASAN_CFGUARD))
 
@@ -197,6 +202,12 @@ $(TARGETS_OMP): %$(EXEEXT): %.c
 
 $(TARGETS_IDL): %$(EXEEXT): %.c %.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -I. -lole32
+
+%.o: %.rc
+	$(WINDRES) $< $@
+
+$(TARGETS_RES): %$(EXEEXT): %.c %-rc.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $+ -o $@
 
 $(TARGETS_OTHER_TARGETS): %-mingw32uwp$(EXEEXT): %.c
 	$(CC_UWP) $< -o $@
