@@ -28,7 +28,6 @@ export PATH=$PREFIX/bin:$PATH
 # in msys2 bash and in bash in WSL.
 : ${CXX:=clang++.exe}
 : ${LLDB:=lldb.exe}
-: ${STRIP:=strip.exe}
 : ${OBJCOPY:=objcopy.exe}
 
 TARGET=$(clang.exe --version | grep Target: | awk '{print $2}')
@@ -44,12 +43,8 @@ mkdir -p $TEST_DIR
 # Build an executable with DWARF debug info
 $CXX hello-exception.cpp -o $TEST_DIR/hello-exception-dwarf.exe -g
 
-# Build an executable with PDB debug info
-$CXX hello-exception.cpp -o $TEST_DIR/hello-exception-pdb.exe -g -gcodeview -Wl,--pdb=
-# Strip the executable that uses pdb; the crt startup files and mingw static
-# library object files have dwarf debug info, so the binary has got a bit of
-# both, and lldb would choose to use the dwarf parts unless we strip it.
-$STRIP $TEST_DIR/hello-exception-pdb.exe
+# Build an executable with PDB debug info. Strip out any bundled DWARF debug info.
+$CXX hello-exception.cpp -o $TEST_DIR/hello-exception-pdb.exe -g -gcodeview -Wl,--pdb= -Wl,-s
 
 # Make a DWARF split debug info file with gnu debuglink.
 cp $TEST_DIR/hello-exception-dwarf.exe $TEST_DIR/hello-exception-split.exe
