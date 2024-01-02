@@ -43,7 +43,6 @@ mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
-: ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-mingw32 mingw32uwp}}
 
 if [ -n "$HOST" ] && [ -z "$CC" ]; then
     CC=$HOST-gcc
@@ -143,33 +142,26 @@ else
 fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
-    for target_os in $TARGET_OSES; do
-        for exec in clang clang++ gcc g++ c++ as; do
-            ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
-        done
-        ln -sf clang-scan-deps-wrapper$CTW_SUFFIX $arch-w64-$target_os-clang-scan-deps$CTW_LINK_SUFFIX
-        for exec in addr2line ar ranlib nm objcopy readelf size strings strip llvm-ar llvm-ranlib; do
-            if [ -n "$EXEEXT" ]; then
-                link_target=llvm-wrapper
-            else
-                case $exec in
-                llvm-*)
-                    link_target=$exec
-                    ;;
-                *)
-                    link_target=llvm-$exec
-                    ;;
-                esac
-            fi
-            ln -sf $link_target$EXEEXT $arch-w64-$target_os-$exec$EXEEXT || true
-        done
-        # windres and dlltool can't use llvm-wrapper, as that loses the original
-        # target arch prefix.
-        ln -sf llvm-windres$EXEEXT $arch-w64-$target_os-windres$EXEEXT
-        ln -sf llvm-dlltool$EXEEXT $arch-w64-$target_os-dlltool$EXEEXT
-        for exec in ld objdump; do
-            ln -sf $exec-wrapper.sh $arch-w64-$target_os-$exec
-        done
+    for exec in clang clang++ gcc g++ c++ as; do
+        ln -sf clang-target-wrapper$CTW_SUFFIX $arch-linux-musl-$exec$CTW_LINK_SUFFIX
+    done
+    for exec in addr2line ar ranlib nm objcopy objdump readelf size strings strip llvm-ar llvm-ranlib; do
+        if [ -n "$EXEEXT" ]; then
+            link_target=llvm-wrapper
+        else
+            case $exec in
+            llvm-*)
+                link_target=$exec
+                ;;
+            *)
+                link_target=llvm-$exec
+                ;;
+            esac
+        fi
+        ln -sf $link_target$EXEEXT $arch-linux-musl-$exec$EXEEXT || true
+    done
+    for exec in ld; do
+        ln -sf $exec-wrapper.sh $arch-linux-musl-$exec
     done
 done
 if [ -n "$EXEEXT" ]; then
@@ -179,23 +171,4 @@ if [ -n "$EXEEXT" ]; then
     if [ ! -L clang-scan-deps$EXEEXT ] && [ -f clang-scan-deps$EXEEXT ] && [ ! -f clang-scan-deps-real$EXEEXT ]; then
         mv clang-scan-deps$EXEEXT clang-scan-deps-real$EXEEXT
     fi
-    if [ -z "$HOST" ]; then
-        HOST=$(./clang-$CLANG_MAJOR -dumpmachine | sed 's/-.*//')-w64-mingw32
-    fi
-    HOST_ARCH="${HOST%%-*}"
-    # Install unprefixed wrappers if $HOST is one of the architectures
-    # we are installing wrappers for.
-    case $ARCHS in
-    *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres clang-scan-deps; do
-            ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
-        done
-        for exec in cc c99 c11; do
-            ln -sf clang$EXEEXT $exec$EXEEXT
-        done
-        for exec in ld objdump; do
-            ln -sf $HOST-$exec $exec
-        done
-        ;;
-    esac
 fi

@@ -18,8 +18,6 @@ set -e
 
 HOST_CLANG=
 LLVM_ARGS=""
-MINGW_ARGS=""
-CFGUARD_ARGS="--enable-cfguard"
 HOST_ARGS=""
 
 while [ $# -gt 0 ]; do
@@ -48,18 +46,6 @@ while [ $# -gt 0 ]; do
         ;;
     --disable-clang-tools-extra)
         LLVM_ARGS="$LLVM_ARGS $1"
-        ;;
-    --with-default-msvcrt=*)
-        MINGW_ARGS="$MINGW_ARGS $1"
-        ;;
-    --with-default-win32-winnt=*)
-        MINGW_ARGS="$MINGW_ARGS $1"
-        ;;
-    --enable-cfguard)
-        CFGUARD_ARGS="--enable-cfguard"
-        ;;
-    --disable-cfguard)
-        CFGUARD_ARGS="--disable-cfguard"
         ;;
     --no-runtimes)
         NO_RUNTIMES=1
@@ -113,7 +99,6 @@ if [ -z "$NO_TOOLS" ]; then
         fi
     fi
     ./install-wrappers.sh $PREFIX $HOST_ARGS ${HOST_CLANG:+--host-clang=$HOST_CLANG}
-    ./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS
 fi
 if [ -n "$NO_RUNTIMES" ]; then
     exit 0
@@ -123,14 +108,15 @@ if [ -n "$WIPE_RUNTIMES" ]; then
     #
     # This roughly matches the setup as if --no-runtimes had been passed,
     # except that compiler-rt headers are left installed in lib/clang/*/include.
-    rm -rf $PREFIX/*-w64-mingw32 $PREFIX/lib/clang/*/lib
+    rm -rf $PREFIX/*-linux-musl* $PREFIX/lib/clang/*/lib
 fi
 if [ -n "$CLEAN_RUNTIMES" ]; then
     export CLEAN=1
 fi
-./build-mingw-w64.sh $PREFIX $MINGW_ARGS $CFGUARD_ARGS
-./build-compiler-rt.sh $PREFIX $CFGUARD_ARGS
-./build-libcxx.sh $PREFIX $CFGUARD_ARGS
-./build-mingw-w64-libraries.sh $PREFIX $CFGUARD_ARGS
-./build-compiler-rt.sh $PREFIX --build-sanitizers # CFGUARD_ARGS intentionally omitted
-./build-openmp.sh $PREFIX $CFGUARD_ARGS
+./build-musl.sh $PREFIX --headers-only
+./build-compiler-rt.sh $PREFIX
+./build-musl.sh $PREFIX
+exit 0
+./build-libcxx.sh $PREFIX
+./build-compiler-rt.sh $PREFIX --build-sanitizers
+./build-openmp.sh $PREFIX
