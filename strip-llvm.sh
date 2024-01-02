@@ -54,7 +54,7 @@ MINGW*)
 esac
 
 cd bin
-for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug diagtool dsymutil find-all-symbols git-clang-format hmaptool ld64.lld* llc lldb-* lli llvm-* modularize nvptx-arch obj2yaml opt pp-trace sancov sanstats scan-build scan-view split-file verify-uselistorder wasm-ld yaml2obj libclang.dll *LTO.dll *Remarks.dll *.bat; do
+for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug diagtool dsymutil find-all-symbols git-clang-format hmaptool ld64.lld* llc lld-link lldb-* lli llvm-* modularize nvptx-arch obj2yaml opt pp-trace sancov sanstats scan-build scan-view split-file verify-uselistorder wasm-ld yaml2obj libclang.dll *LTO.dll *Remarks.dll *.bat; do
     basename=$i
     if [ -n "$EXEEXT" ]; then
         # Some in the list are expanded globs, some are plain names we list.
@@ -89,9 +89,9 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
             rm -f $i
         fi
         ;;
-    llvm-ar|llvm-cvtres|llvm-dlltool|llvm-nm|llvm-objdump|llvm-ranlib|llvm-rc|llvm-readobj|llvm-strings|llvm-pdbutil|llvm-objcopy|llvm-strip|llvm-cov|llvm-profdata|llvm-addr2line|llvm-symbolizer|llvm-wrapper|llvm-windres|llvm-ml|llvm-readelf|llvm-size|llvm-cxxfilt)
+    llvm-ar|llvm-nm|llvm-objdump|llvm-ranlib|llvm-readobj|llvm-strings|llvm-objcopy|llvm-strip|llvm-cov|llvm-profdata|llvm-addr2line|llvm-symbolizer|llvm-wrapper|llvm-readelf|llvm-size|llvm-cxxfilt)
         ;;
-    ld64.lld|wasm-ld)
+    ld64.lld|wasm-ld|lld-link)
         if [ -e $i ]; then
             rm $i
         fi
