@@ -117,7 +117,7 @@ fi
 ./build-compiler-rt.sh $PREFIX
 ./build-musl.sh $PREFIX
 ./install-linux-headers.sh $PREFIX
-exit 0
 ./build-libcxx.sh $PREFIX
+exit 0
 ./build-compiler-rt.sh $PREFIX --build-sanitizers
 ./build-openmp.sh $PREFIX
