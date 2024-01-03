@@ -77,7 +77,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     exec_argv[arg++] = target;
     exec_argv[arg++] = concat(_T("--sysroot="), sysroot);
     exec_argv[arg++] = _T("-rtlib=compiler-rt");
-    //exec_argv[arg++] = _T("-unwindlib=libunwind");
+    exec_argv[arg++] = _T("-unwindlib=libunwind");
     exec_argv[arg++] = _T("-stdlib=libc++");
     exec_argv[arg++] = _T("-fuse-ld=lld");
     exec_argv[arg++] = _T("--end-no-unused-arguments");
