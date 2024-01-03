@@ -116,6 +116,7 @@ fi
 ./build-musl.sh $PREFIX --headers-only
 ./build-compiler-rt.sh $PREFIX
 ./build-musl.sh $PREFIX
+./install-linux-headers.sh $PREFIX
 exit 0
 ./build-libcxx.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX --build-sanitizers

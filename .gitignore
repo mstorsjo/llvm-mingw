@@ -1,4 +1,5 @@
 /llvm-project
 /musl
+/linux
 /lldb-mi
 /make-*
