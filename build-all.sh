@@ -19,6 +19,7 @@ set -e
 HOST_CLANG=
 LLVM_ARGS=""
 HOST_ARGS=""
+RUNTIME_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -46,6 +47,9 @@ while [ $# -gt 0 ]; do
         ;;
     --disable-clang-tools-extra)
         LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
+    --disable-shared|--disable-static)
+        RUNTIME_ARGS="$RUNTIME_ARGS $1"
         ;;
     --no-runtimes)
         NO_RUNTIMES=1
@@ -115,9 +119,9 @@ if [ -n "$CLEAN_RUNTIMES" ]; then
 fi
 ./build-musl.sh $PREFIX --headers-only
 ./build-compiler-rt.sh $PREFIX
-./build-musl.sh $PREFIX
+./build-musl.sh $PREFIX $RUNTIME_ARGS
 ./install-linux-headers.sh $PREFIX
-./build-libcxx.sh $PREFIX
+./build-libcxx.sh $PREFIX $RUNTIME_ARGS
 exit 0
 ./build-compiler-rt.sh $PREFIX --build-sanitizers
 ./build-openmp.sh $PREFIX
