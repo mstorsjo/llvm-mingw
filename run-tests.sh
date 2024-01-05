@@ -44,101 +44,55 @@ esac
 
 cd test
 
-HAVE_UWP=1
-cat<<EOF > is-ucrt.c
-#include <corecrt.h>
-#if __MSVCRT_VERSION__ < 0x1400 && !defined(_UCRT)
-#error not ucrt
-#endif
-EOF
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
-if ! $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -E is-ucrt.c > /dev/null 2>&1; then
-    # If the default CRT isn't UCRT, we can't build for mingw32uwp.
-    unset HAVE_UWP
-fi
-rm -f is-ucrt.c
 
-if (echo "int main(){}" | $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -x c++ - -o has-cfguard-test.exe -mguard=cf); then
-    if llvm-readobj$TOOLEXT --coff-load-config has-cfguard-test.exe | grep -q 'CF_INSTRUMENTED (0x100)'; then
-        HAVE_CFGUARD=1
-    elif [ -n "$HAVE_CFGUARD" ]; then
-        echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2
-        rm -f has-cfguard-test.exe
-        exit 1
-    fi
-    rm -f has-cfguard-test.exe
-elif [ -n "$HAVE_CFGUARD" ]; then
-    echo "error: Toolchain doesn't seem to include Control Flow Guard support." 1>&2
-    exit 1
-fi
-
-: ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
-
-if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ]; then
-    case $(uname) in
-    MINGW*|MSYS*)
-        NATIVE_X86=1
-        RUN_X86_64=true
-        RUN_I686=true
+if [ "$(uname)" = "Linux" ]; then
+    case $(uname -m) in
+    i*86)
+        NATIVE_i386=1
         ;;
-    *)
-        case $(uname -m) in
-        x86_64)
-            : ${RUN_X86_64:=wine}
-            : ${RUN_I686:=wine}
-            ;;
-        esac
+    x86_64)
+        NATIVE_i386=1
+        NATIVE_x86_64=1
+        ;;
+    armv7*)
+        NATIVE_arm=1
+        ;;
+    aarch64)
+        NATIVE_arm=1
+        NATIVE_aarch64=1
         ;;
     esac
 fi
 
 
 for arch in $ARCHS; do
-    case $arch in
-    i686)
-        RUN="$RUN_I686"
-        COPY="$COPY_I686"
-        NATIVE="$NATIVE_X86"
-        HAVE_SANITIZERS=1
-        ;;
-    x86_64)
-        RUN="$RUN_X86_64"
-        COPY="$COPY_X86_64"
-        NATIVE="$NATIVE_X86"
-        HAVE_SANITIZERS=1
-        ;;
-    armv7)
-        RUN="$RUN_ARMV7"
-        COPY="$COPY_ARMV7"
-        NATIVE="$NATIVE_ARMV7"
-        unset HAVE_SANITIZERS
-        ;;
-    aarch64)
-        RUN="$RUN_AARCH64"
-        COPY="$COPY_AARCH64"
-        NATIVE="$NATIVE_AARCH64"
-        unset HAVE_SANITIZERS
-        ;;
-    esac
+    eval "NATIVE=\"\${NATIVE_${arch}}\""
 
-    TARGET=all
-    if [ -n "$RUN" ] && [ "$RUN" != "false" ]; then
-        TARGET=test
-        if [ "$RUN" = "true" ]; then
-            unset RUN
+    unset QEMU
+    unset INTERPRETER
+    if [ -n "$NATIVE" ]; then
+        INTERPRETER=$PREFIX/$arch-linux-musl/lib/ld-musl-$arch.so.1
+    else
+        qemu_arch=$arch
+        if command -v qemu-$qemu_arch-static >/dev/null; then
+            QEMU=qemu-$qemu_arch-static
+        elif command -v qemu-$qemu_arch >/dev/null; then
+            QEMU=qemu-$qemu_arch
         fi
     fi
-    COPYARG=""
-    if [ -n "$COPY" ]; then
-        COPYARG="COPY=$COPY"
+
+    TARGET=all
+    if [ -n "$NATIVE" ] || [ -n "$QEMU" ]; then
+        TARGET=test
     fi
 
     TEST_DIR="$arch"
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     mkdir -p $TEST_DIR
     cd $TEST_DIR
-    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_SANITIZERS=$HAVE_SANITIZERS NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin clean
-    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_SANITIZERS=$HAVE_SANITIZERS NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin RUN="$RUN" $COPYARG $MAKEOPTS -j$CORES $TARGET
+    $MAKE -f ../Makefile ARCH=$arch NATIVE=$NATIVE SYSROOT=$PREFIX/$arch-linux-musl clean
+    $MAKE -f ../Makefile ARCH=$arch NATIVE=$NATIVE SYSROOT=$PREFIX/$arch-linux-musl QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
     cd ..
 done
 echo All tests succeeded
