@@ -27,7 +27,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
 
 MAKE=make
 if command -v gmake >/dev/null; then
@@ -67,10 +67,21 @@ fi
 
 
 for arch in $ARCHS; do
+    triple=$arch-linux-musl
     normalized_arch=$arch
+    musl_arch=$arch
+    qemu_arch=$arch
     case $arch in
     i*86)
         normalized_arch=i386
+        musl_arch=i386
+        qemu_arch=i386
+        ;;
+    arm*)
+        triple=$arch-linux-musleabihf
+        normalized_arch=arm
+        musl_arch=armhf
+        qemu_arch=armhf
         ;;
     esac
     eval "NATIVE=\"\${NATIVE_${normalized_arch}}\""
@@ -78,9 +89,8 @@ for arch in $ARCHS; do
     unset QEMU
     unset INTERPRETER
     if [ -n "$NATIVE" ]; then
-        INTERPRETER=$PREFIX/$arch-linux-musl/lib/ld-musl-$normalized_arch.so.1
+        INTERPRETER=$PREFIX/$triple/lib/ld-musl-$musl_arch.so.1
     else
-        qemu_arch=$normalized_arch
         if command -v qemu-$qemu_arch-static >/dev/null; then
             QEMU=qemu-$qemu_arch-static
         elif command -v qemu-$qemu_arch >/dev/null; then
@@ -97,8 +107,8 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     mkdir -p $TEST_DIR
     cd $TEST_DIR
-    $MAKE -f ../Makefile ARCH=$arch NATIVE=$NATIVE SYSROOT=$PREFIX/$arch-linux-musl clean
-    $MAKE -f ../Makefile ARCH=$arch NATIVE=$NATIVE SYSROOT=$PREFIX/$arch-linux-musl QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
+    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple clean
+    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
     cd ..
 done
 echo All tests succeeded

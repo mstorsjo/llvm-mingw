@@ -89,12 +89,18 @@ export PATH="$PREFIX/bin:$PATH"
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
 
 # libcxx requires linux/futex.h
 : ${HEADERS:=linux/futex.h}
 
 for arch in $ARCHS; do
+    triple=$arch-linux-musl
+    case $arch in
+    arm*)
+        triple=$arch-linux-musleabihf
+        ;;
+    esac
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
@@ -112,7 +118,7 @@ for arch in $ARCHS; do
         linuxarch=$arch
         ;;
     esac
-    arch_prefix=$PREFIX/$arch-linux-musl/usr
+    arch_prefix=$PREFIX/$triple/usr
     dest=$arch_prefix
     if [ -z "$FULL" ]; then
         dest=$(pwd)/temp
@@ -125,7 +131,7 @@ for arch in $ARCHS; do
                 cur_arch_headers="$cur_arch_headers -include $h"
             fi
         done
-        for i in $($arch-linux-musl-clang -I$dest/include $cur_arch_headers - -E -MM < /dev/null | sed 's/^.*://;s/\\$//' | grep $dest/include | sed s,$dest/include/,,); do
+        for i in $($triple-clang -I$dest/include $cur_arch_headers - -E -MM < /dev/null | sed 's/^.*://;s/\\$//' | grep $dest/include | sed s,$dest/include/,,); do
             if [ "$(dirname $i)" != "." ]; then
                 mkdir -p "$arch_prefix/include/$(dirname $i)"
             fi

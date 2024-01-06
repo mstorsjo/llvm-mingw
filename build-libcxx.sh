@@ -43,7 +43,7 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 
 export PATH="$PREFIX/bin:$PATH"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
 
 if [ ! -d llvm-project/libunwind ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
@@ -70,6 +70,14 @@ else
 fi
 
 for arch in $ARCHS; do
+    triple=$arch-linux-musl
+    fulltriple=$arch-unknown-linux-musl
+    case $arch in
+    arm*)
+        triple=$arch-linux-musleabihf
+        fulltriple=armv7-unknown-linux-musleabihf
+        ;;
+    esac
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
@@ -77,10 +85,10 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-linux-musl/usr" \
-        -DCMAKE_C_COMPILER=$arch-linux-musl-clang \
-        -DCMAKE_CXX_COMPILER=$arch-linux-musl-clang++ \
-        -DCMAKE_CXX_COMPILER_TARGET=$arch-unknown-linux-musl \
+        -DCMAKE_INSTALL_PREFIX="$PREFIX/$triple/usr" \
+        -DCMAKE_C_COMPILER=$triple-clang \
+        -DCMAKE_CXX_COMPILER=$triple-clang++ \
+        -DCMAKE_CXX_COMPILER_TARGET=$fulltriple \
         -DCMAKE_SYSTEM_NAME=Linux \
         -DCMAKE_C_COMPILER_WORKS=TRUE \
         -DCMAKE_CXX_COMPILER_WORKS=TRUE \

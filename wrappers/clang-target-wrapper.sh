@@ -33,7 +33,12 @@ if [ "$TARGET" = "$BASENAME" ]; then
     TARGET=$DEFAULT_TARGET
 fi
 ARCH="${TARGET%%-*}"
-TARGET_OS="${TARGET##*-}"
+SYSROOT="$(dirname "$DIR")/$TARGET"
+if [ "$ARCH" = "arm" ]; then
+    # Convert arm-linux-musleabihf into armv7-linux-musleabihf
+    ARCH=armv7
+    TARGET=$ARCH-${TARGET#*-}
+fi
 
 # Check if trying to compile Ada; if we try to do this, invoking clang
 # would end up invoking <triplet>-gcc with the same arguments, which ends
@@ -67,8 +72,6 @@ c11)
     FLAGS="$FLAGS -std=c11"
     ;;
 esac
-
-SYSROOT="$(dirname "$DIR")/$TARGET"
 
 FLAGS="$FLAGS -target $TARGET"
 FLAGS="$FLAGS --sysroot=$SYSROOT"

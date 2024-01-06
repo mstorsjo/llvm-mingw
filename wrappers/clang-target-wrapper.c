@@ -34,8 +34,26 @@ int _tmain(int argc, TCHAR* argv[]) {
         target = _T(DEFAULT_TARGET);
     TCHAR *arch = _tcsdup(target);
     TCHAR *dash = _tcschr(arch, '-');
-    if (dash)
+    TCHAR *target_without_arch = NULL;
+    if (dash) {
         *dash = '\0';
+        target_without_arch = dash + 1;
+    }
+
+    TCHAR *basedir = _tcsdup(dir);
+    size_t basedirlen = _tcslen(basedir);
+    if (basedirlen > 0 && (basedir[basedirlen - 1] == '/' ||
+                           basedir[basedirlen - 1] == '\\'))
+        basedir[basedirlen - 1] = '\0';
+    TCHAR *sep = _tcsrchrs(basedir, '/', '\\');
+    if (sep)
+        *(sep + 1) = '\0';
+    TCHAR *sysroot = concat(basedir, target);
+    if (!_tcscmp(arch, _T("arm"))) {
+        arch = _T("armv7");
+        if (target_without_arch)
+            target = concat(_T("armv7-"), target_without_arch);
+    }
 
     // Check if trying to compile Ada; if we try to do this, invoking clang
     // would end up invoking <triplet>-gcc with the same arguments, which ends
@@ -62,16 +80,6 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-std=c99");
     else if (!_tcscmp(exe, _T("c11")))
         exec_argv[arg++] = _T("-std=c11");
-
-    TCHAR *basedir = _tcsdup(dir);
-    size_t basedirlen = _tcslen(basedir);
-    if (basedirlen > 0 && (basedir[basedirlen - 1] == '/' ||
-                           basedir[basedirlen - 1] == '\\'))
-        basedir[basedirlen - 1] = '\0';
-    TCHAR *sep = _tcsrchrs(basedir, '/', '\\');
-    if (sep)
-        *(sep + 1) = '\0';
-    TCHAR *sysroot = concat(basedir, target);
 
     exec_argv[arg++] = _T("-target");
     exec_argv[arg++] = target;

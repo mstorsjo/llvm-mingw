@@ -32,8 +32,8 @@ endif
 # Run with TOOLEXT=.exe to run testing with Windows tools, from Linux make
 # in WSL.
 
-ifneq ($(ARCH),)
-    CROSS = $(ARCH)-linux-musl-
+ifneq ($(TRIPLE),)
+    CROSS = $(TRIPLE)-
 endif
 CC = $(CROSS)gcc$(TOOLEXT)
 CXX = $(CROSS)g++$(TOOLEXT)
