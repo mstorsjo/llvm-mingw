@@ -40,10 +40,16 @@ mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH="$PREFIX/bin:$PATH"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
 
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
-CLANG_RESOURCE_DIR="$("$PREFIX/bin/$ANY_ARCH-linux-musl-clang" --print-resource-dir)"
+ANY_TRIPLE=$ANY_ARCH-linux-musl
+case $ANY_ARCH in
+arm*)
+    ANY_TRIPLE=$ANY_ARCH-linux-musleabihf
+    ;;
+esac
+CLANG_RESOURCE_DIR="$("$PREFIX/bin/$ANY_TRIPLE-clang" --print-resource-dir)"
 
 if [ ! -d llvm-project/compiler-rt ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
@@ -68,6 +74,14 @@ cd llvm-project/compiler-rt
 WORKDIR=$(mktemp -d); trap "rm -rf $WORKDIR" 0
 
 for arch in $ARCHS; do
+    triple=$arch-linux-musl
+    fulltriple=$arch-unknown-linux-musl
+    case $arch in
+    arm*)
+        triple=$arch-linux-musleabihf
+        fulltriple=armv7-unknown-linux-musleabihf
+        ;;
+    esac
     [ -z "$CLEAN" ] || rm -rf build-$arch$BUILD_SUFFIX
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX
@@ -76,20 +90,20 @@ for arch in $ARCHS; do
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="$CLANG_RESOURCE_DIR" \
-        -DCMAKE_C_COMPILER=$arch-linux-musl-clang \
-        -DCMAKE_CXX_COMPILER=$arch-linux-musl-clang++ \
+        -DCMAKE_C_COMPILER=$triple-clang \
+        -DCMAKE_CXX_COMPILER=$triple-clang++ \
         -DCMAKE_SYSTEM_NAME=Linux \
         -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
         -DCMAKE_C_COMPILER_WORKS=1 \
         -DCMAKE_CXX_COMPILER_WORKS=1 \
-        -DCMAKE_C_COMPILER_TARGET=$arch-unknown-linux-musl \
+        -DCMAKE_C_COMPILER_TARGET=$fulltriple \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE \
         -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE \
         -DCOMPILER_RT_BUILD_BUILTINS=$BUILD_BUILTINS \
         -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=FALSE \
         -DLLVM_CONFIG_PATH="" \
-        -DCMAKE_FIND_ROOT_PATH=$PREFIX/$arch-linux-musl \
+        -DCMAKE_FIND_ROOT_PATH=$PREFIX/$triple \
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
         -DSANITIZER_CXX_ABI=libc++ \

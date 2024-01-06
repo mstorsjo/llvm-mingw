@@ -73,14 +73,20 @@ unset CC
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
 
 for arch in $ARCHS; do
+    triple=$arch-linux-musl
+    case $arch in
+    arm*)
+        triple=$arch-linux-musleabihf
+        ;;
+    esac
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
-    arch_prefix="$PREFIX/$arch-linux-musl"
-    ../configure --target=$arch-linux-musl --prefix="$arch_prefix/usr" --syslibdir="$arch_prefix/lib" --disable-wrapper $FLAGS
+    arch_prefix="$PREFIX/$triple"
+    ../configure --target=$triple --prefix="$arch_prefix/usr" --syslibdir="$arch_prefix/lib" --disable-wrapper $FLAGS
     if [ -n "$HEADERS_ONLY" ]; then
         $MAKE -j$CORES install-headers
     else

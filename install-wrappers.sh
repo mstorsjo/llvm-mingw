@@ -42,7 +42,7 @@ fi
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
 
 if [ -n "$HOST" ] && [ -z "$CC" ]; then
     CC=$HOST-gcc
@@ -142,8 +142,14 @@ else
 fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
+    triple=$arch-linux-musl
+    case $arch in
+    arm*)
+        triple=$arch-linux-musleabihf
+        ;;
+    esac
     for exec in clang clang++ gcc g++ c++ as; do
-        ln -sf clang-target-wrapper$CTW_SUFFIX $arch-linux-musl-$exec$CTW_LINK_SUFFIX
+        ln -sf clang-target-wrapper$CTW_SUFFIX $triple-$exec$CTW_LINK_SUFFIX
     done
     for exec in addr2line ar ranlib nm objcopy objdump readelf size strings strip llvm-ar llvm-ranlib; do
         if [ -n "$EXEEXT" ]; then
@@ -158,10 +164,10 @@ for arch in $ARCHS; do
                 ;;
             esac
         fi
-        ln -sf $link_target$EXEEXT $arch-linux-musl-$exec$EXEEXT || true
+        ln -sf $link_target$EXEEXT $triple-$exec$EXEEXT || true
     done
     for exec in ld; do
-        ln -sf $exec-wrapper.sh $arch-linux-musl-$exec
+        ln -sf $exec-wrapper.sh $triple-$exec
     done
 done
 if [ -n "$EXEEXT" ]; then
