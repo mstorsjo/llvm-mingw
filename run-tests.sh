@@ -27,7 +27,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 armv7 aarch64}}
 
 MAKE=make
 if command -v gmake >/dev/null; then
@@ -67,14 +67,20 @@ fi
 
 
 for arch in $ARCHS; do
-    eval "NATIVE=\"\${NATIVE_${arch}}\""
+    normalized_arch=$arch
+    case $arch in
+    i*86)
+        normalized_arch=i386
+        ;;
+    esac
+    eval "NATIVE=\"\${NATIVE_${normalized_arch}}\""
 
     unset QEMU
     unset INTERPRETER
     if [ -n "$NATIVE" ]; then
-        INTERPRETER=$PREFIX/$arch-linux-musl/lib/ld-musl-$arch.so.1
+        INTERPRETER=$PREFIX/$arch-linux-musl/lib/ld-musl-$normalized_arch.so.1
     else
-        qemu_arch=$arch
+        qemu_arch=$normalized_arch
         if command -v qemu-$qemu_arch-static >/dev/null; then
             QEMU=qemu-$qemu_arch-static
         elif command -v qemu-$qemu_arch >/dev/null; then
