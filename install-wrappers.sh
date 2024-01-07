@@ -42,7 +42,7 @@ fi
 mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le}}
 
 if [ -n "$HOST" ] && [ -z "$CC" ]; then
     CC=$HOST-gcc

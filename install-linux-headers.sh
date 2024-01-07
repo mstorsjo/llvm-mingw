@@ -89,7 +89,7 @@ export PATH="$PREFIX/bin:$PATH"
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le}}
 
 # libcxx requires linux/futex.h
 : ${HEADERS:=linux/futex.h}
@@ -113,6 +113,9 @@ for arch in $ARCHS; do
         ;;
     aarch64)
         linuxarch=arm64
+        ;;
+    powerpc*)
+        linuxarch=powerpc
         ;;
     *)
         linuxarch=$arch
