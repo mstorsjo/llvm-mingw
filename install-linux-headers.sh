@@ -95,13 +95,21 @@ export PATH="$PREFIX/bin:$PATH"
 # compiler-rt for riscv requires linux/unistd.h
 : ${HEADERS:=linux/futex.h linux/unistd.h}
 
+mkdir -p $PREFIX/generic-linux-musl/usr/include
+
 for arch in $ARCHS; do
     triple=$arch-linux-musl
+    multiarch_triple=$arch-linux-gnu
     case $arch in
     arm*)
         triple=$arch-linux-musleabihf
+        multiarch_triple=$arch-linux-gnueabihf
+        ;;
+    i*86)
+        multiarch_triple=i386-linux-gnu
         ;;
     esac
+
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
@@ -126,6 +134,13 @@ for arch in $ARCHS; do
         ;;
     esac
     arch_prefix=$PREFIX/$triple/usr
+    includes="$arch_prefix/include"
+
+    mkdir -p $arch_prefix
+    ln -sfn ../../generic-linux-musl/usr/include "$includes"
+    mkdir -p $includes/$multiarch_triple/asm
+    mv $includes/$multiarch_triple/asm $includes
+
     dest=$arch_prefix
     if [ -z "$FULL" ]; then
         dest=$(pwd)/temp
@@ -146,5 +161,7 @@ for arch in $ARCHS; do
             cp "$dest/include/$i" "$arch_prefix/include/$i"
         done
     fi
+
+    mv $includes/asm $includes/$multiarch_triple
     cd ..
 done
