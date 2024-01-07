@@ -40,7 +40,7 @@ mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH="$PREFIX/bin:$PATH"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le}}
 
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
 ANY_TRIPLE=$ANY_ARCH-linux-musl

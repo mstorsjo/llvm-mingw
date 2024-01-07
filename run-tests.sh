@@ -27,7 +27,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le}}
 
 MAKE=make
 if command -v gmake >/dev/null; then
@@ -82,6 +82,9 @@ for arch in $ARCHS; do
         normalized_arch=arm
         musl_arch=armhf
         qemu_arch=armhf
+        ;;
+    powerpc64le)
+        qemu_arch=ppc64le
         ;;
     esac
     eval "NATIVE=\"\${NATIVE_${normalized_arch}}\""
