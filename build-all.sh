@@ -118,9 +118,9 @@ if [ -n "$CLEAN_RUNTIMES" ]; then
     export CLEAN=1
 fi
 ./build-musl.sh $PREFIX --headers-only
+./install-linux-headers.sh $PREFIX
 ./build-compiler-rt.sh $PREFIX
 ./build-musl.sh $PREFIX $RUNTIME_ARGS
-./install-linux-headers.sh $PREFIX
 ./build-libcxx.sh $PREFIX $RUNTIME_ARGS
 exit 0
 ./build-compiler-rt.sh $PREFIX --build-sanitizers

@@ -89,10 +89,11 @@ export PATH="$PREFIX/bin:$PATH"
 : ${CORES:=$(nproc 2>/dev/null)}
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le riscv64}}
 
 # libcxx requires linux/futex.h
-: ${HEADERS:=linux/futex.h}
+# compiler-rt for riscv requires linux/unistd.h
+: ${HEADERS:=linux/futex.h linux/unistd.h}
 
 for arch in $ARCHS; do
     triple=$arch-linux-musl
@@ -116,6 +117,9 @@ for arch in $ARCHS; do
         ;;
     powerpc*)
         linuxarch=powerpc
+        ;;
+    riscv*)
+        linuxarch=riscv
         ;;
     *)
         linuxarch=$arch
