@@ -75,17 +75,34 @@ unset CC
 : ${CORES:=4}
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le riscv64}}
 
+mkdir -p $PREFIX/generic-linux-musl/usr/include
+
 for arch in $ARCHS; do
     triple=$arch-linux-musl
+    multiarch_triple=$arch-linux-gnu
     case $arch in
     arm*)
         triple=$arch-linux-musleabihf
+        multiarch_triple=$arch-linux-gnueabihf
+        ;;
+    i*86)
+        multiarch_triple=i386-linux-gnu
         ;;
     esac
+
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
     arch_prefix="$PREFIX/$triple"
+    includes="$arch_prefix/usr/include"
+
+    mkdir -p $arch_prefix/usr
+    ln -sfn ../../generic-linux-musl/usr/include "$includes"
+    mkdir -p $includes/$multiarch_triple/asm
+    mkdir -p $includes/$multiarch_triple/bits
+    ln -sfn $multiarch_triple/asm "$includes/asm"
+    ln -sfn $multiarch_triple/bits "$includes/bits"
+
     ../configure --target=$triple --prefix="$arch_prefix/usr" --syslibdir="$arch_prefix/lib" --disable-wrapper $FLAGS
     if [ -n "$HEADERS_ONLY" ]; then
         $MAKE -j$CORES install-headers
@@ -97,6 +114,10 @@ for arch in $ARCHS; do
         # GNU coreutils.)
         ln -fs $(realpath --relative-to=$arch_prefix/lib $(readlink $arch_prefix/lib/ld-musl-*.so.1)) $arch_prefix/lib/ld-musl-*.so.1
     fi
+
+    rm -f "$includes/asm"
+    rm -f "$includes/bits"
+
     cd ..
     mkdir -p "$arch_prefix/share/musl"
     install -m644 COPYRIGHT "$arch_prefix/share/musl/COPYRIGHT.txt"
