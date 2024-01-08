@@ -95,7 +95,7 @@ for arch in $ARCHS; do
     unset QEMU
     unset INTERPRETER
     if [ -n "$NATIVE" ]; then
-        INTERPRETER=$PREFIX/$triple/lib/ld-musl-$musl_arch.so.1
+        INTERPRETER=$PREFIX/generic-linux-musl/lib/ld-musl-$musl_arch.so.1
     else
         if command -v qemu-$qemu_arch-static >/dev/null; then
             QEMU=qemu-$qemu_arch-static
@@ -113,8 +113,8 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     mkdir -p $TEST_DIR
     cd $TEST_DIR
-    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple clean
-    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple LIBDIR=$PREFIX/$triple/usr/lib/$multiarch_triple QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
+    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/generic-linux-musl clean
+    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/generic-linux-musl LIBDIR=$PREFIX/generic-linux-musl/usr/lib/$multiarch_triple QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
     cd ..
 done
 echo All tests succeeded

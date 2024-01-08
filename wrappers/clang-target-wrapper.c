@@ -48,7 +48,7 @@ int _tmain(int argc, TCHAR* argv[]) {
     TCHAR *sep = _tcsrchrs(basedir, '/', '\\');
     if (sep)
         *(sep + 1) = '\0';
-    TCHAR *sysroot = concat(basedir, target);
+    TCHAR *sysroot = concat(basedir, _T("generic-linux-musl"));
     if (!_tcscmp(arch, _T("arm"))) {
         arch = _T("armv7");
         if (target_without_arch)

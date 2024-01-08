@@ -133,15 +133,12 @@ for arch in $ARCHS; do
         linuxarch=$arch
         ;;
     esac
-    arch_prefix=$PREFIX/$triple/usr
-    includes="$arch_prefix/include"
+    includes="$PREFIX/generic-linux-musl/usr/include"
 
-    mkdir -p $arch_prefix
-    ln -sfn ../../generic-linux-musl/usr/include "$includes"
     mkdir -p $includes/$multiarch_triple/asm
     mv $includes/$multiarch_triple/asm $includes
 
-    dest=$arch_prefix
+    dest=$PREFIX/generic-linux-musl/usr
     if [ -z "$FULL" ]; then
         dest=$(pwd)/temp
     fi
@@ -155,10 +152,10 @@ for arch in $ARCHS; do
         done
         for i in $($triple-clang -I$dest/include $cur_arch_headers - -E -MM < /dev/null | sed 's/^.*://;s/\\$//' | grep $dest/include | sed s,$dest/include/,,); do
             if [ "$(dirname $i)" != "." ]; then
-                mkdir -p "$arch_prefix/include/$(dirname $i)"
+                mkdir -p "$PREFIX/generic-linux-musl/usr/include/$(dirname $i)"
             fi
             echo Copying $i
-            cp "$dest/include/$i" "$arch_prefix/include/$i"
+            cp "$dest/include/$i" "$PREFIX/generic-linux-musl/usr/include/$i"
         done
     fi
 

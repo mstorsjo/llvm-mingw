@@ -33,7 +33,7 @@ if [ "$TARGET" = "$BASENAME" ]; then
     TARGET=$DEFAULT_TARGET
 fi
 ARCH="${TARGET%%-*}"
-SYSROOT="$(dirname "$DIR")/$TARGET"
+SYSROOT="$(dirname "$DIR")/generic-linux-musl"
 if [ "$ARCH" = "arm" ]; then
     # Convert arm-linux-musleabihf into armv7-linux-musleabihf
     ARCH=armv7

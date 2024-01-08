@@ -81,32 +81,30 @@ mkdir -p $PREFIX/generic-linux-musl/usr/lib
 for arch in $ARCHS; do
     triple=$arch-linux-musl
     multiarch_triple=$arch-linux-gnu
+    musl_arch=$arch
     case $arch in
     arm*)
         triple=$arch-linux-musleabihf
         multiarch_triple=$arch-linux-gnueabihf
+        musl_arch=armhf
         ;;
     i*86)
         multiarch_triple=i386-linux-gnu
+        musl_arch=i386
         ;;
     esac
 
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
-    arch_prefix="$PREFIX/$triple"
-    includes="$arch_prefix/usr/include"
+    includes="$PREFIX/generic-linux-musl/usr/include"
 
-    mkdir -p $arch_prefix/usr
-    ln -sfn ../../generic-linux-musl/usr/include "$includes"
     mkdir -p $includes/$multiarch_triple/asm
     mkdir -p $includes/$multiarch_triple/bits
     ln -sfn $multiarch_triple/asm "$includes/asm"
     ln -sfn $multiarch_triple/bits "$includes/bits"
 
-    ln -sfn ../../generic-linux-musl/usr/lib "$arch_prefix/usr/lib"
-
-    ../configure --target=$triple --prefix="$arch_prefix/usr" --libdir="$arch_prefix/usr/lib/$multiarch_triple" --syslibdir="$arch_prefix/lib" --disable-wrapper $FLAGS
+    ../configure --target=$triple --prefix="$PREFIX/generic-linux-musl/usr" --libdir="$PREFIX/generic-linux-musl/usr/lib/$multiarch_triple" --syslibdir="$PREFIX/generic-linux-musl/lib" --disable-wrapper $FLAGS
     if [ -n "$HEADERS_ONLY" ]; then
         $MAKE -j$CORES install-headers
     else
@@ -115,13 +113,13 @@ for arch in $ARCHS; do
         # Convert the ld-musl-*.so.1 symlink from an absolute symlink into
         # a relative one. (Note, this use of readlink is specific to
         # GNU coreutils.)
-        ln -fs $(realpath --relative-to=$arch_prefix/lib $(readlink $arch_prefix/lib/ld-musl-*.so.1)) $arch_prefix/lib/ld-musl-*.so.1
+        ln -fs $(realpath --relative-to=$PREFIX/generic-linux-musl/lib $(readlink $PREFIX/generic-linux-musl/lib/ld-musl-$musl_arch.so.1)) $PREFIX/generic-linux-musl/lib/ld-musl-$musl_arch.so.1
     fi
 
     rm -f "$includes/asm"
     rm -f "$includes/bits"
 
     cd ..
-    mkdir -p "$arch_prefix/share/musl"
-    install -m644 COPYRIGHT "$arch_prefix/share/musl/COPYRIGHT.txt"
 done
+mkdir -p "$PREFIX/generic-linux-musl/share/musl"
+install -m644 COPYRIGHT "$PREFIX/generic-linux-musl/share/musl/COPYRIGHT.txt"
