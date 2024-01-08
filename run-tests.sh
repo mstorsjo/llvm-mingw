@@ -72,11 +72,13 @@ for arch in $ARCHS; do
     normalized_arch=$arch
     musl_arch=$arch
     qemu_arch=$arch
+    multiarch_triple=$arch-linux-gnu
     case $arch in
     i*86)
         normalized_arch=i386
         musl_arch=i386
         qemu_arch=i386
+        multiarch_triple=i386-linux-gnu
         ;;
     arm*)
         triple=$arch-linux-musleabihf
@@ -84,6 +86,7 @@ for arch in $ARCHS; do
         normalized_arch=arm
         musl_arch=armhf
         qemu_arch=armhf
+        multiarch_triple=$arch-linux-gnueabihf
         ;;
     powerpc64le)
         qemu_arch=ppc64le
@@ -113,7 +116,7 @@ for arch in $ARCHS; do
     mkdir -p $TEST_DIR
     cd $TEST_DIR
     $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple clean
-    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
+    $MAKE -f ../Makefile TRIPLE=$triple NATIVE=$NATIVE SYSROOT=$PREFIX/$triple LIBDIR=$PREFIX/$triple/usr/lib/$multiarch_triple QEMU=$QEMU INTERPRETER=$INTERPRETER $MAKEOPTS -j$CORES $TARGET
     cd ..
 done
 echo All tests succeeded
