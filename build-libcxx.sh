@@ -84,8 +84,6 @@ for arch in $ARCHS; do
         ;;
     esac
 
-    ln -sfn ../../generic-linux-musl/usr/lib "$PREFIX/$triple/usr/lib"
-
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
@@ -93,7 +91,7 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$PREFIX/$triple/usr" \
+        -DCMAKE_INSTALL_PREFIX="$PREFIX/generic-linux-musl/usr" \
         -DLIBCXX_INSTALL_LIBRARY_DIR=lib/$multiarch_triple \
         -DLIBCXXABI_INSTALL_LIBRARY_DIR=lib/$multiarch_triple \
         -DLIBUNWIND_INSTALL_LIBRARY_DIR=lib/$multiarch_triple \
