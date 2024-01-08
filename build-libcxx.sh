@@ -72,12 +72,20 @@ fi
 for arch in $ARCHS; do
     triple=$arch-linux-musl
     fulltriple=$arch-unknown-linux-musl
+    multiarch_triple=$arch-linux-gnu
     case $arch in
     arm*)
         triple=$arch-linux-musleabihf
         fulltriple=armv7-unknown-linux-musleabihf
+        multiarch_triple=$arch-linux-gnueabihf
+        ;;
+    i*86)
+        multiarch_triple=i386-linux-gnu
         ;;
     esac
+
+    ln -sfn ../../generic-linux-musl/usr/lib "$PREFIX/$triple/usr/lib"
+
     [ -z "$CLEAN" ] || rm -rf build-$arch
     mkdir -p build-$arch
     cd build-$arch
@@ -86,6 +94,9 @@ for arch in $ARCHS; do
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="$PREFIX/$triple/usr" \
+        -DLIBCXX_INSTALL_LIBRARY_DIR=lib/$multiarch_triple \
+        -DLIBCXXABI_INSTALL_LIBRARY_DIR=lib/$multiarch_triple \
+        -DLIBUNWIND_INSTALL_LIBRARY_DIR=lib/$multiarch_triple \
         -DCMAKE_C_COMPILER=$triple-clang \
         -DCMAKE_CXX_COMPILER=$triple-clang++ \
         -DCMAKE_CXX_COMPILER_TARGET=$fulltriple \

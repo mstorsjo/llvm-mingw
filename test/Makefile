@@ -46,10 +46,10 @@ else
     COPY_DEP = @:
 endif
 ifneq ($(QEMU),)
-    DO_RUN = LD_LIBRARY_PATH=. $(QEMU) -L $(SYSROOT) # Trailing whitespace
+    DO_RUN = LD_LIBRARY_PATH=.:$(LIBDIR) $(QEMU) -L $(SYSROOT) # Trailing whitespace
     DO_RUN_STATIC = $(DO_RUN)
 else
-    DO_RUN = LD_LIBRARY_PATH=.:$(SYSROOT)/usr/lib $(INTERPRETER) # Trailing whitespace
+    DO_RUN = LD_LIBRARY_PATH=.:$(LIBDIR):$(SYSROOT)/usr/lib $(INTERPRETER) # Trailing whitespace
     DO_RUN_STATIC = ./
 endif
 

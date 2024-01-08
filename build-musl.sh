@@ -76,6 +76,7 @@ unset CC
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le riscv64}}
 
 mkdir -p $PREFIX/generic-linux-musl/usr/include
+mkdir -p $PREFIX/generic-linux-musl/usr/lib
 
 for arch in $ARCHS; do
     triple=$arch-linux-musl
@@ -103,7 +104,9 @@ for arch in $ARCHS; do
     ln -sfn $multiarch_triple/asm "$includes/asm"
     ln -sfn $multiarch_triple/bits "$includes/bits"
 
-    ../configure --target=$triple --prefix="$arch_prefix/usr" --syslibdir="$arch_prefix/lib" --disable-wrapper $FLAGS
+    ln -sfn ../../generic-linux-musl/usr/lib "$arch_prefix/usr/lib"
+
+    ../configure --target=$triple --prefix="$arch_prefix/usr" --libdir="$arch_prefix/usr/lib/$multiarch_triple" --syslibdir="$arch_prefix/lib" --disable-wrapper $FLAGS
     if [ -n "$HEADERS_ONLY" ]; then
         $MAKE -j$CORES install-headers
     else
