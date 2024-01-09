@@ -93,7 +93,8 @@ export PATH="$PREFIX/bin:$PATH"
 
 # libcxx requires linux/futex.h
 # compiler-rt for riscv requires linux/unistd.h
-: ${HEADERS:=linux/futex.h linux/unistd.h}
+# lldb requires linux/perf_event.h, linux/version.h, asm/ptrace.h, asm/hwcap.h (asm/hwcap.h doesn't exist in all archiectures)
+: ${HEADERS:=linux/futex.h linux/unistd.h linux/perf_event.h linux/version.h asm/ptrace.h asm/hwcap.h}
 
 mkdir -p $PREFIX/generic-linux-musl/usr/include
 
