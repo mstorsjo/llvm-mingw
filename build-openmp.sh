@@ -16,16 +16,8 @@
 
 set -e
 
-CFGUARD_CFLAGS="-mguard=cf"
-
 while [ $# -gt 0 ]; do
     case "$1" in
-    --enable-cfguard)
-        CFGUARD_CFLAGS="-mguard=cf"
-        ;;
-    --disable-cfguard)
-        CFGUARD_CFLAGS=
-        ;;
     *)
         PREFIX="$1"
         ;;
@@ -33,7 +25,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--enable-cfguard|--disable-cfguard] dest"
+    echo "$0 dest"
     exit 1
 fi
 
@@ -42,7 +34,7 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 
 export PATH="$PREFIX/bin:$PATH"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i386 x86_64 arm aarch64 powerpc64le riscv64}}
 
 if [ ! -d llvm-project/openmp ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-llvm.sh
@@ -65,10 +57,15 @@ else
 fi
 
 for arch in $ARCHS; do
-    CMAKEFLAGS=""
+    triple=$arch-linux-musl
+    multiarch_triple=$arch-linux-gnu
     case $arch in
-    x86_64)
-        CMAKEFLAGS="$CMAKEFLAGS -DLIBOMP_ASMFLAGS=-m64"
+    arm*)
+        triple=$arch-linux-musleabihf
+        multiarch_triple=$arch-linux-gnueabihf
+        ;;
+    i*86)
+        multiarch_triple=i386-linux-gnu
         ;;
     esac
 
@@ -80,22 +77,17 @@ for arch in $ARCHS; do
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$PREFIX/$arch-w64-mingw32" \
-        -DCMAKE_C_COMPILER=$arch-w64-mingw32-clang \
-        -DCMAKE_CXX_COMPILER=$arch-w64-mingw32-clang++ \
-        -DCMAKE_RC_COMPILER=$arch-w64-mingw32-windres \
-        -DCMAKE_ASM_MASM_COMPILER=llvm-ml \
-        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_INSTALL_PREFIX="$PREFIX/generic-linux-musl/usr" \
+        -DOPENMP_INSTALL_LIBDIR=lib/$multiarch_triple \
+        -DCMAKE_C_COMPILER=$triple-clang \
+        -DCMAKE_CXX_COMPILER=$triple-clang++ \
+        -DCMAKE_SYSTEM_NAME=Linux \
         -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
         -DLIBOMP_ENABLE_SHARED=TRUE \
-        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
-        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
-        $CMAKEFLAGS \
+        -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
         ..
     cmake --build . ${CORES:+-j${CORES}}
     cmake --install .
-    rm -f $PREFIX/$arch-w64-mingw32/bin/*iomp5md*
-    rm -f $PREFIX/$arch-w64-mingw32/lib/*iomp5md*
     cd ..
 done
