@@ -232,6 +232,7 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          TAG: ${{needs.prepare.outputs.TAG}}
         run: |
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
