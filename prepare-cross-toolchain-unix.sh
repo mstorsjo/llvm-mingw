@@ -25,7 +25,7 @@ DEST="$2"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
-CLANG_RESOURCE_DIR="$("$SRC/bin/clang" --print-resource-dir)"
+CLANG_RESOURCE_DIR="$(echo "$SRC/lib/clang/"*)"
 CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
 
 # Copy the clang resource files (include, lib, share). The clang cross
@@ -44,10 +44,8 @@ CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
 rm -rf $DEST/lib/clang/$CLANG_VERSION
 cp -a $CLANG_RESOURCE_DIR $DEST/lib/clang/$CLANG_VERSION
 
-# Copy all arch-specific subdirectories plus the "generic" one, as is.
-for arch in generic $ARCHS; do
-    cp -a $SRC/$arch-w64-mingw32 $DEST/$arch-w64-mingw32
-done
+# Copy the sysroot
+cp -a $SRC/generic-linux-musl $DEST
 
 # Copy the libc++ module sources
 rm -rf $DEST/share/libc++
