@@ -40,7 +40,11 @@ if [ -n "$FULL_LLVM" ]; then
 fi
 
 if [ -n "$HOST" ]; then
-    EXEEXT=.exe
+    case $HOST in
+    *-mingw32)
+        EXEEXT=.exe
+        ;;
+    esac
 fi
 
 case $(uname) in

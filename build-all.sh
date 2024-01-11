@@ -95,7 +95,7 @@ if [ -z "$NO_TOOLS" ]; then
         ./build-lldb-mi.sh $PREFIX $HOST_ARGS
     fi
     if [ -z "$FULL_LLVM" ]; then
-        ./strip-llvm.sh $PREFIX
+        ./strip-llvm.sh $PREFIX $HOST_ARGS
     fi
     ./install-wrappers.sh $PREFIX $HOST_ARGS
     ./build-mingw-w64-tools.sh $PREFIX $HOST_ARGS
