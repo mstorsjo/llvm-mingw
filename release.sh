@@ -30,7 +30,7 @@ fi
 time docker build -f Dockerfile . -t mstorsjo/llvm-mingw:latest -t mstorsjo/llvm-mingw:$TAG
 
 DISTRO=ubuntu-20.04-$(uname -m)
-docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
+docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
 
 if [ -n "$NATIVEONLY" ]; then
     exit 0
@@ -57,7 +57,7 @@ msvcrt_image=llvm-mingw-msvcrt-$(uuidgen)
 temp_images="$temp_images $msvcrt_image"
 time docker build -f Dockerfile.dev -t $msvcrt_image --build-arg DEFAULT_CRT=msvcrt .
 
-docker run --rm $msvcrt_image sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-msvcrt-$DISTRO && tar -Jcvf - llvm-mingw-$TAG-msvcrt-$DISTRO" > llvm-mingw-$TAG-msvcrt-$DISTRO.tar.xz
+docker run --rm $msvcrt_image sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-msvcrt-$DISTRO && tar -Jcvf - --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw-$TAG-msvcrt-$DISTRO" > llvm-mingw-$TAG-msvcrt-$DISTRO.tar.xz
 
 for arch in i686 x86_64; do
     temp=$(uuidgen)

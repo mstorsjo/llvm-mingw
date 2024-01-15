@@ -77,7 +77,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-ucrt-x86_64-toolchain
@@ -124,7 +124,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-ucrt-aarch64-toolchain
@@ -157,7 +157,7 @@ jobs:
           LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
-          tar -Jcf ../llvm-mingw-linux.tar.xz llvm-mingw
+          tar -Jcf ../llvm-mingw-linux.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw
       - uses: actions/upload-artifact@v4
         with:
           name: linux-asserts-toolchain
@@ -178,7 +178,7 @@ jobs:
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
         run: |
-          brew install ninja
+          brew install ninja gnu-tar
           # Disable zstd and python. Both are available on the runners, but
           # installed with homebrew, and only available in the native (x86_64)
           # form. Therefore, autodetection will pick them up, but linking
@@ -189,7 +189,7 @@ jobs:
           cd install
           NAME=llvm-mingw-$TAG-ucrt-macos-universal
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          gtar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: macos-ucrt-toolchain
@@ -241,7 +241,7 @@ jobs:
           cd install
           NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: msys2-${{matrix.sys}}-toolchain
