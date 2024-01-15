@@ -33,7 +33,7 @@ rm -rf $DEST
 time CLEAN=1 SYNC=1 MACOS_REDIST=1 ./build-all.sh $DEST
 dir=$(pwd)
 cd $HOME
-tar -Jcvf $dir/$RELNAME.tar.xz $RELNAME
+gtar -Jcvf $dir/$RELNAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $RELNAME
 rm -rf $RELNAME
 cd $dir
 ls -lh $RELNAME.tar.xz
