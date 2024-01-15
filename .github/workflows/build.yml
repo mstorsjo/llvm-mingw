@@ -77,7 +77,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-ucrt-x86_64-toolchain
@@ -124,7 +124,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-ucrt-aarch64-toolchain
@@ -189,7 +189,7 @@ jobs:
           cd install
           NAME=llvm-mingw-$TAG-ucrt-macos-universal
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: macos-ucrt-toolchain
@@ -241,7 +241,7 @@ jobs:
           cd install
           NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: msys2-${{matrix.sys}}-toolchain

@@ -76,7 +76,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-msvcrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-msvcrt-x86_64-toolchain
