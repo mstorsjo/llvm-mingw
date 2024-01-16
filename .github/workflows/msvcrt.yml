@@ -24,6 +24,9 @@ jobs:
       MINGW_W64_VERSION: ${{steps.get-parameters.outputs.MINGW_W64_VERSION}}
       PYTHON_VERSION_MINGW: ${{steps.get-parameters.outputs.PYTHON_VERSION_MINGW}}
       TAG: ${{steps.get-parameters.outputs.TAG}}
+      COMMIT_DATE_UNIX: ${{steps.get-parameters.outputs.COMMIT_DATE_UNIX}}
+      BUILD_DATE: ${{steps.get-parameters.outputs.BUILD_DATE}}
+      BUILD_DATE_UNIX: ${{steps.get-parameters.outputs.BUILD_DATE_UNIX}}
     steps:
       - name: Download build parameters
         uses: dawidd6/action-download-artifact@v3
@@ -68,6 +71,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           ./build-all.sh $(pwd)/install/llvm-mingw --no-tools --wipe-runtimes --with-default-msvcrt=msvcrt
@@ -76,7 +81,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-msvcrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-msvcrt-x86_64-toolchain

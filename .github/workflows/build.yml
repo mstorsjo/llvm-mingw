@@ -26,7 +26,13 @@ jobs:
       MINGW_W64_VERSION: ${{steps.get-versions.outputs.MINGW_W64_VERSION}}
       PYTHON_VERSION_MINGW: ${{steps.get-versions.outputs.PYTHON_VERSION_MINGW}}
       TAG: ${{steps.get-tag.outputs.TAG}}
+      COMMIT_DATE_UNIX: ${{steps.get-tag.outputs.COMMIT_DATE_UNIX}}
+      BUILD_DATE: ${{steps.get-tag.outputs.BUILD_DATE}}
+      BUILD_DATE_UNIX: ${{steps.get-tag.outputs.BUILD_DATE_UNIX}}
     steps:
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: .
       - name: Select build tag
         id: get-tag
         run: |
@@ -36,6 +42,9 @@ jobs:
               TAG=$(TZ=UTC date +%Y%m%d)
           fi
           echo TAG=$TAG >> $GITHUB_OUTPUT
+          echo COMMIT_DATE_UNIX=$(git log -1 --pretty=%ct $GITHUB_SHA) >> $GITHUB_OUTPUT
+          echo BUILD_DATE=$(date -u '+%FT%TZ') >> $GITHUB_OUTPUT
+          echo BUILD_DATE_UNIX=$(date -d "${BUILD_DATE}" +%s) >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT >> parameters.txt
       - name: Check latest version
@@ -66,6 +75,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           # Skip dynamic library dependencies that might make it harder to
@@ -77,7 +88,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-ucrt-x86_64-toolchain
@@ -97,6 +108,8 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build g++-aarch64-linux-gnu
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --no-runtimes --host=aarch64-linux-gnu
@@ -124,7 +137,7 @@ jobs:
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: linux-ucrt-aarch64-toolchain
@@ -149,6 +162,8 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build
           # Skip dynamic library dependencies that might make it harder to
@@ -177,6 +192,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           brew install ninja
           # Disable zstd and python. Both are available on the runners, but
@@ -233,6 +250,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
@@ -241,7 +260,7 @@ jobs:
           cd install
           NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
           mv llvm-mingw $NAME
-          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
           name: msys2-${{matrix.sys}}-toolchain
@@ -281,6 +300,8 @@ jobs:
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           PYTHON_VERSION_MINGW: ${{needs.prepare.outputs.PYTHON_VERSION_MINGW}}
           TAG: ${{needs.prepare.outputs.TAG}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
