@@ -56,7 +56,7 @@ jobs:
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
-    if: false
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [prepare]
     runs-on: ubuntu-20.04
     steps:
@@ -88,7 +88,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
-    if: false
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux, prepare]
     runs-on: ubuntu-20.04
     steps:
@@ -293,7 +293,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    if: false
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux, prepare]
     runs-on: ubuntu-latest
     strategy:
