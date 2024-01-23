@@ -153,8 +153,10 @@ fi
 CMAKEFLAGS="$LLVM_CMAKEFLAGS"
 
 if [ -n "$HOST" ]; then
+    ARCH="${HOST%%-*}"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$HOST-gcc"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER=$HOST-g++"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_PROCESSOR=$ARCH"
     case $HOST in
     *-mingw32)
         CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_NAME=Windows"
@@ -267,7 +269,9 @@ if [ -n "$MACOS_REDIST" ]; then
         # If we're not building for the native arch, flag to CMake that we're
         # cross compiling, to let it build native versions of tools used
         # during the build.
+        ARCH="$(echo $MACOS_REDIST_ARCHS | awk '{print $1}')"
         CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_NAME=Darwin"
+        CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_SYSTEM_PROCESSOR=$ARCH"
     fi
 fi
 
