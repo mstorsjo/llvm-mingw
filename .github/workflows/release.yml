@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build.yml
           workflow_conclusion: success
@@ -52,7 +52,7 @@ jobs:
       - name: Set environment
         run: |
           cat parameters/parameters.txt >> $GITHUB_ENV
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
           path: repo
