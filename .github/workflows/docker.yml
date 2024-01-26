@@ -24,7 +24,7 @@ jobs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build.yml
           workflow_conclusion: success
@@ -48,7 +48,7 @@ jobs:
           - { file: Dockerfile,     maintag: latest,  prefix: }
           - { file: Dockerfile.dev, maintag: dev,     prefix: dev- }
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Log in to Docker Hub
