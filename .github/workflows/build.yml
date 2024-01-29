@@ -262,8 +262,6 @@ jobs:
         include:
           - { arch: i686, crt: ucrt }
           - { arch: x86_64, crt: ucrt }
-          - { arch: armv7, crt: ucrt }
-          - { arch: aarch64, crt: ucrt }
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -639,20 +637,18 @@ jobs:
           make -j$(nproc) fate
 
   upload-nightly:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    permissions:
-      contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
       - name: Rearrange files
         run: |
+          ls -lh
+          ls -lh *-toolchain
           rm -rf linux-asserts*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
-      - name: Upload binaries
-        env:
-          GITHUB_TOKEN: ${{github.token}}
+      - name: List binaries
         run: |
-          gh release upload nightly *.tar.xz *.zip --clobber -R ${{github.repository}}
+          ls -lh *.tar.xz *.zip
