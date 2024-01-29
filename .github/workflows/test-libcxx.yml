@@ -30,7 +30,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit:
-          branch: master
+          branch: gha-upgrade-actions
           event: push
           name: parameters
       - name: Get build parameters
@@ -58,7 +58,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit:
-          branch: master
+          branch: gha-upgrade-actions
           event: push
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
