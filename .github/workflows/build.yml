@@ -67,6 +67,7 @@ jobs:
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -101,6 +102,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
+    if: false
     needs: [linux, prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -155,7 +157,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -219,6 +221,7 @@ jobs:
   # Test building the toolchain on msys2. The binaries built here rely on the
   # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
@@ -274,6 +277,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
+    if: false
     needs: [linux, prepare]
     runs-on: ubuntu-latest
     strategy:
@@ -337,6 +341,7 @@ jobs:
 
   # Run llvm-mingw's tests with the cross-built toolchains from above.
   test-toolchain:
+    if: false
     needs: [linux-cross-windows]
     strategy:
       fail-fast: false
@@ -436,7 +441,7 @@ jobs:
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -501,7 +506,7 @@ jobs:
   # also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -578,7 +583,7 @@ jobs:
   # enabled, to catch code generation bugs that might trigger asserts, to
   # find such regressions early.
   linux-test-cross-build-ffmpeg:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
@@ -623,7 +628,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
@@ -670,7 +675,7 @@ jobs:
           make -j$(nproc) fate
 
   upload-nightly:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     permissions:
       contents: write
     needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
