@@ -234,6 +234,11 @@ else
     fi
 fi
 
+if [ -n "$COMPILER_LAUNCHER" ]; then
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER_LAUNCHER=$COMPILER_LAUNCHER"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER_LAUNCHER=$COMPILER_LAUNCHER"
+fi
+
 if [ -n "$TARGET_WINDOWS" ]; then
     # Custom, llvm-mingw specific defaults. We normally set these in
     # the frontend wrappers, but this makes sure they are enabled by
