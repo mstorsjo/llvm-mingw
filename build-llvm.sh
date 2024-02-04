@@ -325,6 +325,22 @@ cmake \
     $CMAKEFLAGS \
     ..
 
+if [ -n "$HOST" ]; then
+    case $HOST in
+    *-mingw32)
+        set -x
+        CCACHE_DEBUG=1 ninja -v FileCheck
+        for i in $(find . -name \*.ccache-log); do
+            cat $i
+        done
+        for i in $(find . -name \*.ccache-input-text); do
+            cat $i
+        done
+        exit 1
+        ;;
+    esac
+fi
+
 cmake --build . ${CORES:+-j${CORES}}
 cmake --install . --strip
 
