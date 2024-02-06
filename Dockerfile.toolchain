@@ -1,0 +1,41 @@
+FROM ubuntu:20.04
+
+RUN apt-get update -qq && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -qqy --no-install-recommends \
+    git wget bzip2 file unzip libtool pkg-config cmake build-essential \
+    automake yasm gettext autopoint vim-tiny python3 python3-distutils \
+    ninja-build ca-certificates curl less zip && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Manually install a newer version of CMake; this is needed since building
+# LLVM requires CMake 3.20, while Ubuntu 20.04 ships with 3.16.3. If
+# updating to a newer distribution, this can be dropped.
+RUN cd /opt && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-Linux-$(uname -m).tar.gz && \
+    tar -zxf cmake-*.tar.gz && \
+    rm cmake-*.tar.gz && \
+    mv cmake-* cmake
+ENV PATH=/opt/cmake/bin:$PATH
+
+
+RUN git config --global user.name "LLVM MinGW" && \
+    git config --global user.email root@localhost
+
+WORKDIR /build
+
+ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
+
+ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
+
+# Copy prebuilt toolchains for the current architecture.
+# Test executing a binary, to make sure that it works (i.e. it is not built
+# requiring a newer version of glibc or libstdc++ than what is available in
+# this container).
+RUN --mount=type=bind,source=toolchain,target=/toolchain \
+    mkdir -p $TOOLCHAIN_PREFIX && ARCH=$(uname -m) && \
+    tar xf /toolchain/linux-ucrt-$ARCH-toolchain/llvm-mingw-*-$ARCH.tar.xz --strip-components 1 -C $TOOLCHAIN_PREFIX && \
+    ANY_ARCH=$(echo $TOOLCHAIN_ARCHS | awk '{print $1}') && \
+    $TOOLCHAIN_PREFIX/bin/$ANY_ARCH-w64-mingw32-clang --version
+
+ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
