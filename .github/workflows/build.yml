@@ -260,6 +260,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{matrix.sys}}
+          cache: false
           install: >-
             git
             make
@@ -378,6 +379,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: mingw64
+          cache: false
           install: >-
             unzip
             make
@@ -669,6 +671,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: mingw64
+          cache: false
           install: >-
             unzip
             make
