@@ -1,6 +1,5 @@
 name: Build docker images
 on:
-  push:
   workflow_dispatch:
     inputs:
       commit:
@@ -19,7 +18,28 @@ on:
         default: false
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      TAG: ${{steps.get-parameters.outputs.TAG}}
+    steps:
+      - name: Download build parameters
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
+          event: push
+          name: parameters
+      - name: Get build parameters
+        id: get-parameters
+        run: |
+          cat parameters.txt >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
+
   docker-build:
+    needs: [prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -29,8 +49,10 @@ jobs:
           - { file: Dockerfile.dev, maintag: dev,     prefix: dev- }
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Log in to Docker Hub
-        if: false
+        if: ${{inputs.login}}
         uses: docker/login-action@v3
         with:
           username: ${{secrets.DOCKER_USERNAME}}
@@ -39,25 +61,29 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: false
+          push: ${{inputs.push}}
           file: ./${{matrix.file}}
           tags: |
             mstorsjo/llvm-mingw:${{matrix.maintag}}
+            mstorsjo/llvm-mingw:${{matrix.prefix}}${{needs.prepare.outputs.TAG}}
       - name: Inspect Docker images
         run: |
           docker images
 
   docker-build-toolchain:
+    needs: [prepare]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit:
-          branch: master
+          commit: ${{inputs.commit}}
+          branch: ${{inputs.branch}}
           event: push
           name: linux-ucrt-.*
           name_is_regexp: true
@@ -67,7 +93,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
-        if: false
+        if: ${{inputs.login}}
         uses: docker/login-action@v3
         with:
           username: ${{secrets.DOCKER_USERNAME}}
@@ -77,11 +103,12 @@ jobs:
         with:
           context: .
           platforms: linux/arm64
-          push: false
+          push: ${{inputs.push}}
           file: ./Dockerfile.toolchain
           load: true
           tags: |
             mstorsjo/llvm-mingw:latest
+            mstorsjo/llvm-mingw:${{needs.prepare.outputs.TAG}}
       - name: Inspect Docker images
         run: |
           docker images
