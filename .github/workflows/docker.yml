@@ -49,8 +49,6 @@ jobs:
           - { file: Dockerfile.dev, maintag: dev,     prefix: dev- }
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Log in to Docker Hub
         if: ${{inputs.login}}
         uses: docker/login-action@v3
@@ -75,8 +73,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v3
         with:
