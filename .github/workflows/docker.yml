@@ -39,6 +39,7 @@ jobs:
           cat $GITHUB_OUTPUT
 
   docker-build:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     strategy:
