@@ -43,7 +43,8 @@ jobs:
           fi
           echo TAG=$TAG >> $GITHUB_OUTPUT
           echo COMMIT_DATE_UNIX=$(git log -1 --pretty=%ct $GITHUB_SHA) >> $GITHUB_OUTPUT
-          echo BUILD_DATE=$(date -u '+%FT%TZ') >> $GITHUB_OUTPUT
+          BUILD_DATE=$(date -u '+%FT%TZ')
+          echo BUILD_DATE=${BUILD_DATE} >> $GITHUB_OUTPUT
           echo BUILD_DATE_UNIX=$(date -d "${BUILD_DATE}" +%s) >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT >> parameters.txt
