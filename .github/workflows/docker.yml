@@ -1,5 +1,6 @@
 name: Build docker images
 on:
+  push:
   workflow_dispatch:
     inputs:
       commit:
@@ -25,6 +26,7 @@ jobs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
       - name: Download build parameters
+        if: false
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
@@ -36,18 +38,23 @@ jobs:
       - name: Get build parameters
         id: get-parameters
         run: |
-          cat parameters.txt >> $GITHUB_OUTPUT
+          echo TAG=test >> $GITHUB_OUTPUT
+          #cat parameters.txt >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
   docker-build-dev:
     needs: [prepare]
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { file: Dockerfile,     maintag: latest,  prefix: }
+          - { file: Dockerfile.dev, maintag: dev,     prefix: dev- }
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Log in to Docker Hub
-        if: ${{inputs.login}}
+        if: false
         uses: docker/login-action@v3
         with:
           username: ${{vars.DOCKER_USERNAME}}
@@ -56,14 +63,70 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{inputs.push}}
-          file: ./Dockerfile.dev
+          push: false
+          file: ./${{matrix.file}}
           tags: |
-            mstorsjo/llvm-mingw:dev
-            mstorsjo/llvm-mingw:dev-${{needs.prepare.outputs.TAG}}
+            mstorsjo/llvm-mingw:${{matrix.maintag}}
+            mstorsjo/llvm-mingw:${{matrix.prefix}}${{needs.prepare.outputs.TAG}}
       - name: Inspect Docker images
         run: |
           docker images
+      - name: Extract toolchain
+        if: ${{ (matrix.file == 'Dockerfile') }}
+        env:
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          DISTRO=ubuntu-22.04-$(uname -m)
+          docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
+      - name: Upload image as artifact
+        if: ${{ (matrix.file == 'Dockerfile') }}
+        uses: ishworkh/container-image-artifact-upload@v1.0.0
+        with:
+          retention_days: 3
+          image: mstorsjo/llvm-mingw:latest
+      - uses: actions/upload-artifact@v4
+        if: ${{ (matrix.file == 'Dockerfile') }}
+        with:
+          name: linux-ucrt-x86_64-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
+
+  docker-build-cross:
+    needs: [docker-build-dev, prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download image
+        uses: ishworkh/container-image-artifact-download@v1.0.0
+        with:
+          image: mstorsjo/llvm-mingw:latest
+      - name: Build Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          file: ./Dockerfile.cross
+          load: true
+          build-args: |
+            BASE=mstorsjo/llvm-mingw:latest
+            CROSS_ARCH=x86_64
+            TAG=${{needs.prepare.outputs.TAG}}-ucrt-
+            WITH_PYTHON=1
+          tags: |
+            mstorsjo/llvm-mingw-cross:latest
+      - name: Inspect Docker images, extract output
+        env:
+          TAG: ${{needs.prepare.outputs.TAG}}
+        run: |
+          docker images
+          ./extract-docker.sh mstorsjo/llvm-mingw-cross:latest /llvm-mingw-$TAG-ucrt-x86_64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-ucrt-x86_64-toolchain
+          path: |
+            llvm-mingw-*.zip
+          retention-days: 7
 
   docker-build:
     needs: [prepare]
@@ -72,21 +135,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { file: Dockerfile, key: amd64 }
           - { file: Dockerfile.toolchain, platforms: linux/arm64, key: arm64 }
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
         if: ${{matrix.file == 'Dockerfile.toolchain'}}
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: push
+          commit:
+          branch: master
+          event: schedule
           name: linux-ucrt-.*
           name_is_regexp: true
           path: toolchain
@@ -96,7 +156,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
-        if: ${{inputs.login}}
+        if: false
         uses: docker/login-action@v3
         with:
           username: ${{vars.DOCKER_USERNAME}}
@@ -107,7 +167,7 @@ jobs:
         with:
           context: .
           platforms: ${{matrix.platforms}}
-          push: ${{inputs.push}}
+          push: false
           file: ./${{matrix.file}}
           outputs: |
             type=image,name=mstorsjo/llvm-mingw,push-by-digest=true,name-canonical=true
@@ -123,7 +183,7 @@ jobs:
   docker-create:
     needs: [docker-build, prepare]
     runs-on: ubuntu-latest
-    if: ${{inputs.push}}
+    if: false
     steps:
       - uses: cloudposse/github-action-matrix-outputs-read@main
         id: read
