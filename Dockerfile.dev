@@ -20,11 +20,11 @@ ARG FULL_LLVM
 
 # Build LLVM
 COPY build-llvm.sh ./
-RUN ./build-llvm.sh $TOOLCHAIN_PREFIX
+RUN ./build-llvm.sh $TOOLCHAIN_PREFIX --disable-lldb --disable-clang-tools-extra
 
 # Build LLDB-MI
 COPY build-lldb-mi.sh ./
-RUN ./build-lldb-mi.sh $TOOLCHAIN_PREFIX
+#RUN ./build-lldb-mi.sh $TOOLCHAIN_PREFIX
 
 # Strip the LLVM install output immediately. (This doesn't reduce the
 # total docker image size as long as it is in a separate RUN layer though,
@@ -34,7 +34,7 @@ RUN ./build-lldb-mi.sh $TOOLCHAIN_PREFIX
 COPY strip-llvm.sh ./
 RUN ./strip-llvm.sh $TOOLCHAIN_PREFIX
 
-ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
+ARG TOOLCHAIN_ARCHS="x86_64"
 
 # Install the usual $TUPLE-clang binaries
 COPY wrappers/*.sh wrappers/*.c wrappers/*.h wrappers/*.cfg ./wrappers/
