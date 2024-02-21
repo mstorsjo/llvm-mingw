@@ -1,0 +1,42 @@
+FROM ubuntu:22.04
+
+RUN apt-get update -qq && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -qqy --no-install-recommends \
+    git wget bzip2 file unzip libtool pkg-config cmake build-essential \
+    automake yasm gettext autopoint vim-tiny python3 python3-distutils \
+    ninja-build ca-certificates curl less zip && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Separate step for system-clang; the RUN line above is similar to other dockerfiles.
+RUN apt-get update -qq && \
+    apt-get install -qqy clang-15 lld-15 llvm-15 && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+
+RUN git config --global user.name "LLVM MinGW" && \
+    git config --global user.email root@localhost
+
+WORKDIR /build
+
+ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
+
+ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
+
+ARG DEFAULT_CRT=ucrt
+
+ARG CFGUARD_ARGS=--enable-cfguard
+
+COPY build-all.sh build-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh ./
+COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
+# Libcxx version 17 requires Clang >= 15, while Libcxx 18 requires Clang >= 16.
+RUN LLVM_VERSION=llvmorg-17.0.6 ./build-all.sh $TOOLCHAIN_PREFIX --host-clang=clang-15 && \
+    rm -rf /build/*
+
+ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
+
+# Test the installation
+COPY test/*.c test/*.cpp test/*.h test/*.idl test/*.rc test/Makefile ./test/
+COPY run-tests.sh ./
+RUN RUN_I686=false RUN_X86_64=false ./run-tests.sh $TOOLCHAIN_PREFIX
