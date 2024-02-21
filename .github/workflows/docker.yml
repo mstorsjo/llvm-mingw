@@ -102,7 +102,7 @@ jobs:
           platforms: linux/arm64
           push: ${{inputs.push}}
           file: ./Dockerfile.toolchain
-          load: true
+          load: ${{!inputs.push}}
           tags: |
             mstorsjo/llvm-mingw:latest
             mstorsjo/llvm-mingw:${{needs.prepare.outputs.TAG}}
