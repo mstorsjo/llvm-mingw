@@ -16,7 +16,7 @@
 
 set -e
 
-: ${LLVM_VERSION:=llvmorg-18.1.0-rc3}
+: ${LLVM_VERSION:=ca0560d8c821fa93e34cf84362fd523b546ba426}
 ASSERTS=OFF
 unset HOST
 BUILDDIR="build"
@@ -117,6 +117,7 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
             ;;
         esac
     fi
+    git am -3 ../patches/llvm-project/*.patch
     cd ..
 fi
 

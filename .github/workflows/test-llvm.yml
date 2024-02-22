@@ -68,6 +68,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
           git config --global core.autocrlf false
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       # Not passing -DPython3_EXECUTABLE="$Env:PYTHON_EXE" here. The bundled Python doesn't normally have
       # zlib enabled, which some tests require.
