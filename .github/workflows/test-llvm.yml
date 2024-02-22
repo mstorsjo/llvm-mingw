@@ -1,5 +1,6 @@
 name: Run LLVM tests
 on:
+  push:
   workflow_dispatch:
     inputs:
       commit:
@@ -28,15 +29,10 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: ${{inputs.pipeline_type}}
+          commit:
+          branch: master
+          event: schedule
           name: parameters
-      - name: Get build parameters
-        id: get-parameters
-        run: |
-          cat parameters.txt >> $GITHUB_OUTPUT
-          cat $GITHUB_OUTPUT
 
   test-llvm:
     needs: [prepare]
@@ -50,9 +46,9 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: ${{inputs.pipeline_type}}
+          commit:
+          branch: master
+          event: schedule
           name: windows-ucrt-x86_64-toolchain
       - name: Unpack toolchain
         run: |
