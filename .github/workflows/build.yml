@@ -254,7 +254,10 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
+          if [ "${{matrix.sys}}" = "mingw64" ]; then
+              ARGS="--disable-dylib"
+          fi
+          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $ARGS
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
           ./run-tests.sh $(pwd)/install/llvm-mingw
