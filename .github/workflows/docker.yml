@@ -36,6 +36,7 @@ jobs:
           cat $GITHUB_OUTPUT
 
   docker-build-dev:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
