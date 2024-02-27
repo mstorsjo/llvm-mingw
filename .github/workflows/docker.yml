@@ -38,15 +38,9 @@ jobs:
           cat parameters.txt >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
-  docker-build:
+  docker-build-dev:
     needs: [prepare]
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { file: Dockerfile,     maintag: latest,  prefix: }
-          - { file: Dockerfile.dev, maintag: dev,     prefix: dev- }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,22 +56,29 @@ jobs:
         with:
           context: .
           push: ${{inputs.push}}
-          file: ./${{matrix.file}}
+          file: ./Dockerfile.dev
           tags: |
-            mstorsjo/llvm-mingw:${{matrix.maintag}}
-            mstorsjo/llvm-mingw:${{matrix.prefix}}${{needs.prepare.outputs.TAG}}
+            mstorsjo/llvm-mingw:dev
+            mstorsjo/llvm-mingw:dev-${{needs.prepare.outputs.TAG}}
       - name: Inspect Docker images
         run: |
           docker images
 
-  docker-build-toolchain:
+  docker-build:
     needs: [prepare]
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { file: Dockerfile, key: amd64 }
+          - { file: Dockerfile.toolchain, platforms: linux/arm64, key: arm64 }
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
+        if: ${{matrix.file == 'Dockerfile.toolchain'}}
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build.yml
@@ -89,6 +90,7 @@ jobs:
           name_is_regexp: true
           path: toolchain
       - name: Set up QEMU
+        if: ${{matrix.file == 'Dockerfile.toolchain'}}
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -100,15 +102,42 @@ jobs:
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker images
         uses: docker/build-push-action@v5
+        id: build
         with:
           context: .
-          platforms: linux/arm64
+          platforms: ${{matrix.platforms}}
           push: ${{inputs.push}}
-          file: ./Dockerfile.toolchain
-          load: ${{!inputs.push}}
-          tags: |
-            mstorsjo/llvm-mingw:latest
-            mstorsjo/llvm-mingw:${{needs.prepare.outputs.TAG}}
-      - name: Inspect Docker images
+          file: ./${{matrix.file}}
+          outputs: |
+            type=image,name=mstorsjo/llvm-mingw,push-by-digest=true,name-canonical=true
+      - name: Write outputs for later steps
+        uses: cloudposse/github-action-matrix-outputs-write@main
+        id: out
+        with:
+          matrix-step-name: ${{github.job}}
+          matrix-key: ${{matrix.key}}
+          outputs: |-
+            digest: ${{steps.build.outputs.digest}}
+
+  docker-create:
+    needs: [docker-build, prepare]
+    runs-on: ubuntu-latest
+    if: ${{inputs.push}}
+    steps:
+      - uses: cloudposse/github-action-matrix-outputs-read@main
+        id: read
+        with:
+          matrix-step-name: docker-build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PASSWORD}}
+      - name: Create final image
         run: |
-          docker images
+          set -x
+          for tag in latest ${{needs.prepare.outputs.TAG}}; do
+              docker buildx imagetools create -t mstorsjo/llvm-mingw:$tag mstorsjo/llvm-mingw@${{fromJson(steps.read.outputs.result).digest.amd64}} mstorsjo/llvm-mingw@${{fromJson(steps.read.outputs.result).digest.arm64}}
+          done
