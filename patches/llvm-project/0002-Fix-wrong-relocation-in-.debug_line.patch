@@ -1,0 +1,41 @@
+From 116edabe0b759fc83007fd6eedd845dc2dc93564 Mon Sep 17 00:00:00 2001
+From: Timo Habighorst <t.habighorst@beckhoff.com>
+Date: Fri, 23 Feb 2024 10:48:22 +0100
+Subject: [PATCH 2/2] Fix wrong relocation in .debug_line
+
+Dwarf 5 allows separating filenames from .debug_line into a separate
+.debug_line_str section. The strings are referenced relative to the
+start of the .debug_line_str section. Previously, on COFF, the
+relocation information instead caused offsets to be relocated to the
+base address of the COFF-File. This lead  to wrong offsets in linked
+COFF files which caused the debugger to be unable to find the correct
+source files.
+
+This patch fixes this problem by making the offsets relative to the
+start of the .debug_line_str section instead. There should be no
+changes for ELF-Files as everything seems to be working there.
+---
+ llvm/lib/MC/MCDwarf.cpp | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/llvm/lib/MC/MCDwarf.cpp b/llvm/lib/MC/MCDwarf.cpp
+index d0face9140de..2ee0c3eb27b9 100644
+--- a/llvm/lib/MC/MCDwarf.cpp
++++ b/llvm/lib/MC/MCDwarf.cpp
+@@ -360,7 +360,12 @@ void MCDwarfLineStr::emitRef(MCStreamer *MCOS, StringRef Path) {
+   size_t Offset = addString(Path);
+   if (UseRelocs) {
+     MCContext &Ctx = MCOS->getContext();
+-    MCOS->emitValue(makeStartPlusIntExpr(Ctx, *LineStrLabel, Offset), RefSize);
++    if (Ctx.getAsmInfo()->needsDwarfSectionOffsetDirective()) {
++      MCOS->emitCOFFSecRel32(LineStrLabel, Offset);
++    } else {
++      MCOS->emitValue(makeStartPlusIntExpr(Ctx, *LineStrLabel, Offset),
++                      RefSize);
++    }
+   } else
+     MCOS->emitIntValue(Offset, RefSize);
+ }
+-- 
+2.25.1
+

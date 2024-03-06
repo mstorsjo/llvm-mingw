@@ -1,7 +1,7 @@
 From d9b3d2de19ea7d345f4dd0ec0e48efbcd19cd227 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Wed, 6 Mar 2024 11:28:33 +0200
-Subject: [PATCH] WIP: [clang] Switch MinGW to use DWARF 5
+Subject: [PATCH 1/2] WIP: [clang] Switch MinGW to use DWARF 5
 
 ---
  clang/lib/Driver/ToolChains/MinGW.h | 2 +-
