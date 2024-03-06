@@ -1,0 +1,39 @@
+From d9b3d2de19ea7d345f4dd0ec0e48efbcd19cd227 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Wed, 6 Mar 2024 11:28:33 +0200
+Subject: [PATCH] WIP: [clang] Switch MinGW to use DWARF 5
+
+---
+ clang/lib/Driver/ToolChains/MinGW.h | 2 +-
+ clang/test/CodeGen/dwarf-version.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/clang/lib/Driver/ToolChains/MinGW.h b/clang/lib/Driver/ToolChains/MinGW.h
+index a9963d8d06c2..ec31e698fe6b 100644
+--- a/clang/lib/Driver/ToolChains/MinGW.h
++++ b/clang/lib/Driver/ToolChains/MinGW.h
+@@ -95,7 +95,7 @@ public:
+ 
+   void printVerboseInfo(raw_ostream &OS) const override;
+ 
+-  unsigned GetDefaultDwarfVersion() const override { return 4; }
++  unsigned GetDefaultDwarfVersion() const override { return 5; }
+ 
+ protected:
+   Tool *getTool(Action::ActionClass AC) const override;
+diff --git a/clang/test/CodeGen/dwarf-version.c b/clang/test/CodeGen/dwarf-version.c
+index e63316ace69c..0790909911d7 100644
+--- a/clang/test/CodeGen/dwarf-version.c
++++ b/clang/test/CodeGen/dwarf-version.c
+@@ -36,7 +36,7 @@
+ 
+ // Check what version of dwarf is used for MinGW targets.
+ // RUN: %clang -target i686-pc-windows-gnu -g -S -emit-llvm -o - %s | \
+-// RUN:   FileCheck %s --check-prefixes=VER4
++// RUN:   FileCheck %s --check-prefixes=VER5
+ 
+ // RUN: %clang -target powerpc-ibm-aix-xcoff -g -S -emit-llvm -o - %s | \
+ // RUN:   FileCheck %s --check-prefix=VER3
+-- 
+2.25.1
+
