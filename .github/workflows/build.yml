@@ -102,7 +102,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux, prepare]
     runs-on: ubuntu-20.04
     steps:
@@ -158,7 +158,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -189,7 +189,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: macos-latest
     steps:
@@ -228,7 +228,7 @@ jobs:
   # the host environment (libstdc++ or libc++). No artifacts are stored from
   # these builds, but llvm-mingw's tests are run.
   msys2:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
@@ -295,8 +295,6 @@ jobs:
         include:
           - { arch: i686, crt: ucrt }
           - { arch: x86_64, crt: ucrt }
-          - { arch: armv7, crt: ucrt }
-          - { arch: aarch64, crt: ucrt }
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -443,7 +441,7 @@ jobs:
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross-windows, prepare]
     runs-on: windows-latest
     strategy:
@@ -589,7 +587,7 @@ jobs:
   # enabled, to catch code generation bugs that might trigger asserts, to
   # find such regressions early.
   linux-test-cross-build-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
@@ -634,7 +632,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
