@@ -48,6 +48,7 @@ jobs:
       - name: Rearrange files
         run: |
           rm -rf linux-asserts*
+          rm -rf msys2*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
       - name: Set environment
         run: |
