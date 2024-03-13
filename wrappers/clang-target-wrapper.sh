@@ -87,7 +87,7 @@ mingw32uwp)
     # the UWP target is for Windows 10
     FLAGS="$FLAGS -D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00"
     # the UWP target can only use Windows Store APIs
-    FLAGS="$FLAGS -DWINAPI_FAMILY=WINAPI_FAMILY_APP"
+    FLAGS="$FLAGS -DWINAPI_FAMILY=WINAPI_FAMILY_PC_APP"
     # the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
     FLAGS="$FLAGS -DUNICODE"
     # Force the Universal C Runtime

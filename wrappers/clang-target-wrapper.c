@@ -81,7 +81,7 @@ int _tmain(int argc, TCHAR* argv[]) {
         exec_argv[arg++] = _T("-D_WIN32_WINNT=0x0A00");
         exec_argv[arg++] = _T("-DWINVER=0x0A00");
         // the UWP target can only use Windows Store APIs
-        exec_argv[arg++] = _T("-DWINAPI_FAMILY=WINAPI_FAMILY_APP");
+        exec_argv[arg++] = _T("-DWINAPI_FAMILY=WINAPI_FAMILY_PC_APP");
         // the Windows Store API only supports Windows Unicode (some rare ANSI ones are available)
         exec_argv[arg++] = _T("-DUNICODE");
         // force the user of Universal C Runtime
