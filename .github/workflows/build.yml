@@ -85,6 +85,7 @@ jobs:
           # llvm-mingw).
           LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+          RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
           cd install
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
@@ -172,6 +173,7 @@ jobs:
           # llvm-mingw).
           LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+          RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" llvm-mingw
       - uses: actions/upload-artifact@v4
@@ -204,6 +206,7 @@ jobs:
           # other (arm64) architecture form.
           MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+          RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
           cd install
           NAME=llvm-mingw-$TAG-ucrt-macos-universal
           mv llvm-mingw $NAME
