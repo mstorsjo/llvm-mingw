@@ -86,7 +86,7 @@ TESTS_UWP = uwp-error
 TESTS_IDL = idltest
 TESTS_RES = hello-res
 ifneq ($(HAVE_UWP),)
-    TESTS_OTHER_TARGETS = hello
+    TESTS_OTHER_TARGETS = hello hello-tls
 endif
 ifneq ($(HAVE_CFGUARD),)
     TESTS_CFGUARD = cfguard-test
