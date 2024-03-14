@@ -322,5 +322,6 @@ cmake \
 
 cmake --build . ${CORES:+-j${CORES}}
 cmake --install . --strip
+cmake --install . --strip --component clang-scan-deps
 
 cp ../LICENSE.TXT $PREFIX
