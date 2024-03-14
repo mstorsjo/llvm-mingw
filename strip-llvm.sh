@@ -74,6 +74,8 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
         ;;
     clangd)
         ;;
+    clang-scan-deps)
+        ;;
     clang-tidy)
         ;;
     clang-target-wrapper*)
