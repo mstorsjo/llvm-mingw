@@ -143,8 +143,6 @@ EXTRAFILES = \
      $(addprefix lib, $(addsuffix .dll.a, $(TESTS_CPP_DLL))) \
      $(addsuffix .h, $(TESTS_IDL)) \
      $(addsuffix -rc.o, $(TESTS_RES)) \
-     $(addsuffix -asan.pdb, $(TESTS_ASAN)) \
-     $(addsuffix -asan-cfguard.pdb, $(TESTS_ASAN_CFGUARD))
 
 all: $(TARGETS)
 
@@ -187,14 +185,14 @@ $(TARGETS_FORTIFY): %-fortify$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -O2 -D_FORTIFY_SOURCE=2
 
 $(TARGETS_ASAN): %-asan$(EXEEXT): %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fsanitize=address -g -gcodeview -Wl,--pdb=
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fsanitize=address -g
 
 $(TARGETS_UBSAN): %$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fsanitize=undefined -fno-sanitize-recover=all
 
 # Smoke test ASAN with CFGuard to make sure it doesn't trip.
 $(TARGETS_ASAN_CFGUARD): %-asan-cfguard$(EXEEXT): %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fsanitize=address -g -gcodeview -mguard=cf -Wl,--pdb=
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fsanitize=address -g -mguard=cf
 
 $(TARGETS_OMP): %$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fopenmp=libomp
