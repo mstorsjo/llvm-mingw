@@ -308,17 +308,17 @@ $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $
 		echo OK: $< trigger failed expectedly, returned $$ret; \
 		case $* in \
 		stacksmash-asan|stacksmash-asan-cfguard) \
-			grep -q stack-buffer-overflow $$OUT || exit 1; \
-			grep -q "func.*stacksmash.c" $$OUT || exit 1; \
+			grep -q stack-buffer-overflow $$OUT || { echo ERROR: $< missing mention of stack-buffer-overflow; exit 1; }; \
+			grep -q "func.*stacksmash.c" $$OUT || { echo ERROR: $< missing source location; exit 1; }; \
 			;; \
 		ubsan) \
-			grep -q "signed integer overflow" $$OUT || exit 1; \
+			grep -q "signed integer overflow" $$OUT || { echo ERROR: $< missing mention of signed integer overflow; exit 1; }; \
 			;; \
 		stacksmash) \
-			grep -q "stack smashing detected" $$OUT || exit 1; \
+			grep -q "stack smashing detected" $$OUT || { echo ERROR: $< missing mention of stack smashing detected; exit 1; }; \
 			;; \
 		bufferoverflow-*) \
-			grep -q "buffer overflow detected" $$OUT || exit 1; \
+			grep -q "buffer overflow detected" $$OUT || { echo ERROR: $< missing mention of buffer overflow detected; exit 1; }; \
 			;; \
 		*) \
 			echo Unhandled failure test $*; \
@@ -343,7 +343,7 @@ $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $
 			ret=$$?; \
 			cat $$OUT; \
 			echo OK: $* $$i failed expectedly, returned $$ret; \
-			grep -q "buffer overflow detected" $$OUT || exit 1; \
+			grep -q "buffer overflow detected" $$OUT || { echo ERROR: $< missing mention of buffer overflow detected; exit 1; }; \
 			rm -f $$OUT; \
 		fi; \
 		i=$$(($$i+1)); \
