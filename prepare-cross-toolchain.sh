@@ -52,14 +52,14 @@ cp $SRC/$CROSS_ARCH-w64-mingw32/bin/*.dll $DEST/bin
 rm -rf $DEST/lib/clang/$CLANG_VERSION
 cp -a $CLANG_RESOURCE_DIR $DEST/lib/clang/$CLANG_VERSION
 
-rm -rf $DEST/include
+mkdir -p $DEST/include
 # Copy over headers and arch specific files, converting a unix style
 # install (everything in arch specific subdirectories) into
 # what we'd have when built on Windows, as if build-mingw-w64.sh
 # was called with --skip-include-triplet-prefit, with all headers
 # in $DEST/include, and only keeping the bin and lib directories for the
 # individual architectures.
-cp -a $SRC/generic-w64-mingw32/include $DEST/include
+cp -a $SRC/generic-w64-mingw32/include/. $DEST/include
 for arch in $ARCHS; do
     mkdir -p $DEST/$arch-w64-mingw32
     for subdir in bin lib share; do
