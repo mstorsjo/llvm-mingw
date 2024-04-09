@@ -1,0 +1,49 @@
+From 34d7918111f1838fe39fc81facf991d359178094 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 30 May 2024 10:49:39 +0300
+Subject: [PATCH] [compiler-rt] [test] Work around MS CRT stdio format quirks
+ on mingw too
+
+So far, these tests have been disabled in mingw build configurations
+(built as asan-dynamic), but these were enabled in
+246234ac70faa1e3281a2bb83dfc4dd206a7d59c.
+---
+ compiler-rt/test/asan/TestCases/debug_double_free.cpp | 4 ++--
+ compiler-rt/test/asan/TestCases/debug_report.cpp      | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/compiler-rt/test/asan/TestCases/debug_double_free.cpp b/compiler-rt/test/asan/TestCases/debug_double_free.cpp
+index 8a2ce40bc561..c1cc383b3c1e 100644
+--- a/compiler-rt/test/asan/TestCases/debug_double_free.cpp
++++ b/compiler-rt/test/asan/TestCases/debug_double_free.cpp
+@@ -4,9 +4,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+-// If we use %p with MSVC, it comes out all upper case. Use %08x to get
++// If we use %p with MS CRTs, it comes out all upper case. Use %08x to get
+ // lowercase hex.
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ # ifdef _WIN64
+ #  define PTR_FMT "0x%08llx"
+ # else
+diff --git a/compiler-rt/test/asan/TestCases/debug_report.cpp b/compiler-rt/test/asan/TestCases/debug_report.cpp
+index 855642bdc0d3..0dbb9f2fb998 100644
+--- a/compiler-rt/test/asan/TestCases/debug_report.cpp
++++ b/compiler-rt/test/asan/TestCases/debug_report.cpp
+@@ -19,9 +19,9 @@ int main() {
+   return 0;
+ }
+ 
+-// If we use %p with MSVC, it comes out all upper case. Use %08x to get
++// If we use %p with MS CRTs, it comes out all upper case. Use %08x to get
+ // lowercase hex.
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ # ifdef _WIN64
+ #  define PTR_FMT "0x%08llx"
+ # else
+-- 
+2.25.1
+

@@ -117,6 +117,9 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
             ;;
         esac
     fi
+    git config --global user.name "GitHub Actions"
+    git config --global user.email martin@martin.st
+    git am -3 ../patches/llvm-project/*.patch
     cd ..
 fi
 
