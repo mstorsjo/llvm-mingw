@@ -172,7 +172,7 @@ static inline void split_argv(const TCHAR *argv0, const TCHAR **dir_ptr, const T
         TCHAR *dash2 = _tcsrchr(target, '-');
         if (dash2 && !_tcscmp(dash2, _T("-llvm"))) {
             // Found <target>-llvm-<tool>; move the llvm- prefix to
-            // exe. Convert the original dash which we overwrite with '\0'
+            // exe. Convert the original dash which we overwrote with '\0'
             // back into a dash and split the string at the preceding dash.
             *dash = '-';
             *dash2 = '\0';
