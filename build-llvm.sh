@@ -16,7 +16,7 @@
 
 set -e
 
-: ${LLVM_VERSION:=llvmorg-18.1.4}
+: ${LLVM_VERSION:=b6824c9d459da059e247a60c1ebd1aeb580dacc2}
 ASSERTS=OFF
 unset HOST
 BUILDDIR="build"
