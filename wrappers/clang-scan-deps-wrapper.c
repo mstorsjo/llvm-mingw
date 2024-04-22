@@ -18,6 +18,9 @@
 
 #include "native-wrapper.h"
 
+#ifndef CLANG_SCAN_DEPS
+#define CLANG_SCAN_DEPS "clang-scan-deps"
+#endif
 #ifndef DEFAULT_TARGET
 #define DEFAULT_TARGET "x86_64-w64-mingw32"
 #endif
@@ -29,7 +32,7 @@ int _tmain(int argc, TCHAR *argv[]) {
     int max_arg = argc + 3;
     const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
-    exec_argv[arg++] = concat(dir, _T("clang-scan-deps"));
+    exec_argv[arg++] = concat(dir, _T(CLANG_SCAN_DEPS));
 
     // If changing this wrapper, change clang-scan-deps-wrapper.sh accordingly.
     int i = 1;
