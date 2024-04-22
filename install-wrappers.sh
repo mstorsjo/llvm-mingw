@@ -114,6 +114,7 @@ fi
 if [ -n "$EXEEXT" ]; then
     CLANG_MAJOR=$(basename $(echo $PREFIX/lib/clang/* | awk '{print $NF}') | cut -f 1 -d .)
     WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -DCLANG_SCAN_DEPS=\"clang-scan-deps-real\""
 fi
 
 mkdir -p "$PREFIX/bin"
@@ -171,6 +172,9 @@ if [ -n "$EXEEXT" ]; then
     if [ ! -L clang$EXEEXT ] && [ -f clang$EXEEXT ] && [ ! -f clang-$CLANG_MAJOR$EXEEXT ]; then
         mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
     fi
+    if [ ! -L clang-scan-deps$EXEEXT ] && [ -f clang-scan-deps$EXEEXT ] && [ ! -f clang-scan-deps-real$EXEEXT ]; then
+        mv clang-scan-deps$EXEEXT clang-scan-deps-real$EXEEXT
+    fi
     if [ -z "$HOST" ]; then
         HOST=$(./clang-$CLANG_MAJOR -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
@@ -179,7 +183,7 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres; do
+        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres clang-scan-deps; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
         for exec in cc c99 c11; do
