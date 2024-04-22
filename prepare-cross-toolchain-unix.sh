@@ -48,3 +48,7 @@ cp -a $CLANG_RESOURCE_DIR $DEST/lib/clang/$CLANG_VERSION
 for arch in generic $ARCHS; do
     cp -a $SRC/$arch-w64-mingw32 $DEST/$arch-w64-mingw32
 done
+
+# Copy the libc++ module sources
+rm -rf $DEST/share/libc++
+cp -a $SRC/share/libc++ $DEST/share
