@@ -66,3 +66,7 @@ for arch in $ARCHS; do
         cp -a $SRC/$arch-w64-mingw32/$subdir $DEST/$arch-w64-mingw32
     done
 done
+
+# Copy the libc++ module sources
+rm -rf $DEST/share/libc++
+cp -a $SRC/share/libc++ $DEST/share
