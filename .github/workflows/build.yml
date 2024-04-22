@@ -89,7 +89,7 @@ jobs:
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF -DLLDB_ENABLE_PYTHON=OFF" COMPILER_LAUNCHER="ccache" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra
+          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF -DLLDB_ENABLE_PYTHON=OFF" COMPILER_LAUNCHER="ccache" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
           cd install
@@ -341,7 +341,7 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
-          COMPILER_LAUNCHER="ccache" CCACHE_COMPILERCHECK="%compiler% -v" ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
+          COMPILER_LAUNCHER="ccache" CCACHE_COMPILERCHECK="%compiler% -v" ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
