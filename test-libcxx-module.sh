@@ -30,4 +30,10 @@ for arch in $ARCHS; do
     # TODO: This should ideally use "$CXX -print-file-name=libc++.modules.json", then parse the json to find the relevant cppm file and include directory.
     $arch-w64-mingw32-clang++ -I$PREFIX/share/libc++/v1 -std=gnu++23 -Wno-reserved-module-identifier -x c++-module -fmodule-output=std.pcm -o std.cppm.obj -c $PREFIX/share/libc++/v1/std.cppm
     $arch-w64-mingw32-clang++ -I$PREFIX/share/libc++/v1 -std=gnu++23 -Wno-reserved-module-identifier -x c++-module -fmodule-output=std.compat.pcm -fmodule-file=std=std.pcm -o std.compat.cppm.obj -c $PREFIX/share/libc++/v1/std.compat.cppm
+    $arch-w64-mingw32-clang-scan-deps -format=p1689 -- $arch-w64-mingw32-clang++ -std=c++23 -c test/test-scan-deps.cpp -DEXPECT_$arch
 done
+
+if [ -n "$NATIVE" ]; then
+    # Test the unprefixed clang-scan-deps wrapper.
+    clang-scan-deps -format=p1689 -- clang++ -std=c++23 -c test/test-scan-deps.cpp -DEXPECT_$(clang++ -dumpmachine | sed 's/-.*//')
+fi
