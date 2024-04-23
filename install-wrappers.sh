@@ -111,6 +111,11 @@ if [ -n "$MACOS_REDIST" ]; then
     WRAPPER_FLAGS="$WRAPPER_FLAGS -mmacosx-version-min=$MACOS_REDIST_VERSION"
 fi
 
+if [ -n "$EXEEXT" ]; then
+    CLANG_MAJOR=$(basename $(echo $PREFIX/lib/clang/* | awk '{print $NF}') | cut -f 1 -d .)
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
+fi
+
 mkdir -p "$PREFIX/bin"
 cp wrappers/*-wrapper.sh "$PREFIX/bin"
 if [ -n "$HOST" ] && [ -n "$EXEEXT" ]; then
@@ -161,6 +166,9 @@ for arch in $ARCHS; do
     done
 done
 if [ -n "$EXEEXT" ]; then
+    if [ ! -L clang$EXEEXT ] && [ -f clang$EXEEXT ] && [ ! -f clang-$CLANG_MAJOR$EXEEXT ]; then
+        mv clang$EXEEXT clang-$CLANG_MAJOR$EXEEXT
+    fi
     if [ -z "$HOST" ]; then
         HOST=$(./clang-$CLANG_MAJOR -dumpmachine | sed 's/-.*//')-w64-mingw32
     fi
@@ -169,7 +177,7 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres; do
+        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
         for exec in cc c99 c11; do
