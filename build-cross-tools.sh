@@ -72,14 +72,18 @@ export PATH="$NATIVE/bin:$PATH"
 HOST=$CROSS_ARCH-w64-mingw32
 
 if [ -n "$PYTHON" ]; then
+    [ -n "$GITHUB_ACTIONS" ] && echo "::group::Build native python"
     PYTHON_NATIVE_PREFIX="$(cd "$(dirname "$0")" && pwd)/python-native"
     [ -d "$PYTHON_NATIVE_PREFIX" ] || rm -rf "$PYTHON_NATIVE_PREFIX"
     ./build-python.sh $PYTHON_NATIVE_PREFIX
+    [ -n "$GITHUB_ACTIONS" ] && echo "::endgroup::"
+    [ -n "$GITHUB_ACTIONS" ] && echo "::group::Cross-build python"
     export PATH="$PYTHON_NATIVE_PREFIX/bin:$PATH"
     ./build-python.sh $PREFIX/python --host=$HOST
     mkdir -p $PREFIX/bin
     cp $PREFIX/python/bin/*.dll $PREFIX/bin
     LLVM_ARGS="$LLVM_ARGS --with-python"
+    [ -n "$GITHUB_ACTIONS" ] && echo "::endgroup::"
 fi
 
 ./build-llvm.sh $PREFIX --host=$HOST $LLVM_ARGS
