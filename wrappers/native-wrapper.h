@@ -94,10 +94,19 @@ static inline int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR 
     while (argv[num_args])
         num_args++;
     const TCHAR **escaped_argv = malloc((num_args + 1) * sizeof(*escaped_argv));
-    for (int i = 0; argv[i]; i++)
+    int total = 0;
+    for (int i = 0; argv[i]; i++) {
         escaped_argv[i] = escape(argv[i]);
+        total += 1 + _tcslen(escaped_argv[i]);
+    }
     escaped_argv[num_args] = NULL;
-    return _tspawnvp(mode, filename, escaped_argv);
+    int ret = _tspawnvp(mode, filename, escaped_argv);
+    if (ret == -1 && total >= 32767) {
+        int err = errno;
+        fprintf(stderr, "command line too long; %d characters\n", total);
+        errno = err;
+    }
+    return ret;
 }
 #else
 static inline int _tcsicmp(const TCHAR *a, const TCHAR *b) {
