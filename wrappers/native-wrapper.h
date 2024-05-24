@@ -89,6 +89,27 @@ static inline const TCHAR *escape(const TCHAR *str) {
     return out;
 }
 
+static inline TCHAR *concat(const TCHAR *prefix, const TCHAR *suffix);
+
+static TCHAR *make_response_file(const TCHAR **argv) {
+    if (!argv[1])
+        return NULL;
+    TCHAR *temp_path = malloc(MAX_PATH * sizeof(*temp_path));
+    if (GetTempPath(MAX_PATH, temp_path) == 0)
+        return NULL;
+    TCHAR *rsp_file = malloc(MAX_PATH * sizeof(*rsp_file));
+    if (GetTempFileName(temp_path, _T("ctw"), 0, rsp_file) == 0)
+        return NULL;
+
+    FILE *f = _tfopen(rsp_file, _T("w, ccs=UNICODE"));
+    for (int i = 1; argv[i]; i++)
+        _ftprintf(f, _T(TS"\n"), argv[i]);
+    fclose(f);
+    argv[1] = escape(concat(_T("@"), rsp_file));
+    argv[2] = NULL;
+    return rsp_file;
+}
+
 static inline int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR * const *argv) {
     int num_args = 0;
     while (argv[num_args])
@@ -100,12 +121,17 @@ static inline int _tspawnvp_escape(int mode, const TCHAR *filename, const TCHAR 
         total += 1 + _tcslen(escaped_argv[i]);
     }
     escaped_argv[num_args] = NULL;
-    int ret = _tspawnvp(mode, filename, escaped_argv);
-    if (ret == -1 && total >= 32767) {
-        int err = errno;
-        fprintf(stderr, "command line too long; %d characters\n", total);
-        errno = err;
+    const TCHAR *temp_file = NULL;
+    if (total > 32000) {
+        // If we are getting close to the limit, write the arguments to
+        // a temporary response file.
+        temp_file = make_response_file(escaped_argv);
+        if (temp_file)
+            total = _tcslen(escaped_argv[0]) + _tcslen(escaped_argv[1]) + 2;
     }
+    int ret = _tspawnvp(mode, filename, escaped_argv);
+    if (temp_file)
+        DeleteFile(temp_file);
     return ret;
 }
 #else
