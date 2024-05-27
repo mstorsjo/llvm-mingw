@@ -115,6 +115,10 @@ if [ -n "$EXEEXT" ]; then
     CLANG_MAJOR=$(basename $(echo $PREFIX/lib/clang/* | awk '{print $NF}') | cut -f 1 -d .)
     WRAPPER_FLAGS="$WRAPPER_FLAGS -municode -DCLANG=\"clang-$CLANG_MAJOR\""
     WRAPPER_FLAGS="$WRAPPER_FLAGS -DCLANG_SCAN_DEPS=\"clang-scan-deps-real\""
+    # The wrappers may use printf, but doesn't use anything that specifically
+    # needs full ansi compliance - prefer leaner binaries by using the CRT
+    # implementations.
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -D__USE_MINGW_ANSI_STDIO=0"
 fi
 
 mkdir -p "$PREFIX/bin"
