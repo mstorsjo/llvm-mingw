@@ -122,8 +122,7 @@ if [ -n "$WIPE_RUNTIMES" ]; then
     # Remove the runtime code built previously.
     #
     # This roughly matches the setup as if --no-runtimes had been passed,
-    #  --no-runtimes, except that compiler-rt headers are left installed
-    # in lib/clang/*/include.
+    # except that compiler-rt headers are left installed in lib/clang/*/include.
     rm -rf $PREFIX/*-w64-mingw32 $PREFIX/lib/clang/*/lib
 fi
 if [ -n "$CLEAN_RUNTIMES" ]; then
