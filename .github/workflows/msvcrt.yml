@@ -8,6 +8,7 @@ on:
       branch:
         description: 'Branch to extract from'
         type: string
+        default: 'master'
       upload:
         description: 'Upload the artifacts'
         type: boolean

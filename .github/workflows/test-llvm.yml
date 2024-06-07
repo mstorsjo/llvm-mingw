@@ -8,6 +8,7 @@ on:
       branch:
         description: 'Branch to extract from'
         type: string
+        default: 'master'
       pipeline_type:
         description: 'Pipeline type'
         required: true
