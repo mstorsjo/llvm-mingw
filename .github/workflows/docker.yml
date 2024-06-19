@@ -1,5 +1,6 @@
 name: Build docker images
 on:
+  push:
   workflow_dispatch:
     inputs:
       ref:
@@ -17,6 +18,7 @@ on:
 
 jobs:
   prepare:
+    if: false
     runs-on: ubuntu-latest
     outputs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
@@ -36,14 +38,13 @@ jobs:
           cat $GITHUB_OUTPUT
 
   docker-build-dev:
-    needs: [prepare]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{inputs.ref}}
       - name: Log in to Docker Hub
-        if: ${{inputs.login}}
+        if: false
         uses: docker/login-action@v3
         with:
           username: ${{vars.DOCKER_USERNAME}}
@@ -52,16 +53,18 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{inputs.push}}
-          file: ./Dockerfile.dev
+          push: false
+          file: ./Dockerfile.cross
           tags: |
-            mstorsjo/llvm-mingw:dev
-            mstorsjo/llvm-mingw:dev-${{needs.prepare.outputs.TAG}}
+            mstorsjo/llvm-mingw:cross
+          build-args: |
+            WITH_PYTHON=1
       - name: Inspect Docker images
         run: |
           docker images
 
   docker-build:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
