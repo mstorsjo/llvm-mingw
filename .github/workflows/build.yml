@@ -455,9 +455,13 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
+          git clone https://github.com/llvm/llvm-project.git
+          bash -c "CHECKOUT_ONLY=1 SYNC=1 ./build-llvm.sh"
+          cd llvm-project
           git config --global user.name "LLVM MinGW"
           git config --global user.email root@localhost
-          bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
+          git cherry-pick 4fc8df9c6afa5ddcaaab91aad87bf713c592545d
+          git cherry-pick 337e633bb75640bb6e04eb874c7114dfac6fa754
       - name: Build and test libcxx
         run: |
           cd llvm-project
