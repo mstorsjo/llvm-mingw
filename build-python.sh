@@ -103,7 +103,8 @@ if [ -z "$HOST" ]; then
     cd $BUILDDIR
     ../configure --prefix="$PREFIX" \
         CFLAGS="-I$PREFIX/include" CXXFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib -Wl,-s" \
-        --without-ensurepip
+        --without-ensurepip \
+        --disable-test-modules
     $MAKE -j$CORES
     $MAKE install
     exit 0
@@ -153,11 +154,11 @@ export CXX=$HOST-g++
     --enable-shared             \
     --with-system-ffi           \
     --without-ensurepip         \
-    --without-c-locale-coercion
+    --without-c-locale-coercion \
+    --disable-test-modules
 
 $MAKE -j$CORES
 $MAKE install
-rm -rf $PREFIX/lib/python*/test
 find $PREFIX/lib/python* -name __pycache__ | xargs rm -rf
 
 # Provide a versionless executable as well; msys2 does something similar
