@@ -8,7 +8,7 @@
 # platform, but just copies over the runtime libraries from the existing
 # toolchain in the base docker image.
 
-ARG BASE=mstorsjo/llvm-mingw:dev
+ARG BASE=mstorsjo/llvm-mingw
 FROM $BASE
 
 RUN apt-get update -qq && \
