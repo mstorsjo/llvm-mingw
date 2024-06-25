@@ -1,0 +1,40 @@
+From b07d18a298f4a8a3bed1bd6b5be975c839b2e69e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 24 Jun 2024 15:10:34 +0300
+Subject: [PATCH 2/7] crt: Move wcstof.c to msvcr*.a from mingwex, prefer UCRT
+ version
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The UCRT version of wcstof should be usable on all architectures.
+
+Signed-off-by: Martin Storsjö <martin@martin.st>
+---
+ mingw-w64-crt/Makefile.am | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index 22d0d4c3d..fc7be750f 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -164,6 +164,7 @@ src_msvcrt_common=\
+   misc/onexit_table.c \
+   misc/register_tls_atexit.c \
+   misc/wcrtomb.c \
++  misc/wcstof.c \
+   stdio/_getc_nolock.c \
+   stdio/_getwc_nolock.c \
+   stdio/_putc_nolock.c \
+@@ -801,7 +802,7 @@ src_libmingwex=\
+   misc/strnlen.c         misc/strsafe.c         \
+   misc/tdelete.c         misc/tdestroy.c            misc/tfind.c           \
+   misc/tsearch.c         misc/twalk.c           \
+-  misc/wcsnlen.c         misc/wcstof.c          \
++  misc/wcsnlen.c         \
+   misc/wcstoimax.c       misc/wcstold.c             misc/wcstoumax.c        misc/wctob.c                 misc/wctrans.c         \
+   misc/wctype.c          misc/wdirent.c             misc/winbs_uint64.c     misc/winbs_ulong.c           misc/winbs_ushort.c    \
+   misc/wmemchr.c         misc/wmemcmp.c             misc/wmemcpy.c          misc/wmemmove.c              misc/wmempcpy.c        \
+-- 
+2.34.1
+

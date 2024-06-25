@@ -1,0 +1,56 @@
+From ae23dea7dd4e3e1762db0f2db239874fae6389c8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 24 Jun 2024 15:25:01 +0300
+Subject: [PATCH 6/7] crt: Move nan, nanf and nanl to msvcr*.a, and nanl to x86
+ versionf of UCRT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This allows using the UCRT version of nan and nanf on all
+architectures, and nanl on arm/aarch64.
+
+Signed-off-by: Martin Storsjö <martin@martin.st>
+---
+ mingw-w64-crt/Makefile.am | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index e1435e995..510033fd5 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -193,6 +193,7 @@ src_msvcrt_common=\
+   math/lrint.c math/lrintf.c \
+   math/lround.c math/lroundf.c \
+   math/modf.c math/modff.c \
++  math/nan.c math/nanf.c math/nanl.c \
+   math/nextafterf.c math/nextafterl.c \
+   math/nexttoward.c math/nexttowardf.c \
+   math/powf.c \
+@@ -408,6 +409,7 @@ src_ucrtbase32=\
+   math/log10f.c \
+   math/logf.c \
+   math/modff.c \
++  math/nanl.c \
+   math/powf.c \
+   math/sinhf.c \
+   math/sqrtf.c \
+@@ -428,6 +430,7 @@ src_ucrtbase32=\
+ src_ucrtbase64=\
+   $(src_ucrtbase) \
+   math/fabsf.c \
++  math/nanl.c \
+   math/nextafterl.c \
+   math/nexttoward.c math/nexttowardf.c \
+   misc/wcstold.c
+@@ -783,7 +786,6 @@ src_libmingwex=\
+   math/signbit.c        math/signbitf.c    math/signbitl.c       \
+   math/signgam.c        \
+   math/sinhl.c          math/sqrtl.c       math/tanhl.c          \
+-  math/nan.c            math/nanf.c        math/nanl.c           \
+   math/powi.def.h       math/sqrt.def.h    \
+   math/cephes_mconf.h   math/fp_consts.h   \
+   \
+-- 
+2.34.1
+

@@ -1,0 +1,57 @@
+From 0304846d879871dd4ee68ba39c5c6e5c326d7db9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 24 Jun 2024 15:07:12 +0300
+Subject: [PATCH 1/7] crt: Move rint() and rintf() to msvcr*.a for arm/aarch64
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This moves the ARM specific versions of these functions to msvcr*.a,
+preferring using the version from UCRT.
+
+Signed-off-by: Martin Storsjö <martin@martin.st>
+---
+ mingw-w64-crt/Makefile.am | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index 71960488f..22d0d4c3d 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -266,11 +266,13 @@ src_msvcrt_common_add_arm=\
+ 
+ # Arch specific files included in all libmsvcr*.a on arm32
+ src_msvcrt_common_add_arm32=\
+-  $(src_msvcrt_common_add_arm)
++  $(src_msvcrt_common_add_arm) \
++  math/arm/s_rint.c math/arm/s_rintf.c
+ 
+ # Arch specific files included in all libmsvcr*.a on arm64
+ src_msvcrt_common_add_arm64=\
+-  $(src_msvcrt_common_add_arm)
++  $(src_msvcrt_common_add_arm) \
++  math/arm64/rint.c math/arm64/rintf.c
+ 
+ # Files included in all libmsvcr*.a on x86_32
+ src_msvcrt_common32=\
+@@ -864,8 +866,7 @@ src_libmingwex64=$(src_libmingwex_x86)
+ 
+ # these only go into the ARM32 version:
+ src_libmingwexarm32=\
+-  math/arm/_chgsignl.S \
+-  math/arm/s_rint.c         math/arm/s_rintf.c
++  math/arm/_chgsignl.S
+ 
+ if ENABLE_SOFTMATH
+ src_libmingwexarm32+=\
+@@ -893,7 +894,6 @@ endif
+ # these only go into the ARM64 version:
+ src_libmingwexarm64=\
+   math/arm64/_chgsignl.S \
+-  math/arm64/rint.c         math/arm64/rintf.c \
+   math/arm64/sincos.S       math/arm64/sincosf.S \
+   math/arm-common/ldexpl.c
+ 
+-- 
+2.34.1
+

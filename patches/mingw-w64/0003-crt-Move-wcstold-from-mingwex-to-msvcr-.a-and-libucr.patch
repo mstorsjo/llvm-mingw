@@ -1,0 +1,61 @@
+From f67724fa01b7d16858589352089792aeb1d54250 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 24 Jun 2024 15:13:19 +0300
+Subject: [PATCH 3/7] crt: Move wcstold from mingwex to msvcr*.a, and
+ libucrt*.a on x86
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The long double functions in UCRT can be used on arm/aarch64, but not
+on x86; prefer the UCRT implementation of wcstold.
+
+Signed-off-by: Martin Storsjö <martin@martin.st>
+---
+ mingw-w64-crt/Makefile.am | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index fc7be750f..bbc5f311b 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -164,7 +164,7 @@ src_msvcrt_common=\
+   misc/onexit_table.c \
+   misc/register_tls_atexit.c \
+   misc/wcrtomb.c \
+-  misc/wcstof.c \
++  misc/wcstof.c misc/wcstold.c \
+   stdio/_getc_nolock.c \
+   stdio/_getwc_nolock.c \
+   stdio/_putc_nolock.c \
+@@ -421,14 +421,16 @@ src_ucrtbase32=\
+   math/x86/floorf.S \
+   math/x86/fmodf.c \
+   math/x86/sinf.c \
+-  math/x86/tanf.c
++  math/x86/tanf.c \
++  misc/wcstold.c
+ 
+ # Files included in libucrt*.a on x86_64
+ src_ucrtbase64=\
+   $(src_ucrtbase) \
+   math/fabsf.c \
+   math/nextafterl.c \
+-  math/nexttoward.c math/nexttowardf.c
++  math/nexttoward.c math/nexttowardf.c \
++  misc/wcstold.c
+ 
+ # Files included in libucrt*.a on arm32
+ src_ucrtbasearm32=\
+@@ -803,7 +805,7 @@ src_libmingwex=\
+   misc/tdelete.c         misc/tdestroy.c            misc/tfind.c           \
+   misc/tsearch.c         misc/twalk.c           \
+   misc/wcsnlen.c         \
+-  misc/wcstoimax.c       misc/wcstold.c             misc/wcstoumax.c        misc/wctob.c                 misc/wctrans.c         \
++  misc/wcstoimax.c       misc/wcstoumax.c           misc/wctob.c            misc/wctrans.c         \
+   misc/wctype.c          misc/wdirent.c             misc/winbs_uint64.c     misc/winbs_ulong.c           misc/winbs_ushort.c    \
+   misc/wmemchr.c         misc/wmemcmp.c             misc/wmemcpy.c          misc/wmemmove.c              misc/wmempcpy.c        \
+   misc/wmemset.c         misc/ftw.c                 misc/ftw64.c            misc/mingw-access.c          \
+-- 
+2.34.1
+

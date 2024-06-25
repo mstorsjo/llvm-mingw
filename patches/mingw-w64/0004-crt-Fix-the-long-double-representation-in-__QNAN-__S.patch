@@ -1,0 +1,43 @@
+From 96d687b4ed3d4a0f1b04e37a2f3af30023520bf5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 24 Jun 2024 15:18:52 +0300
+Subject: [PATCH 4/7] crt: Fix the long double representation in
+ __QNAN/__SNAN/__INF/__DENORM for arm/aarch64
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+In practice, little uses these constants though; since
+7d929f711d3e6cd757b3dc3ddcd66f8bd6f0c77b, the implementation of
+nanl() hasn't used these constants on arm/aarch64.
+
+Signed-off-by: Martin Storsjö <martin@martin.st>
+---
+ mingw-w64-crt/math/fp_constsl.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/mingw-w64-crt/math/fp_constsl.c b/mingw-w64-crt/math/fp_constsl.c
+index 880408209..fa422110b 100644
+--- a/mingw-w64-crt/math/fp_constsl.c
++++ b/mingw-w64-crt/math/fp_constsl.c
+@@ -6,10 +6,17 @@
+ #include "fp_consts.h"
+ #include <math.h>
+ 
++#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++const union _ieee_rep __QNAN = { __DOUBLE_QNAN_REP };
++const union _ieee_rep __SNAN = { __DOUBLE_SNAN_REP };
++const union _ieee_rep __INF =  { __DOUBLE_INF_REP };
++const union _ieee_rep __DENORM = { __DOUBLE_DENORM_REP };
++#else
+ const union _ieee_rep __QNANL = { __LONG_DOUBLE_QNAN_REP };
+ const union _ieee_rep __SNANL = { __LONG_DOUBLE_SNAN_REP };
+ const union _ieee_rep __INFL  = { __LONG_DOUBLE_INF_REP };
+ const union _ieee_rep __DENORML = { __LONG_DOUBLE_DENORM_REP };
++#endif
+ 
+ #undef nanl
+ /* FIXME */
+-- 
+2.34.1
+
