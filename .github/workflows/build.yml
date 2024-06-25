@@ -200,7 +200,7 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          brew install ninja gnu-tar
+          brew install ninja
           # Disable zstd and python. Both are available on the runners, but
           # installed with homebrew, and only available in the native (x86_64)
           # form. Therefore, autodetection will pick them up, but linking
