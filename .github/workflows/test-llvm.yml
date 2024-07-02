@@ -1,5 +1,6 @@
 name: Run LLVM tests
 on:
+  push:
   workflow_dispatch:
     inputs:
       commit:
@@ -28,10 +29,9 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build.yml
-          workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: ${{inputs.pipeline_type}}
+          workflow_conclusion: ""
+          branch: master
+          event: schedule
           name: parameters
       - name: Get build parameters
         id: get-parameters
@@ -50,10 +50,9 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: build.yml
-          workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: ${{inputs.pipeline_type}}
+          workflow_conclusion: ""
+          branch: master
+          event: schedule
           name: windows-ucrt-x86_64-toolchain
       - name: Unpack toolchain
         run: |
