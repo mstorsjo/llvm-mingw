@@ -1,0 +1,308 @@
+From e37376c4e8e2c77a2b98449a5b1aadfa5b6d675b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 9 Jul 2024 00:41:19 +0300
+Subject: [PATCH 3/3] [llvm-dlltool] Fix renamed imports without a separate
+ regular import entry
+
+Normally, when doing renamed imports, we do this by providing a
+weak alias, towards another regular import, for the symbol we
+want to actually import. In a def file, this looks like this:
+
+    regularfunc
+    renamedfunc == regularfunc
+
+However, if we want to link against a function in a DLL, where we
+(intentionally) don't provide a regular import for that symbol
+with the name in its DLL, doing the renamed import with a weak
+alias doesn't work, as there's no symbol that the weak alias can
+point towards.
+
+We can't make up such an import either, as we may intentionally
+not want to provide a regular import for that name.
+
+This situation can either be resolved by using the "long" import
+library format (as e.g. produced by GNU dlltool), or by using the
+new short import library name type "export as".
+
+This patch implements it by using the "export as" name type.
+
+When producing a renamed import, defer emitting it until all regular
+imports have been produced. If the renamed import refers to a
+symbol that does exist as a regular import entry, produce a
+weak alias, just as before. (This implementation also avoids needing
+to know whether the symbol that the alias points towards actually
+is prefixed or not, too.)
+
+If the renamed import points at a symbol that isn't otherwise
+available (or is available as a renamed symbol itself), generate
+an "export as" import entry.
+
+This name type is new, and is normally used in ARM64EC import
+libraries, but can also be used for other architectures.
+---
+ lld/test/COFF/lib.test                        | 16 +++----
+ llvm/include/llvm/Object/COFFImportFile.h     |  9 ++--
+ llvm/lib/Object/COFFImportFile.cpp            | 42 ++++++++++++++-----
+ .../llvm-dlltool/DlltoolDriver.cpp            |  5 +--
+ .../tools/llvm-dlltool/coff-decorated.def     |  2 +-
+ .../tools/llvm-dlltool/coff-weak-exports.def  | 15 +++++--
+ llvm/test/tools/llvm-dlltool/renaming.def     | 39 +++++++++++++++++
+ 7 files changed, 96 insertions(+), 32 deletions(-)
+ create mode 100644 llvm/test/tools/llvm-dlltool/renaming.def
+
+diff --git a/lld/test/COFF/lib.test b/lld/test/COFF/lib.test
+index 7525ef4226cd..82abca6ec930 100644
+--- a/lld/test/COFF/lib.test
++++ b/lld/test/COFF/lib.test
+@@ -1,6 +1,14 @@
+ # RUN: lld-link /machine:x64 /def:%S/Inputs/library.def /out:%t.lib
+ # RUN: llvm-nm %t.lib | FileCheck %s
+ 
++CHECK: 00000000 R __imp_constant
++CHECK: 00000000 R constant
++
++CHECK: 00000000 D __imp_data
++
++CHECK: 00000000 T __imp_function
++CHECK: 00000000 T function
++
+ CHECK: 00000000 a @comp.id
+ CHECK: 00000000 a @feat.00
+ CHECK: 00000000 W alias
+@@ -11,11 +19,3 @@ CHECK: 00000000 a @feat.00
+ CHECK: 00000000 W __imp_alias
+ CHECK:          U __imp_function
+ 
+-CHECK: 00000000 R __imp_constant
+-CHECK: 00000000 R constant
+-
+-CHECK: 00000000 D __imp_data
+-
+-CHECK: 00000000 T __imp_function
+-CHECK: 00000000 T function
+-
+diff --git a/llvm/include/llvm/Object/COFFImportFile.h b/llvm/include/llvm/Object/COFFImportFile.h
+index e91d5a9b3198..649fb4930934 100644
+--- a/llvm/include/llvm/Object/COFFImportFile.h
++++ b/llvm/include/llvm/Object/COFFImportFile.h
+@@ -135,11 +135,10 @@ struct COFFShortExport {
+ /// linking both ARM64EC and pure ARM64 objects, and the linker will pick only
+ /// the exports relevant to the target platform. For non-hybrid targets,
+ /// the NativeExports parameter should not be used.
+-Error writeImportLibrary(StringRef ImportName, StringRef Path,
+-                         ArrayRef<COFFShortExport> Exports,
+-                         COFF::MachineTypes Machine, bool MinGW,
+-                         ArrayRef<COFFShortExport> NativeExports = std::nullopt,
+-                         bool AddUnderscores = true);
++Error writeImportLibrary(
++    StringRef ImportName, StringRef Path, ArrayRef<COFFShortExport> Exports,
++    COFF::MachineTypes Machine, bool MinGW,
++    ArrayRef<COFFShortExport> NativeExports = std::nullopt);
+ 
+ } // namespace object
+ } // namespace llvm
+diff --git a/llvm/lib/Object/COFFImportFile.cpp b/llvm/lib/Object/COFFImportFile.cpp
+index 1ddc5d954de6..a44ff2d5a742 100644
+--- a/llvm/lib/Object/COFFImportFile.cpp
++++ b/llvm/lib/Object/COFFImportFile.cpp
+@@ -12,6 +12,8 @@
+ 
+ #include "llvm/Object/COFFImportFile.h"
+ #include "llvm/ADT/ArrayRef.h"
++#include "llvm/ADT/SmallVector.h"
++#include "llvm/ADT/StringMap.h"
+ #include "llvm/ADT/Twine.h"
+ #include "llvm/Object/Archive.h"
+ #include "llvm/Object/ArchiveWriter.h"
+@@ -657,8 +659,7 @@ NewArchiveMember ObjectFactory::createWeakExternal(StringRef Sym,
+ Error writeImportLibrary(StringRef ImportName, StringRef Path,
+                          ArrayRef<COFFShortExport> Exports,
+                          MachineTypes Machine, bool MinGW,
+-                         ArrayRef<COFFShortExport> NativeExports,
+-                         bool AddUnderscores) {
++                         ArrayRef<COFFShortExport> NativeExports) {
+ 
+   MachineTypes NativeMachine = Machine;
+   if (isArm64EC(Machine)) {
+@@ -680,6 +681,13 @@ Error writeImportLibrary(StringRef ImportName, StringRef Path,
+ 
+   auto addExports = [&](ArrayRef<COFFShortExport> Exp,
+                         MachineTypes M) -> Error {
++    StringMap<std::string> RegularImports;
++    struct Deferred {
++      std::string Name;
++      ImportType ImpType;
++      const COFFShortExport *Export;
++    };
++    SmallVector<Deferred, 0> Renames;
+     for (const COFFShortExport &E : Exp) {
+       if (E.Private)
+         continue;
+@@ -724,15 +732,11 @@ Error writeImportLibrary(StringRef ImportName, StringRef Path,
+         else if (Name == E.ImportName)
+           NameType = IMPORT_NAME;
+         else {
+-          StringRef Prefix = "";
+-          if (Machine == IMAGE_FILE_MACHINE_I386 && AddUnderscores)
+-            Prefix = "_";
+-
+-          if (ImportType == IMPORT_CODE)
+-            Members.push_back(OF.createWeakExternal(
+-                (Prefix + E.ImportName).str(), Name, false, M));
+-          Members.push_back(OF.createWeakExternal((Prefix + E.ImportName).str(),
+-                                                  Name, true, M));
++          Deferred D;
++          D.Name = Name;
++          D.ImpType = ImportType;
++          D.Export = &E;
++          Renames.push_back(D);
+           continue;
+         }
+       } else {
+@@ -754,9 +758,25 @@ Error writeImportLibrary(StringRef ImportName, StringRef Path,
+         }
+       }
+ 
++      RegularImports[applyNameType(NameType, Name)] = Name;
+       Members.push_back(OF.createShortImport(Name, E.Ordinal, ImportType,
+                                              NameType, ExportName, M));
+     }
++    for (const auto &D : Renames) {
++      auto It = RegularImports.find(D.Export->ImportName);
++      if (It != RegularImports.end()) {
++        // We have a regular import entry for a symbol with the name we
++        // want to reference; produce an alias pointing at that.
++        StringRef Symbol = It->second;
++        if (D.ImpType == IMPORT_CODE)
++          Members.push_back(OF.createWeakExternal(Symbol, D.Name, false, M));
++        Members.push_back(OF.createWeakExternal(Symbol, D.Name, true, M));
++      } else {
++        Members.push_back(OF.createShortImport(
++            D.Name, D.Export->Ordinal, D.ImpType, IMPORT_NAME_EXPORTAS,
++            D.Export->ImportName, M));
++      }
++    }
+     return Error::success();
+   };
+ 
+diff --git a/llvm/lib/ToolDrivers/llvm-dlltool/DlltoolDriver.cpp b/llvm/lib/ToolDrivers/llvm-dlltool/DlltoolDriver.cpp
+index 012ad246888f..15e4cac08cd4 100644
+--- a/llvm/lib/ToolDrivers/llvm-dlltool/DlltoolDriver.cpp
++++ b/llvm/lib/ToolDrivers/llvm-dlltool/DlltoolDriver.cpp
+@@ -243,9 +243,8 @@ int llvm::dlltoolDriverMain(llvm::ArrayRef<const char *> ArgsArr) {
+   }
+ 
+   std::string Path = std::string(Args.getLastArgValue(OPT_l));
+-  if (!Path.empty() &&
+-      writeImportLibrary(OutputFile, Path, Exports, Machine,
+-                         /*MinGW=*/true, NativeExports, AddUnderscores))
++  if (!Path.empty() && writeImportLibrary(OutputFile, Path, Exports, Machine,
++                                          /*MinGW=*/true, NativeExports))
+     return 1;
+   return 0;
+ }
+diff --git a/llvm/test/tools/llvm-dlltool/coff-decorated.def b/llvm/test/tools/llvm-dlltool/coff-decorated.def
+index 773e3762cc3d..f5685fb1cf0c 100644
+--- a/llvm/test/tools/llvm-dlltool/coff-decorated.def
++++ b/llvm/test/tools/llvm-dlltool/coff-decorated.def
+@@ -7,7 +7,7 @@ EXPORTS
+ CdeclFunction
+ StdcallFunction@4
+ @FastcallFunction@4
+-StdcallAlias@4==StdcallFunction@4
++StdcallAlias@4==StdcallFunction
+ ??_7exception@@6B@
+ StdcallExportName@4=StdcallInternalFunction@4
+ OtherStdcallExportName@4=CdeclInternalFunction
+diff --git a/llvm/test/tools/llvm-dlltool/coff-weak-exports.def b/llvm/test/tools/llvm-dlltool/coff-weak-exports.def
+index 67f0013bf170..b08040e29fa4 100644
+--- a/llvm/test/tools/llvm-dlltool/coff-weak-exports.def
++++ b/llvm/test/tools/llvm-dlltool/coff-weak-exports.def
+@@ -5,6 +5,9 @@
+ 
+ LIBRARY test.dll
+ EXPORTS
++AltTestFunction
++AltTestFunction2
++AltTestData
+ TestFunction==AltTestFunction
+ TestData DATA == AltTestData
+ ; When creating an import library, the DLL internal function name of
+@@ -17,6 +20,14 @@ ImpLibName2 = Implementation2 == AltTestFunction2
+ ; matter for the import library
+ ImpLibName3 = kernel32.Sleep
+ 
++; CHECK:      T AltTestFunction
++; CHECK-NEXT: T __imp_AltTestFunction
++; CHECK:      T AltTestFunction2
++; CHECK-NEXT: T __imp_AltTestFunction2
++; CHECK:      T ImpLibName
++; CHECK-NEXT: T __imp_ImpLibName
++; CHECK:      T ImpLibName3
++; CHECK-NEXT: T __imp_ImpLibName3
+ ; CHECK:      U AltTestFunction
+ ; CHECK-NEXT: W TestFunction
+ ; CHECK:      U __imp_AltTestFunction
+@@ -24,14 +35,10 @@ ImpLibName3 = kernel32.Sleep
+ ; CHECK-NOT:  W TestData
+ ; CHECK:      U __imp_AltTestData
+ ; CHECK-NEXT: W __imp_TestData
+-; CHECK:      T ImpLibName
+-; CHECK-NEXT: T __imp_ImpLibName
+ ; CHECK:      U AltTestFunction2
+ ; CHECK-NEXT: W ImpLibName2
+ ; CHECK:      U __imp_AltTestFunction2
+ ; CHECK-NEXT: W __imp_ImpLibName2
+-; CHECK:      T ImpLibName3
+-; CHECK-NEXT: T __imp_ImpLibName3
+ 
+ ; ARCH-NOT: unknown arch
+ 
+diff --git a/llvm/test/tools/llvm-dlltool/renaming.def b/llvm/test/tools/llvm-dlltool/renaming.def
+new file mode 100644
+index 000000000000..57fd472aa37c
+--- /dev/null
++++ b/llvm/test/tools/llvm-dlltool/renaming.def
+@@ -0,0 +1,39 @@
++; RUN: llvm-dlltool -k -m i386 --input-def %s --output-lib %t.a
++; RUN: llvm-readobj %t.a | FileCheck %s
++; RUN: llvm-nm %t.a | FileCheck %s -check-prefix=CHECK-NM
++
++LIBRARY test.dll
++EXPORTS
++
++symbolname == actualimport
++
++dataname DATA == actualdata
++
++_wcstok == wcstok
++wcstok == wcstok_s
++
++; CHECK-NM-NOT: actualimport
++; CHECK-NM-NOT: actualdata
++
++; CHECK:      Type: code
++; CHECK-NEXT: Name type: export as
++; CHECK-NEXT: Export name: actualimport
++; CHECK-NEXT: Symbol: __imp__symbolname
++; CHECK-NEXT: Symbol: _symbolname
++
++; CHECK:      Type: data
++; CHECK-NEXT: Name type: export as
++; CHECK-NEXT: Export name: actualdata
++; CHECK-NEXT: Symbol: __imp__dataname
++
++; CHECK:      Type: code
++; CHECK-NEXT: Name type: export as
++; CHECK-NEXT: Export name: wcstok
++; CHECK-NEXT: Symbol: __imp___wcstok
++; CHECK-NEXT: Symbol: __wcstok
++
++; CHECK:      Type: code
++; CHECK-NEXT: Name type: export as
++; CHECK-NEXT: Export name: wcstok_s
++; CHECK-NEXT: Symbol: __imp__wcstok
++; CHECK-NEXT: Symbol: _wcstok
+-- 
+2.25.1
+
