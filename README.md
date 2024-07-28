@@ -119,9 +119,6 @@ normal GCC/binutils based MinGW.
   variables.
 - The runtime libraries libunwind, libcxxabi and libcxx also assume that the
   target is Windows 7 or newer.
-- Address Sanitizer doesn't produce working backtraces for i686. Address
-  Sanitizer requires using a PDB file for symbolizing the error location and
-  backtraces.
 - The sanitizers are only supported on x86.
 - LLD doesn't support linker script (in the COFF part of LLD). Linker script can be used for
   reprogramming how the linker lays out the output, but is in most cases
