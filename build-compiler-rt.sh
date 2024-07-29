@@ -130,8 +130,15 @@ for arch in $ARCHS; do
     if [ -n "$SANITIZERS" ]; then
         mv "${WORKDIR}/install/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
+    INSTALLED=1
     cd ..
 done
+
+if [ -z "$INSTALLED" ]; then
+    # Don't try to move the installed files in place, if nothing was
+    # installed (e.g. if building with --build-sanitizers but not for x86).
+    exit 0
+fi
 
 if [ -h "$CLANG_RESOURCE_DIR/include" ]; then
     # symlink to system headers - skip copy
