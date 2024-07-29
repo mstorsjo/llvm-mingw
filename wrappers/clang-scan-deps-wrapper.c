@@ -94,9 +94,6 @@ int _tmain(int argc, TCHAR *argv[]) {
             exec_argv[arg++] = _T("-target");
             exec_argv[arg++] = target;
         }
-        if (target || has_target) {
-            exec_argv[arg++] = _T("-stdlib=libc++");
-        }
     }
 
     for (; i < argc; i++)
