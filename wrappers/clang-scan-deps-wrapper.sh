@@ -59,7 +59,7 @@ if [ -n "$CMD_EXE" ]; then
 fi
 
 if [ -n "$IS_CLANG" ]; then
-    "$EXE" "${FLAGS[@]}" -stdlib=libc++ "$@"
+    "$EXE" "${FLAGS[@]}" "$@"
 else
     "$EXE" "${FLAGS[@]}" "$@"
 fi
