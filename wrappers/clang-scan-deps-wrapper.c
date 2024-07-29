@@ -92,6 +92,7 @@ int _tmain(int argc, TCHAR *argv[]) {
             // -target after cmd_exe.
             exec_argv[arg++] = _T("-target");
             exec_argv[arg++] = target;
+            exec_argv[arg++] = _T("-stdlib=libc++");
         }
     }
 

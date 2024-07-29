@@ -60,7 +60,7 @@ if [ -n "$CMD_EXE" ]; then
 fi
 
 if [ -n "$TARGET" ]; then
-    "$EXE" "${FLAGS[@]}" "$CMD_EXE" -target $TARGET "$@"
+    "$EXE" "${FLAGS[@]}" "$CMD_EXE" -target $TARGET -stdlib=libc++ "$@"
 else
     "$EXE" "${FLAGS[@]}" "$@"
 fi
