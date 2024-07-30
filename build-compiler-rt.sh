@@ -57,7 +57,7 @@ mkdir -p "$PREFIX"
 PREFIX="$(cd "$PREFIX" && pwd)"
 export PATH="$PREFIX/bin:$PATH"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64 arm64ec}}
 
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
 CLANG_RESOURCE_DIR="$("$PREFIX/bin/$ANY_ARCH-w64-mingw32-clang" --print-resource-dir)"
