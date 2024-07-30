@@ -1,0 +1,29 @@
+From d6c027a39e62a94b3305dc84dcd0368b7584d06b Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Mon, 18 Mar 2024 21:37:48 +0000
+Subject: [PATCH 7/9] [clang] always allow naked attribute
+
+---
+ clang/lib/Sema/SemaDeclAttr.cpp | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/clang/lib/Sema/SemaDeclAttr.cpp b/clang/lib/Sema/SemaDeclAttr.cpp
+index bc858c63f69b..4ea378d46305 100644
+--- a/clang/lib/Sema/SemaDeclAttr.cpp
++++ b/clang/lib/Sema/SemaDeclAttr.cpp
+@@ -1952,12 +1952,6 @@ static void handleNakedAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
+   if (AL.isDeclspecAttribute()) {
+     const auto &Triple = S.getASTContext().getTargetInfo().getTriple();
+     const auto &Arch = Triple.getArch();
+-    if (Arch != llvm::Triple::x86 &&
+-        (Arch != llvm::Triple::arm && Arch != llvm::Triple::thumb)) {
+-      S.Diag(AL.getLoc(), diag::err_attribute_not_supported_on_arch)
+-          << AL << Triple.getArchName();
+-      return;
+-    }
+ 
+     // This form is not allowed to be written on a member function (static or
+     // nonstatic) when in Microsoft compatibility mode.
+-- 
+2.25.1
+

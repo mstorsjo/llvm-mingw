@@ -1,0 +1,191 @@
+From fc81dcbb8ebd2d886eb7fcb69ea446945367e8d4 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 17:29:08 +0100
+Subject: [PATCH 3/9] [compiler-rt] Use aarch64 builtin variants for ARM64EC
+
+When targeting ARM64EC, __x86_64__ is defined and __aarch64__ is not
+defined, so all uses of these macros to guard assembly need to be
+special cased.
+---
+ compiler-rt/lib/builtins/aarch64/chkstk.S    | 14 ++++++++++----
+ compiler-rt/lib/builtins/aarch64/lse.S       |  4 ++--
+ compiler-rt/lib/builtins/assembly.h          |  2 +-
+ compiler-rt/lib/builtins/clear_cache.c       |  8 +++++---
+ compiler-rt/lib/builtins/cpu_model/aarch64.c |  2 +-
+ compiler-rt/lib/builtins/crtbegin.c          |  4 ++--
+ compiler-rt/lib/builtins/fp_compare_impl.inc |  2 +-
+ compiler-rt/lib/builtins/fp_lib.h            |  2 +-
+ compiler-rt/lib/builtins/udivmodti4.c        |  2 +-
+ 9 files changed, 24 insertions(+), 16 deletions(-)
+
+diff --git a/compiler-rt/lib/builtins/aarch64/chkstk.S b/compiler-rt/lib/builtins/aarch64/chkstk.S
+index 01f90366f030..563c09ecbc39 100644
+--- a/compiler-rt/lib/builtins/aarch64/chkstk.S
++++ b/compiler-rt/lib/builtins/aarch64/chkstk.S
+@@ -15,12 +15,18 @@
+ //      bl      __chkstk
+ //      sub     sp, sp, x15, lsl #4
+ 
+-#ifdef __aarch64__
++#if defined(__aarch64__) || defined(__arm64ec__)
++
++#ifdef __arm64ec__
++#define CHKSTK_FUNC __chkstk_arm64ec
++#else
++#define CHKSTK_FUNC __chkstk
++#endif
+ 
+ #define PAGE_SIZE 4096
+ 
+         .p2align 2
+-DEFINE_COMPILERRT_FUNCTION(__chkstk)
++DEFINE_COMPILERRT_FUNCTION(CHKSTK_FUNC)
+         lsl    x16, x15, #4
+         mov    x17, sp
+ 1:
+@@ -30,6 +36,6 @@ DEFINE_COMPILERRT_FUNCTION(__chkstk)
+         b.gt   1b
+ 
+         ret
+-END_COMPILERRT_FUNCTION(__chkstk)
++END_COMPILERRT_FUNCTION(CHKSTK_FUNC)
+ 
+-#endif // __aarch64__
++#endif // defined(__aarch64__) || defined(__arm64ec__)
+diff --git a/compiler-rt/lib/builtins/aarch64/lse.S b/compiler-rt/lib/builtins/aarch64/lse.S
+index 1fe18f4a4681..d7c1db7243ef 100644
+--- a/compiler-rt/lib/builtins/aarch64/lse.S
++++ b/compiler-rt/lib/builtins/aarch64/lse.S
+@@ -20,7 +20,7 @@
+ // Routines may modify temporary registers tmp0, tmp1, tmp2,
+ // return value x0 and the flags only.
+ 
+-#ifdef __aarch64__
++#if defined(__aarch64__) || defined(__arm64ec__)
+ 
+ #ifdef HAS_ASM_LSE
+ .arch armv8-a+lse
+@@ -267,4 +267,4 @@ NO_EXEC_STACK_DIRECTIVE
+ // GNU property note for BTI and PAC
+ GNU_PROPERTY_BTI_PAC
+ 
+-#endif // __aarch64__
++#endif // defined(__aarch64__) || defined(__arm64ec__)
+diff --git a/compiler-rt/lib/builtins/assembly.h b/compiler-rt/lib/builtins/assembly.h
+index 7028d01f93ba..0cdce0f72854 100644
+--- a/compiler-rt/lib/builtins/assembly.h
++++ b/compiler-rt/lib/builtins/assembly.h
+@@ -71,7 +71,7 @@
+ 
+ #endif
+ 
+-#if defined(__arm__) || defined(__aarch64__)
++#if defined(__arm__) || defined(__aarch64__) || defined(__arm64ec__)
+ #define FUNC_ALIGN                                                             \
+   .text SEPARATOR                                                              \
+   .balign 16 SEPARATOR
+diff --git a/compiler-rt/lib/builtins/clear_cache.c b/compiler-rt/lib/builtins/clear_cache.c
+index 2ac99b25c243..41bc386129f5 100644
+--- a/compiler-rt/lib/builtins/clear_cache.c
++++ b/compiler-rt/lib/builtins/clear_cache.c
+@@ -59,10 +59,12 @@ uintptr_t GetCurrentProcess(void);
+ // specified range.
+ 
+ void __clear_cache(void *start, void *end) {
+-#if __i386__ || __x86_64__ || defined(_M_IX86) || defined(_M_X64)
++#if defined(__i386__) || (defined(__x86_64__) && !defined(__arm64ec__)) ||     \
++    defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+ // Intel processors have a unified instruction and data cache
+ // so there is nothing to do
+-#elif defined(_WIN32) && (defined(__arm__) || defined(__aarch64__))
++#elif defined(_WIN32) &&                                                       \
++    (defined(__arm__) || defined(__aarch64__) || defined(__arm64ec__))
+   FlushInstructionCache(GetCurrentProcess(), start, end - start);
+ #elif defined(__arm__) && !defined(__APPLE__)
+ #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+@@ -120,7 +122,7 @@ void __clear_cache(void *start, void *end) {
+     compilerrt_abort();
+ #endif
+   }
+-#elif defined(__aarch64__) && !defined(__APPLE__)
++#elif (defined(__aarch64__) || defined(__arm64ec__)) && !defined(__APPLE__)
+   uint64_t xstart = (uint64_t)(uintptr_t)start;
+   uint64_t xend = (uint64_t)(uintptr_t)end;
+ 
+diff --git a/compiler-rt/lib/builtins/cpu_model/aarch64.c b/compiler-rt/lib/builtins/cpu_model/aarch64.c
+index 4082fd62ea11..e29aa0058859 100644
+--- a/compiler-rt/lib/builtins/cpu_model/aarch64.c
++++ b/compiler-rt/lib/builtins/cpu_model/aarch64.c
+@@ -14,7 +14,7 @@
+ 
+ #include "aarch64.h"
+ 
+-#if !defined(__aarch64__) && !defined(__arm64__) && !defined(_M_ARM64)
++#if !(defined(__aarch64__) || defined(_M_ARM64) || defined(__arm64ec__) || defined(_M_ARM64EC))
+ #error This file is intended only for aarch64-based targets
+ #endif
+ 
+diff --git a/compiler-rt/lib/builtins/crtbegin.c b/compiler-rt/lib/builtins/crtbegin.c
+index d5f7756308b0..cb3202f80b61 100644
+--- a/compiler-rt/lib/builtins/crtbegin.c
++++ b/compiler-rt/lib/builtins/crtbegin.c
+@@ -70,7 +70,7 @@ __attribute__((section(".init_array"), used)) static void *__init =
+ __attribute__((section(".init_array"),
+                used)) static void (*__init)(void) = __do_init;
+ #endif
+-#elif defined(__i386__) || defined(__x86_64__)
++#elif defined(__i386__) || (defined(__x86_64__) && !defined(__arm64ec__))
+ __asm__(".pushsection .init,\"ax\",@progbits\n\t"
+         "call __do_init\n\t"
+         ".popsection");
+@@ -141,7 +141,7 @@ __attribute__((section(".fini_array"), used)) static void *__fini =
+ __attribute__((section(".fini_array"),
+                used)) static void (*__fini)(void) = __do_fini;
+ #endif
+-#elif defined(__i386__) || defined(__x86_64__)
++#elif defined(__i386__) || (defined(__x86_64__) && !defined(__arm64ec__))
+ __asm__(".pushsection .fini,\"ax\",@progbits\n\t"
+         "call __do_fini\n\t"
+         ".popsection");
+diff --git a/compiler-rt/lib/builtins/fp_compare_impl.inc b/compiler-rt/lib/builtins/fp_compare_impl.inc
+index a9a4f6fbf5df..f883338c471d 100644
+--- a/compiler-rt/lib/builtins/fp_compare_impl.inc
++++ b/compiler-rt/lib/builtins/fp_compare_impl.inc
+@@ -12,7 +12,7 @@
+ // functions. We need to ensure that the return value is sign-extended in the
+ // same way as GCC expects (since otherwise GCC-generated __builtin_isinf
+ // returns true for finite 128-bit floating-point numbers).
+-#ifdef __aarch64__
++#if defined(__aarch64__) || defined(__arm64ec__)
+ // AArch64 GCC overrides libgcc_cmp_return to use int instead of long.
+ typedef int CMP_RESULT;
+ #elif __SIZEOF_POINTER__ == 8 && __SIZEOF_LONG__ == 4
+diff --git a/compiler-rt/lib/builtins/fp_lib.h b/compiler-rt/lib/builtins/fp_lib.h
+index fae58497a8f8..95b24aac1ff1 100644
+--- a/compiler-rt/lib/builtins/fp_lib.h
++++ b/compiler-rt/lib/builtins/fp_lib.h
+@@ -359,7 +359,7 @@ static __inline fp_t __compiler_rt_scalbn(fp_t x, int y) {
+   return __compiler_rt_scalbnX(x, y);
+ }
+ static __inline fp_t __compiler_rt_fmax(fp_t x, fp_t y) {
+-#if defined(__aarch64__)
++#if defined(__aarch64__) || defined(__arm64ec__)
+   // Use __builtin_fmax which turns into an fmaxnm instruction on AArch64.
+   return __builtin_fmax(x, y);
+ #else
+diff --git a/compiler-rt/lib/builtins/udivmodti4.c b/compiler-rt/lib/builtins/udivmodti4.c
+index 55def37c9e1f..6ce213fd5f2a 100644
+--- a/compiler-rt/lib/builtins/udivmodti4.c
++++ b/compiler-rt/lib/builtins/udivmodti4.c
+@@ -83,7 +83,7 @@ static inline du_int udiv128by64to64default(du_int u1, du_int u0, du_int v,
+ 
+ static inline du_int udiv128by64to64(du_int u1, du_int u0, du_int v,
+                                      du_int *r) {
+-#if defined(__x86_64__)
++#if defined(__x86_64__) && !defined(__arm64ec__)
+   du_int result;
+   __asm__("divq %[v]"
+           : "=a"(result), "=d"(*r)
+-- 
+2.25.1
+

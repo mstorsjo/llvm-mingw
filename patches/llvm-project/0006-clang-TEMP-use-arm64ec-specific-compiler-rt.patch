@@ -1,0 +1,26 @@
+From b88dbf254b669e9f9bd3fad23a1b999ad19cc22e Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Wed, 18 Oct 2023 21:15:15 +0100
+Subject: [PATCH 6/9] [clang] TEMP: use arm64ec specific compiler-rt
+
+---
+ clang/lib/Driver/ToolChain.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/clang/lib/Driver/ToolChain.cpp b/clang/lib/Driver/ToolChain.cpp
+index 5f75d004eede..3458633a6555 100644
+--- a/clang/lib/Driver/ToolChain.cpp
++++ b/clang/lib/Driver/ToolChain.cpp
+@@ -686,6 +686,9 @@ static StringRef getArchNameForCompilerRTLib(const ToolChain &TC,
+   if (TC.getArch() == llvm::Triple::x86_64 && Triple.isX32())
+     return "x32";
+ 
++  if (Triple.isWindowsArm64EC())
++    return "arm64ec";
++
+   return llvm::Triple::getArchTypeName(TC.getArch());
+ }
+ 
+-- 
+2.25.1
+

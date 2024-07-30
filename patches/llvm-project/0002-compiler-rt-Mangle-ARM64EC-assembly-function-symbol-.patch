@@ -1,0 +1,75 @@
+From a6071f035e84b3c901dbcb29cfd4b48ec3773cb9 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Sun, 28 Jan 2024 23:45:12 +0000
+Subject: [PATCH 2/9] [compiler-rt] Mangle ARM64EC assembly function symbol
+ names
+
+ARM64EC requires that native function symbols be prefixed with a '#'
+when defined in assembly, however __USER_LABEL_PREFIX__ isn't defined as
+that is generally used to prefix both data and function symbols.
+---
+ compiler-rt/lib/builtins/assembly.h          | 10 ++++++++++
+ compiler-rt/lib/builtins/atomic.c            | 10 +++++-----
+ compiler-rt/lib/builtins/cpu_model/aarch64.h |  2 +-
+ 3 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/compiler-rt/lib/builtins/assembly.h b/compiler-rt/lib/builtins/assembly.h
+index 34c71241524d..7028d01f93ba 100644
+--- a/compiler-rt/lib/builtins/assembly.h
++++ b/compiler-rt/lib/builtins/assembly.h
+@@ -207,7 +207,17 @@
+ #define GLUE4_(a, b, c, d) a##b##c##d
+ #define GLUE4(a, b, c, d) GLUE4_(a, b, c, d)
+ 
++#ifdef __arm64ec__
++#define QUOTE(a) #a
++#define STR(a) QUOTE(a)
++#define HASH_LIT #
++#define HASH() HASH_LIT
++#define SYMBOL_NAME_C(name) name
++#define SYMBOL_NAME(name) STR(HASH()name)
++#else
+ #define SYMBOL_NAME(name) GLUE(__USER_LABEL_PREFIX__, name)
++#define SYMBOL_NAME_C(name) SYMBOL_NAME(name)
++#endif
+ 
+ #ifdef VISIBILITY_HIDDEN
+ #define DECLARE_SYMBOL_VISIBILITY(name)                                        \
+diff --git a/compiler-rt/lib/builtins/atomic.c b/compiler-rt/lib/builtins/atomic.c
+index aded25d9baa9..36998dcfa87f 100644
+--- a/compiler-rt/lib/builtins/atomic.c
++++ b/compiler-rt/lib/builtins/atomic.c
+@@ -35,12 +35,12 @@
+ 
+ // Clang objects if you redefine a builtin.  This little hack allows us to
+ // define a function with the same name as an intrinsic.
+-#pragma redefine_extname __atomic_load_c SYMBOL_NAME(__atomic_load)
+-#pragma redefine_extname __atomic_store_c SYMBOL_NAME(__atomic_store)
+-#pragma redefine_extname __atomic_exchange_c SYMBOL_NAME(__atomic_exchange)
+-#pragma redefine_extname __atomic_compare_exchange_c SYMBOL_NAME(              \
++#pragma redefine_extname __atomic_load_c SYMBOL_NAME_C(__atomic_load)
++#pragma redefine_extname __atomic_store_c SYMBOL_NAME_C(__atomic_store)
++#pragma redefine_extname __atomic_exchange_c SYMBOL_NAME_C(__atomic_exchange)
++#pragma redefine_extname __atomic_compare_exchange_c SYMBOL_NAME_C(              \
+     __atomic_compare_exchange)
+-#pragma redefine_extname __atomic_is_lock_free_c SYMBOL_NAME(                  \
++#pragma redefine_extname __atomic_is_lock_free_c SYMBOL_NAME_C(                  \
+     __atomic_is_lock_free)
+ 
+ /// Number of locks.  This allocates one page on 32-bit platforms, two on
+diff --git a/compiler-rt/lib/builtins/cpu_model/aarch64.h b/compiler-rt/lib/builtins/cpu_model/aarch64.h
+index 2a734b02b7c9..290c2a89b520 100644
+--- a/compiler-rt/lib/builtins/cpu_model/aarch64.h
++++ b/compiler-rt/lib/builtins/cpu_model/aarch64.h
+@@ -8,7 +8,7 @@
+ 
+ #include "cpu_model.h"
+ 
+-#if !defined(__aarch64__) && !defined(__arm64__) && !defined(_M_ARM64)
++#if !(defined(__aarch64__) || defined(_M_ARM64) || defined(__arm64ec__) || defined(_M_ARM64EC))
+ #error This file is intended only for aarch64-based targets
+ #endif
+ 
+-- 
+2.25.1
+

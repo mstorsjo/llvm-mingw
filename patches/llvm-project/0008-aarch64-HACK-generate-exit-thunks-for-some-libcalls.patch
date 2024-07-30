@@ -1,0 +1,59 @@
+From 69e85468530642a2d804c98ebf0e199fa96389c4 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Mon, 5 Aug 2024 19:27:45 +0000
+Subject: [PATCH 8/9] [aarch64] HACK: generate exit thunks for some libcalls
+
+This is impossible to do properly without significant LLVM changes
+---
+ .../AArch64/AArch64Arm64ECCallLowering.cpp    | 21 +++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/llvm/lib/Target/AArch64/AArch64Arm64ECCallLowering.cpp b/llvm/lib/Target/AArch64/AArch64Arm64ECCallLowering.cpp
+index 066d62b3d4b4..c49e069ea83e 100644
+--- a/llvm/lib/Target/AArch64/AArch64Arm64ECCallLowering.cpp
++++ b/llvm/lib/Target/AArch64/AArch64Arm64ECCallLowering.cpp
+@@ -89,6 +89,7 @@ private:
+   Module *M = nullptr;
+ 
+   Type *PtrTy;
++  Type *I32Ty;
+   Type *I64Ty;
+   Type *VoidTy;
+ 
+@@ -789,6 +790,7 @@ bool AArch64Arm64ECCallLowering::runOnModule(Module &Mod) {
+     cfguard_module_flag = MD->getZExtValue();
+ 
+   PtrTy = PointerType::getUnqual(M->getContext());
++  I32Ty = Type::getInt32Ty(M->getContext());
+   I64Ty = Type::getInt64Ty(M->getContext());
+   VoidTy = Type::getVoidTy(M->getContext());
+ 
+@@ -856,6 +858,25 @@ bool AArch64Arm64ECCallLowering::runOnModule(Module &Mod) {
+   }
+ 
+   SetVector<GlobalValue *> DirectCalledFns;
++
++  if (!M->getFunction("memcpy")) {
++    Function *MemCpy =
++        Function::Create(FunctionType::get(PtrTy, {PtrTy, PtrTy, I64Ty}, false), GlobalValue::WeakODRLinkage, 0, "memcpy", M);
++    DirectCalledFns.insert(MemCpy);
++  }
++
++  if (!M->getFunction("memmove")) {
++    Function *MemCpy =
++        Function::Create(FunctionType::get(PtrTy, {PtrTy, PtrTy, I64Ty}, false), GlobalValue::WeakODRLinkage, 0, "memmove", M);
++    DirectCalledFns.insert(MemCpy);
++  }
++
++  if (!M->getFunction("memset")) {
++    Function *MemSet =
++        Function::Create(FunctionType::get(PtrTy, {PtrTy, I32Ty, I64Ty}, false), GlobalValue::WeakODRLinkage, 0, "memset", M);
++    DirectCalledFns.insert(MemSet);
++  }
++
+   for (Function &F : Mod)
+     if (!F.isDeclaration() &&
+         F.getCallingConv() != CallingConv::ARM64EC_Thunk_Native &&
+-- 
+2.25.1
+

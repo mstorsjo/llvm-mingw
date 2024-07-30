@@ -1,0 +1,70 @@
+From 28e8f9aa5978aa98dc12ff3a95338b1051f7543b Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 21 Sep 2023 13:07:46 +0100
+Subject: [PATCH 4/9] [compiler-rt] Allow for mangling aarch64 LSE outlining
+ builtins
+
+These need to be mangled to begin with a # on ARM64EC so that the
+linker knows the symbols refer to ARM code. This shoud be safe as no
+other ARM target defines __USER_LABEL_PREFIX__, in which case this
+change is a noop.
+---
+ compiler-rt/lib/builtins/aarch64/lse.S |  6 +++---
+ compiler-rt/lib/builtins/assembly.h    | 10 ++++++++++
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/compiler-rt/lib/builtins/aarch64/lse.S b/compiler-rt/lib/builtins/aarch64/lse.S
+index d7c1db7243ef..aad0442fa352 100644
+--- a/compiler-rt/lib/builtins/aarch64/lse.S
++++ b/compiler-rt/lib/builtins/aarch64/lse.S
+@@ -142,7 +142,7 @@ HIDDEN(___aarch64_have_lse_atomics)
+ .endm
+ 
+ #ifdef L_cas
+-DEFINE_COMPILERRT_OUTLINE_FUNCTION_UNMANGLED(NAME(cas))
++DEFINE_COMPILERRT_OUTLINE_FUNCTION(NAME(cas))
+         JUMP_IF_NOT_LSE 8f
+ #if SIZE < 16
+ #ifdef HAS_ASM_LSE
+@@ -202,7 +202,7 @@ END_COMPILERRT_OUTLINE_FUNCTION(NAME(cas))
+ #else
+ #define SWP .inst 0x38208020 + B + N
+ #endif
+-DEFINE_COMPILERRT_OUTLINE_FUNCTION_UNMANGLED(NAME(swp))
++DEFINE_COMPILERRT_OUTLINE_FUNCTION(NAME(swp))
+         JUMP_IF_NOT_LSE 8f
+         SWP    // s(0), s(0), [x1]
+         ret
+@@ -246,7 +246,7 @@ END_COMPILERRT_OUTLINE_FUNCTION(NAME(swp))
+ #define LDOP .inst 0x38200020 + OPN + B + N
+ #endif
+ 
+-DEFINE_COMPILERRT_OUTLINE_FUNCTION_UNMANGLED(NAME(LDNM))
++DEFINE_COMPILERRT_OUTLINE_FUNCTION(NAME(LDNM))
+         JUMP_IF_NOT_LSE 8f
+         LDOP // s(0), s(0), [x1]
+         ret
+diff --git a/compiler-rt/lib/builtins/assembly.h b/compiler-rt/lib/builtins/assembly.h
+index 0cdce0f72854..f4fb3fb0c0d9 100644
+--- a/compiler-rt/lib/builtins/assembly.h
++++ b/compiler-rt/lib/builtins/assembly.h
+@@ -275,6 +275,16 @@
+   SEPARATOR CFI_START                                                          \
+   SEPARATOR BTI_C
+ 
++#define DEFINE_COMPILERRT_OUTLINE_FUNCTION(name)                               \
++  DEFINE_CODE_STATE                                                            \
++  FUNC_ALIGN                                                                   \
++  .globl SYMBOL_NAME(name) SEPARATOR                                           \
++  SYMBOL_IS_FUNC(SYMBOL_NAME(name)) SEPARATOR                                  \
++  DECLARE_SYMBOL_VISIBILITY(name)                                              \
++  CFI_START SEPARATOR                                                          \
++  DECLARE_FUNC_ENCODING                                                        \
++  SYMBOL_NAME(name): SEPARATOR BTI_C
++
+ #define DEFINE_COMPILERRT_FUNCTION_ALIAS(name, target)                         \
+   .globl SYMBOL_NAME(name) SEPARATOR                                           \
+   SYMBOL_IS_FUNC(SYMBOL_NAME(name)) SEPARATOR                                  \
+-- 
+2.25.1
+

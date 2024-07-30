@@ -1,0 +1,440 @@
+From 7d21b1a74fdf74fddab7b4f65b28fcf54a615bd9 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 21 Sep 2023 13:15:27 +0100
+Subject: [PATCH 5/9] [libunwind] WIP: ARM64EC support
+
+Needs testing with SEH.
+---
+ libunwind/include/__libunwind_config.h |  13 +-
+ libunwind/src/UnwindCursor.hpp         | 224 +++++++++++++++++++++++--
+ libunwind/src/UnwindRegistersRestore.S |   4 +-
+ libunwind/src/UnwindRegistersSave.S    |   4 +-
+ libunwind/src/assembly.h               |   9 +
+ libunwind/src/libunwind.cpp            |   4 +-
+ 6 files changed, 241 insertions(+), 17 deletions(-)
+
+diff --git a/libunwind/include/__libunwind_config.h b/libunwind/include/__libunwind_config.h
+index bb7fe4c83a3c..263b484138b3 100644
+--- a/libunwind/include/__libunwind_config.h
++++ b/libunwind/include/__libunwind_config.h
+@@ -44,7 +44,7 @@
+ #  define _LIBUNWIND_CONTEXT_SIZE 8
+ #  define _LIBUNWIND_CURSOR_SIZE 15
+ #  define _LIBUNWIND_HIGHEST_DWARF_REGISTER _LIBUNWIND_HIGHEST_DWARF_REGISTER_X86
+-# elif defined(__x86_64__)
++#elif defined(__x86_64__) && !defined(__arm64ec__)
+ #  define _LIBUNWIND_TARGET_X86_64 1
+ #  if defined(_WIN64)
+ #    define _LIBUNWIND_CONTEXT_SIZE 54
+@@ -80,6 +80,17 @@
+ #    define _LIBUNWIND_CURSOR_SIZE 78
+ #  endif
+ #  define _LIBUNWIND_HIGHEST_DWARF_REGISTER _LIBUNWIND_HIGHEST_DWARF_REGISTER_ARM64
++#elif defined(__arm64ec__)
++#define _LIBUNWIND_TARGET_AARCH64 1
++#define _LIBUNWIND_TARGET_ARM64EC 1
++#define _LIBUNWIND_CONTEXT_SIZE 66
++#if defined(__SEH__)
++#define _LIBUNWIND_CURSOR_SIZE 204
++#else
++#error
++#endif
++#define _LIBUNWIND_HIGHEST_DWARF_REGISTER                                      \
++  _LIBUNWIND_HIGHEST_DWARF_REGISTER_ARM64
+ # elif defined(__arm__)
+ #  define _LIBUNWIND_TARGET_ARM 1
+ #  if defined(__SEH__)
+diff --git a/libunwind/src/UnwindCursor.hpp b/libunwind/src/UnwindCursor.hpp
+index ca9927edc999..8fa6a33f06eb 100644
+--- a/libunwind/src/UnwindCursor.hpp
++++ b/libunwind/src/UnwindCursor.hpp
+@@ -563,7 +563,14 @@ private:
+   A                   &_addressSpace;
+   unw_proc_info_t      _info;
+   DISPATCHER_CONTEXT   _dispContext;
++#if defined(_LIBUNWIND_TARGET_ARM64EC)
++  union {
++    CONTEXT _msContext;
++    ARM64EC_NT_CONTEXT _msEcContext;
++  };
++#else
+   CONTEXT              _msContext;
++#endif
+   UNWIND_HISTORY_TABLE _histTable;
+   bool                 _unwindInfoMissing;
+ };
+@@ -572,10 +579,6 @@ private:
+ template <typename A, typename R>
+ UnwindCursor<A, R>::UnwindCursor(unw_context_t *context, A &as)
+     : _addressSpace(as), _unwindInfoMissing(false) {
+-  static_assert((check_fit<UnwindCursor<A, R>, unw_cursor_t>::does_fit),
+-                "UnwindCursor<> does not fit in unw_cursor_t");
+-  static_assert((alignof(UnwindCursor<A, R>) <= alignof(unw_cursor_t)),
+-                "UnwindCursor<> requires more alignment than unw_cursor_t");
+   memset(&_info, 0, sizeof(_info));
+   memset(&_histTable, 0, sizeof(_histTable));
+   memset(&_dispContext, 0, sizeof(_dispContext));
+@@ -664,6 +667,48 @@ UnwindCursor<A, R>::UnwindCursor(unw_context_t *context, A &as)
+     d.d = r.getFloatRegister(i);
+     _msContext.D[i - UNW_ARM_D0] = d.w;
+   }
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  _msEcContext.X0 = r.getRegister(UNW_AARCH64_X0);
++  _msEcContext.X1 = r.getRegister(UNW_AARCH64_X1);
++  _msEcContext.X2 = r.getRegister(UNW_AARCH64_X2);
++  _msEcContext.X3 = r.getRegister(UNW_AARCH64_X3);
++  _msEcContext.X4 = r.getRegister(UNW_AARCH64_X4);
++  _msEcContext.X5 = r.getRegister(UNW_AARCH64_X5);
++  _msEcContext.X6 = r.getRegister(UNW_AARCH64_X6);
++  _msEcContext.X7 = r.getRegister(UNW_AARCH64_X7);
++  _msEcContext.X8 = r.getRegister(UNW_AARCH64_X8);
++  _msEcContext.X9 = r.getRegister(UNW_AARCH64_X9);
++  _msEcContext.X10 = r.getRegister(UNW_AARCH64_X10);
++  _msEcContext.X11 = r.getRegister(UNW_AARCH64_X11);
++  _msEcContext.X12 = r.getRegister(UNW_AARCH64_X12);
++  _msEcContext.X15 = r.getRegister(UNW_AARCH64_X15);
++
++  uint64_t X16Val = r.getRegister(UNW_AARCH64_X16);
++  _msEcContext.X16_0 = static_cast<uint16_t>(X16Val);
++  _msEcContext.X16_1 = static_cast<uint16_t>(X16Val >> 16);
++  _msEcContext.X16_2 = static_cast<uint16_t>(X16Val >> 32);
++  _msEcContext.X16_3 = static_cast<uint16_t>(X16Val >> 48);
++
++  uint64_t X17Val = r.getRegister(UNW_AARCH64_X17);
++  _msEcContext.X17_0 = static_cast<uint16_t>(X17Val);
++  _msEcContext.X17_1 = static_cast<uint16_t>(X17Val >> 16);
++  _msEcContext.X17_2 = static_cast<uint16_t>(X17Val >> 32);
++  _msEcContext.X17_3 = static_cast<uint16_t>(X17Val >> 48);
++
++  _msEcContext.X19 = r.getRegister(UNW_AARCH64_X19);
++  _msEcContext.X20 = r.getRegister(UNW_AARCH64_X20);
++  _msEcContext.X21 = r.getRegister(UNW_AARCH64_X21);
++  _msEcContext.X22 = r.getRegister(UNW_AARCH64_X22);
++  _msEcContext.X25 = r.getRegister(UNW_AARCH64_X25);
++  _msEcContext.X26 = r.getRegister(UNW_AARCH64_X26);
++  _msEcContext.X27 = r.getRegister(UNW_AARCH64_X27);
++  _msEcContext.Fp = r.getRegister(UNW_AARCH64_FP);
++  _msEcContext.Lr = r.getRegister(UNW_AARCH64_LR);
++  _msEcContext.Sp = r.getRegister(UNW_AARCH64_SP);
++  _msEcContext.Pc = r.getRegister(UNW_REG_IP);
++
++  for (int i = UNW_AARCH64_V0; i <= UNW_ARM64_D15; ++i)
++    _msEcContext.V[i - UNW_AARCH64_V0].D[0] = r.getFloatRegister(i);
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   for (int i = UNW_AARCH64_X0; i <= UNW_ARM64_X30; ++i)
+     _msContext.X[i - UNW_AARCH64_X0] = r.getRegister(i);
+@@ -677,8 +722,6 @@ UnwindCursor<A, R>::UnwindCursor(unw_context_t *context, A &as)
+ template <typename A, typename R>
+ UnwindCursor<A, R>::UnwindCursor(CONTEXT *context, A &as)
+     : _addressSpace(as), _unwindInfoMissing(false) {
+-  static_assert((check_fit<UnwindCursor<A, R>, unw_cursor_t>::does_fit),
+-                "UnwindCursor<> does not fit in unw_cursor_t");
+   memset(&_info, 0, sizeof(_info));
+   memset(&_histTable, 0, sizeof(_histTable));
+   memset(&_dispContext, 0, sizeof(_dispContext));
+@@ -697,6 +740,12 @@ bool UnwindCursor<A, R>::validReg(int regNum) {
+   if ((regNum >= UNW_ARM_R0 && regNum <= UNW_ARM_R15) ||
+       regNum == UNW_ARM_RA_AUTH_CODE)
+     return true;
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  if (regNum != UNW_AARCH64_X13 && regNum != UNW_AARCH64_X14 &&
++      regNum != UNW_AARCH64_X18 && regNum != UNW_AARCH64_X23 &&
++      regNum != UNW_AARCH64_X24 && regNum >= UNW_AARCH64_X0 &&
++      regNum <= UNW_ARM64_X30)
++    return true;
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   if (regNum >= UNW_AARCH64_X0 && regNum <= UNW_ARM64_X30) return true;
+ #endif
+@@ -745,6 +794,69 @@ unw_word_t UnwindCursor<A, R>::getReg(int regNum) {
+   case UNW_ARM_LR: return _msContext.Lr;
+   case UNW_REG_IP:
+   case UNW_ARM_IP: return _msContext.Pc;
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  case UNW_AARCH64_X0:
++    return _msEcContext.X0;
++  case UNW_AARCH64_X1:
++    return _msEcContext.X1;
++  case UNW_AARCH64_X2:
++    return _msEcContext.X2;
++  case UNW_AARCH64_X3:
++    return _msEcContext.X3;
++  case UNW_AARCH64_X4:
++    return _msEcContext.X4;
++  case UNW_AARCH64_X5:
++    return _msEcContext.X5;
++  case UNW_AARCH64_X6:
++    return _msEcContext.X6;
++  case UNW_AARCH64_X7:
++    return _msEcContext.X7;
++  case UNW_AARCH64_X8:
++    return _msEcContext.X8;
++  case UNW_AARCH64_X9:
++    return _msEcContext.X9;
++  case UNW_AARCH64_X10:
++    return _msEcContext.X10;
++  case UNW_AARCH64_X11:
++    return _msEcContext.X11;
++  case UNW_AARCH64_X12:
++    return _msEcContext.X12;
++  case UNW_AARCH64_X15:
++    return _msEcContext.X15;
++    // TODO: check below
++  case UNW_AARCH64_X16:
++    return static_cast<unw_word_t>(_msEcContext.X16_0) |
++           static_cast<unw_word_t>(_msEcContext.X16_1) << 16 |
++           static_cast<unw_word_t>(_msEcContext.X16_2) << 32 |
++           static_cast<unw_word_t>(_msEcContext.X16_3) << 48;
++  case UNW_AARCH64_X17:
++    return static_cast<unw_word_t>(_msEcContext.X17_0) |
++           static_cast<unw_word_t>(_msEcContext.X17_1) << 16 |
++           static_cast<unw_word_t>(_msEcContext.X17_2) << 32 |
++           static_cast<unw_word_t>(_msEcContext.X17_3) << 48;
++  case UNW_AARCH64_X19:
++    return _msEcContext.X19;
++  case UNW_AARCH64_X20:
++    return _msEcContext.X20;
++  case UNW_AARCH64_X21:
++    return _msEcContext.X21;
++  case UNW_AARCH64_X22:
++    return _msEcContext.X22;
++  case UNW_AARCH64_X25:
++    return _msEcContext.X25;
++  case UNW_AARCH64_X26:
++    return _msEcContext.X26;
++  case UNW_AARCH64_X27:
++    return _msEcContext.X27;
++  case UNW_AARCH64_FP:
++    return _msEcContext.Fp;
++  case UNW_AARCH64_LR:
++    return _msEcContext.Lr;
++  case UNW_REG_SP:
++  case UNW_AARCH64_SP:
++    return _msEcContext.Sp;
++  case UNW_REG_IP:
++    return _msEcContext.Pc;
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   case UNW_REG_SP: return _msContext.Sp;
+   case UNW_REG_IP: return _msContext.Pc;
+@@ -796,6 +908,95 @@ void UnwindCursor<A, R>::setReg(int regNum, unw_word_t value) {
+   case UNW_ARM_LR: _msContext.Lr = value; break;
+   case UNW_REG_IP:
+   case UNW_ARM_IP: _msContext.Pc = value; break;
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  case UNW_AARCH64_X0:
++    _msEcContext.X0 = value;
++    break;
++  case UNW_AARCH64_X1:
++    _msEcContext.X1 = value;
++    break;
++  case UNW_AARCH64_X2:
++    _msEcContext.X2 = value;
++    break;
++  case UNW_AARCH64_X3:
++    _msEcContext.X3 = value;
++    break;
++  case UNW_AARCH64_X4:
++    _msEcContext.X4 = value;
++    break;
++  case UNW_AARCH64_X5:
++    _msEcContext.X5 = value;
++    break;
++  case UNW_AARCH64_X6:
++    _msEcContext.X6 = value;
++    break;
++  case UNW_AARCH64_X7:
++    _msEcContext.X7 = value;
++    break;
++  case UNW_AARCH64_X8:
++    _msEcContext.X8 = value;
++    break;
++  case UNW_AARCH64_X9:
++    _msEcContext.X9 = value;
++    break;
++  case UNW_AARCH64_X10:
++    _msEcContext.X10 = value;
++    break;
++  case UNW_AARCH64_X11:
++    _msEcContext.X11 = value;
++    break;
++  case UNW_AARCH64_X12:
++    _msEcContext.X12 = value;
++    break;
++  case UNW_AARCH64_X15:
++    _msEcContext.X15 = value;
++    break;
++  case UNW_AARCH64_X16:
++    _msEcContext.X16_0 = static_cast<uint16_t>(value);
++    _msEcContext.X16_1 = static_cast<uint16_t>(value >> 16);
++    _msEcContext.X16_2 = static_cast<uint16_t>(value >> 32);
++    _msEcContext.X16_3 = static_cast<uint16_t>(value >> 48);
++    break;
++  case UNW_AARCH64_X17:
++    _msEcContext.X17_0 = static_cast<uint16_t>(value);
++    _msEcContext.X17_1 = static_cast<uint16_t>(value >> 16);
++    _msEcContext.X17_2 = static_cast<uint16_t>(value >> 32);
++    _msEcContext.X17_3 = static_cast<uint16_t>(value >> 48);
++    break;
++  case UNW_AARCH64_X19:
++    _msEcContext.X19 = value;
++    break;
++  case UNW_AARCH64_X20:
++    _msEcContext.X20 = value;
++    break;
++  case UNW_AARCH64_X21:
++    _msEcContext.X21 = value;
++    break;
++  case UNW_AARCH64_X22:
++    _msEcContext.X22 = value;
++    break;
++  case UNW_AARCH64_X25:
++    _msEcContext.X25 = value;
++    break;
++  case UNW_AARCH64_X26:
++    _msEcContext.X26 = value;
++    break;
++  case UNW_AARCH64_X27:
++    _msEcContext.X27 = value;
++    break;
++  case UNW_AARCH64_FP:
++    _msEcContext.Fp = value;
++    break;
++  case UNW_AARCH64_LR:
++    _msEcContext.Lr = value;
++    break;
++  case UNW_AARCH64_SP:
++  case UNW_REG_SP:
++    _msEcContext.Sp = value;
++    break;
++  case UNW_REG_IP:
++    _msEcContext.Pc = value;
++    break;
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   case UNW_REG_SP: _msContext.Sp = value; break;
+   case UNW_REG_IP: _msContext.Pc = value; break;
+@@ -841,6 +1042,9 @@ bool UnwindCursor<A, R>::validFloatReg(int regNum) {
+ #if defined(_LIBUNWIND_TARGET_ARM)
+   if (regNum >= UNW_ARM_S0 && regNum <= UNW_ARM_S31) return true;
+   if (regNum >= UNW_ARM_D0 && regNum <= UNW_ARM_D31) return true;
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  if (regNum >= UNW_AARCH64_V0 && regNum <= UNW_ARM64_D15)
++    return true;
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   if (regNum >= UNW_AARCH64_V0 && regNum <= UNW_ARM64_D31) return true;
+ #else
+@@ -869,6 +1073,8 @@ unw_fpreg_t UnwindCursor<A, R>::getFloatReg(int regNum) {
+     return d.d;
+   }
+   _LIBUNWIND_ABORT("unsupported float register");
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  return _msEcContext.V[regNum - UNW_AARCH64_V0].D[0];
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   return _msContext.V[regNum - UNW_AARCH64_V0].D[0];
+ #else
+@@ -897,6 +1103,8 @@ void UnwindCursor<A, R>::setFloatReg(int regNum, unw_fpreg_t value) {
+     _msContext.D[regNum - UNW_ARM_D0] = d.w;
+   }
+   _LIBUNWIND_ABORT("unsupported float register");
++#elif defined(_LIBUNWIND_TARGET_ARM64EC)
++  _msEcContext.V[regNum - UNW_AARCH64_V0].D[0] = value;
+ #elif defined(_LIBUNWIND_TARGET_AARCH64)
+   _msContext.V[regNum - UNW_AARCH64_V0].D[0] = value;
+ #else
+@@ -1332,10 +1540,6 @@ template <typename A, typename R>
+ UnwindCursor<A, R>::UnwindCursor(unw_context_t *context, A &as)
+     : _addressSpace(as), _registers(context), _unwindInfoMissing(false),
+       _isSignalFrame(false) {
+-  static_assert((check_fit<UnwindCursor<A, R>, unw_cursor_t>::does_fit),
+-                "UnwindCursor<> does not fit in unw_cursor_t");
+-  static_assert((alignof(UnwindCursor<A, R>) <= alignof(unw_cursor_t)),
+-                "UnwindCursor<> requires more alignment than unw_cursor_t");
+   memset(&_info, 0, sizeof(_info));
+ }
+ 
+diff --git a/libunwind/src/UnwindRegistersRestore.S b/libunwind/src/UnwindRegistersRestore.S
+index 1702d016c368..2a150839e0ad 100644
+--- a/libunwind/src/UnwindRegistersRestore.S
++++ b/libunwind/src/UnwindRegistersRestore.S
+@@ -66,7 +66,7 @@ DEFINE_LIBUNWIND_FUNCTION(__libunwind_Registers_x86_jumpto)
+   # skip fs
+   # skip gs
+ 
+-#elif defined(__x86_64__)
++#elif defined(__x86_64__) && !defined(__arm64ec__)
+ 
+ DEFINE_LIBUNWIND_FUNCTION(__libunwind_Registers_x86_64_jumpto)
+ #
+@@ -627,7 +627,7 @@ Lnovec:
+   lwz     3,  20(3)   // do r3 last
+   bctr
+ 
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__arm64ec__)
+ 
+ #if defined(__ARM_FEATURE_GCS_DEFAULT)
+ .arch_extension gcs
+diff --git a/libunwind/src/UnwindRegistersSave.S b/libunwind/src/UnwindRegistersSave.S
+index a489a8ba6df1..288abb00745a 100644
+--- a/libunwind/src/UnwindRegistersSave.S
++++ b/libunwind/src/UnwindRegistersSave.S
+@@ -65,7 +65,7 @@ DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
+   xorl  %eax, %eax    # return UNW_ESUCCESS
+   ret
+ 
+-#elif defined(__x86_64__)
++#elif defined(__x86_64__) && !defined(__arm64ec__)
+ 
+ #
+ # extern int __unw_getcontext(unw_context_t* thread_state)
+@@ -716,7 +716,7 @@ LnoR2Fix:
+   blr
+ 
+ 
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__arm64ec__)
+ 
+ //
+ // extern int __unw_getcontext(unw_context_t* thread_state)
+diff --git a/libunwind/src/assembly.h b/libunwind/src/assembly.h
+index f8e83e138eff..80c6e22e5315 100644
+--- a/libunwind/src/assembly.h
++++ b/libunwind/src/assembly.h
+@@ -128,7 +128,16 @@
+ 
+ #define GLUE2(a, b) a ## b
+ #define GLUE(a, b) GLUE2(a, b)
++#define QUOTE(a) #a
++#define STR(a) QUOTE(a)
++
++#ifdef __arm64ec__
++#define QUOTE(a) #a
++#define STR(a) QUOTE(a)
++#define SYMBOL_NAME(name) STR(GLUE(#, name))
++#else
+ #define SYMBOL_NAME(name) GLUE(__USER_LABEL_PREFIX__, name)
++#endif
+ 
+ #if defined(__APPLE__)
+ 
+diff --git a/libunwind/src/libunwind.cpp b/libunwind/src/libunwind.cpp
+index cf39ec5f7dbd..916447e09ef1 100644
+--- a/libunwind/src/libunwind.cpp
++++ b/libunwind/src/libunwind.cpp
+@@ -47,13 +47,13 @@ _LIBUNWIND_HIDDEN int __unw_init_local(unw_cursor_t *cursor,
+                        static_cast<void *>(context));
+ #if defined(__i386__)
+ # define REGISTER_KIND Registers_x86
+-#elif defined(__x86_64__)
++#elif defined(__x86_64__) && !defined(__arm64ec__)
+ # define REGISTER_KIND Registers_x86_64
+ #elif defined(__powerpc64__)
+ # define REGISTER_KIND Registers_ppc64
+ #elif defined(__powerpc__)
+ # define REGISTER_KIND Registers_ppc
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__arm64ec__)
+ # define REGISTER_KIND Registers_arm64
+ #elif defined(__arm__)
+ # define REGISTER_KIND Registers_arm
+-- 
+2.25.1
+
