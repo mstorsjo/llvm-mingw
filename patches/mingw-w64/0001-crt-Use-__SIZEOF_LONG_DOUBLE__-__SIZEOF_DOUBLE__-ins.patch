@@ -1,0 +1,239 @@
+From 395727ea6b01e5f1cadae4ee849bed08e00005f8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 11 Mar 2025 15:22:34 +0200
+Subject: [PATCH 01/24] crt: Use __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ instead of arch checks
+
+---
+ mingw-w64-crt/gdtoa/strtodnrp.c |  3 +--
+ mingw-w64-crt/gdtoa/strtopx.c   | 23 ++++++++++++-----------
+ mingw-w64-crt/math/coshl.c      |  2 +-
+ mingw-w64-crt/math/erfl.c       |  2 +-
+ mingw-w64-crt/math/fabsl.c      |  6 +++---
+ mingw-w64-crt/math/fp_constsl.c |  2 +-
+ mingw-w64-crt/math/frexpl.c     |  2 +-
+ mingw-w64-crt/math/isnanl.c     |  6 +++---
+ mingw-w64-crt/math/lgammal.c    |  2 +-
+ mingw-w64-crt/math/sinhl.c      |  2 +-
+ mingw-w64-crt/math/tanhl.c      |  2 +-
+ mingw-w64-crt/math/tgammal.c    |  2 +-
+ mingw-w64-crt/math/truncl.c     |  2 +-
+ 13 files changed, 28 insertions(+), 28 deletions(-)
+
+diff --git a/mingw-w64-crt/gdtoa/strtodnrp.c b/mingw-w64-crt/gdtoa/strtodnrp.c
+index bc5e86111..9304866bf 100644
+--- a/mingw-w64-crt/gdtoa/strtodnrp.c
++++ b/mingw-w64-crt/gdtoa/strtodnrp.c
+@@ -85,8 +85,7 @@ double __cdecl
+ __mingw_strtod (const char * __restrict__ src, char ** __restrict__ endptr)
+   __attribute__((alias("__strtod")));
+ 
+-#if !(defined(_AMD64_) || defined(__x86_64__) || \
+-  defined(_X86_) || defined(__i386__))
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ /* For systems other than x86, where long double == double, provide the
+  * long double functions as aliases to __strtod. */
+ 
+diff --git a/mingw-w64-crt/gdtoa/strtopx.c b/mingw-w64-crt/gdtoa/strtopx.c
+index a5bc3ec60..b80a79476 100644
+--- a/mingw-w64-crt/gdtoa/strtopx.c
++++ b/mingw-w64-crt/gdtoa/strtopx.c
+@@ -53,8 +53,19 @@ THIS SOFTWARE.
+ #define _4 0
+ #endif
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++/* For ARM, where long double == double, provide the long double function as
++ * an alias for __strtod. Do this in a separate object file from other
++ * functions, to avoid linker conflicts if object files import both 'strtold'
++ * from libucrt*.a and the object file providing '__strtod'. */
++long double __cdecl
++strtold (const char * __restrict__ src, char ** __restrict__ endptr)
++{
++  return __mingw_strtod(src, endptr);
++}
++
+ /* This is specific to the x86 80 bit long doubles. */
+-#if defined(_AMD64_) || defined(__x86_64__) || \
++#elif defined(_AMD64_) || defined(__x86_64__) || \
+   defined(_X86_) || defined(__i386__)
+ 
+ typedef union lD {
+@@ -133,14 +144,4 @@ long double __cdecl
+ strtold (const char * __restrict__ src, char ** __restrict__ endptr)
+   __attribute__((alias("__strtold")));
+ 
+-#elif defined(__arm__) || defined(__aarch64__) || defined(_ARM_) || defined(_ARM64_)
+-/* For ARM, where long double == double, provide the long double function as
+- * an alias for __strtod. Do this in a separate object file from other
+- * functions, to avoid linker conflicts if object files import both 'strtold'
+- * from libucrt*.a and the object file providing '__strtod'. */
+-long double __cdecl
+-strtold (const char * __restrict__ src, char ** __restrict__ endptr)
+-{
+-  return __mingw_strtod(src, endptr);
+-}
+ #endif
+diff --git a/mingw-w64-crt/math/coshl.c b/mingw-w64-crt/math/coshl.c
+index c5aaa73ec..acc0094a4 100644
+--- a/mingw-w64-crt/math/coshl.c
++++ b/mingw-w64-crt/math/coshl.c
+@@ -5,7 +5,7 @@
+  */
+ #include "cephes_mconf.h"
+ 
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ #include <math.h>
+ 
+ long double coshl(long double x)
+diff --git a/mingw-w64-crt/math/erfl.c b/mingw-w64-crt/math/erfl.c
+index 1408cf542..b1001dfa1 100644
+--- a/mingw-w64-crt/math/erfl.c
++++ b/mingw-w64-crt/math/erfl.c
+@@ -108,7 +108,7 @@ Copyright 1984, 1995 by Stephen L. Moshier
+ 
+ long double erfl(long double x);
+ 
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ long double erfcl(long double x)
+ {
+ 	return erfc(x);
+diff --git a/mingw-w64-crt/math/fabsl.c b/mingw-w64-crt/math/fabsl.c
+index 1df48cfa9..ed97ed017 100644
+--- a/mingw-w64-crt/math/fabsl.c
++++ b/mingw-w64-crt/math/fabsl.c
+@@ -8,11 +8,11 @@ long double fabsl (long double x);
+ long double
+ fabsl (long double x)
+ {
+-#if defined(__x86_64__) || defined(_AMD64_) || defined(__i386__) || defined(_X86_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return __builtin_fabsl (x);
++#elif defined(__x86_64__) || defined(_AMD64_) || defined(__i386__) || defined(_X86_)
+   long double res = 0.0L;
+   asm volatile ("fabs;" : "=t" (res) : "0" (x));
+   return res;
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+-  return __builtin_fabsl (x);
+ #endif /* defined(__x86_64__) || defined(_AMD64_) || defined(__i386__) || defined(_X86_) */
+ }
+diff --git a/mingw-w64-crt/math/fp_constsl.c b/mingw-w64-crt/math/fp_constsl.c
+index 880408209..2bb00f746 100644
+--- a/mingw-w64-crt/math/fp_constsl.c
++++ b/mingw-w64-crt/math/fp_constsl.c
+@@ -16,7 +16,7 @@ const union _ieee_rep __DENORML = { __LONG_DOUBLE_DENORM_REP };
+ long double nanl (const char *);
+ long double nanl (const char * tagp __attribute__((unused)) )
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+   return nan("");
+ #else
+   return __QNANL.ldouble_val;
+diff --git a/mingw-w64-crt/math/frexpl.c b/mingw-w64-crt/math/frexpl.c
+index f686a7463..f60b68bcd 100644
+--- a/mingw-w64-crt/math/frexpl.c
++++ b/mingw-w64-crt/math/frexpl.c
+@@ -5,7 +5,7 @@
+  */
+ long double frexpl(long double value, int* exp);
+ 
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ 
+ double frexp(double value, int* exp);
+ 
+diff --git a/mingw-w64-crt/math/isnanl.c b/mingw-w64-crt/math/isnanl.c
+index ff4ca6e42..fdc2529a9 100644
+--- a/mingw-w64-crt/math/isnanl.c
++++ b/mingw-w64-crt/math/isnanl.c
+@@ -8,7 +8,9 @@
+ int
+ __isnanl (long double _x)
+ {
+-#if defined(__x86_64__) || defined(_AMD64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++    return __isnan(_x);
++#elif defined(__x86_64__) || defined(_AMD64_)
+   __mingw_ldbl_type_t ld;
+   int xx, signexp;
+ 
+@@ -18,8 +20,6 @@ __isnanl (long double _x)
+   signexp |= (unsigned int) (xx | (-xx)) >> 31;
+   signexp = 0xfffe - signexp;
+   return (int) ((unsigned int) signexp) >> 16;
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+-    return __isnan(_x);
+ #elif defined(__i386__) || defined(_X86_)
+   unsigned short _sw;
+   __asm__ __volatile__ ("fxam;"
+diff --git a/mingw-w64-crt/math/lgammal.c b/mingw-w64-crt/math/lgammal.c
+index 998c6a90d..1ccf7fce0 100644
+--- a/mingw-w64-crt/math/lgammal.c
++++ b/mingw-w64-crt/math/lgammal.c
+@@ -5,7 +5,7 @@
+  */
+ #include "cephes_mconf.h"
+ 
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ double lgamma(double x);
+ 
+ long double lgammal(long double x)
+diff --git a/mingw-w64-crt/math/sinhl.c b/mingw-w64-crt/math/sinhl.c
+index aa6f0a9c3..fbf7edd67 100644
+--- a/mingw-w64-crt/math/sinhl.c
++++ b/mingw-w64-crt/math/sinhl.c
+@@ -6,7 +6,7 @@
+ #include "cephes_mconf.h"
+ #include <errno.h>
+ 
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ #include <math.h>
+ 
+ long double sinhl(long double x)
+diff --git a/mingw-w64-crt/math/tanhl.c b/mingw-w64-crt/math/tanhl.c
+index da3fc5e25..326adb2ae 100644
+--- a/mingw-w64-crt/math/tanhl.c
++++ b/mingw-w64-crt/math/tanhl.c
+@@ -8,7 +8,7 @@
+ #define _SET_ERRNO(x)
+ #endif
+ 
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ #include <math.h>
+ 
+ long double tanhl(long double x)
+diff --git a/mingw-w64-crt/math/tgammal.c b/mingw-w64-crt/math/tgammal.c
+index 1c7d4ea94..cfd694fe0 100644
+--- a/mingw-w64-crt/math/tgammal.c
++++ b/mingw-w64-crt/math/tgammal.c
+@@ -5,7 +5,7 @@
+  */
+ #include "cephes_mconf.h"
+ 
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+ double tgamma(double x);
+ 
+ long double tgammal(long double x)
+diff --git a/mingw-w64-crt/math/truncl.c b/mingw-w64-crt/math/truncl.c
+index d1b296661..a28fed3dc 100644
+--- a/mingw-w64-crt/math/truncl.c
++++ b/mingw-w64-crt/math/truncl.c
+@@ -9,7 +9,7 @@
+ long double
+ truncl (long double _x)
+ {
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+   return trunc(_x);
+ #else
+   long double retval = 0.0L;
+-- 
+2.43.0
+

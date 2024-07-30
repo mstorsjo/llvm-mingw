@@ -1,0 +1,224 @@
+From 8459172773cb568ff717bc7df2547304d665d204 Mon Sep 17 00:00:00 2001
+From: Jacek Caban <jacek@codeweavers.com>
+Date: Wed, 12 Mar 2025 12:11:23 +0100
+Subject: [PATCH 06/24] crt: Remove target checks from math/arm-common/* files.
+
+These files are already in a target-specific directory, and it's the build
+system's job to include them only for applicable targets.
+
+This also allows their use for ARM64EC.
+
+Signed-off-by: Jacek Caban <jacek@codeweavers.com>
+---
+ mingw-w64-crt/math/arm-common/acoshl.c     | 4 ----
+ mingw-w64-crt/math/arm-common/asinhl.c     | 4 ----
+ mingw-w64-crt/math/arm-common/atanhl.c     | 4 ----
+ mingw-w64-crt/math/arm-common/expm1l.c     | 4 ----
+ mingw-w64-crt/math/arm-common/ilogbl.c     | 4 ----
+ mingw-w64-crt/math/arm-common/ldexpl.c     | 4 ----
+ mingw-w64-crt/math/arm-common/log1pl.c     | 4 ----
+ mingw-w64-crt/math/arm-common/log2.c       | 4 ----
+ mingw-w64-crt/math/arm-common/logbl.c      | 4 ----
+ mingw-w64-crt/math/arm-common/powl.c       | 4 ----
+ mingw-w64-crt/math/arm-common/remainderl.c | 4 ----
+ mingw-w64-crt/math/arm-common/remquol.c    | 4 ----
+ mingw-w64-crt/math/arm-common/scalbn.c     | 8 --------
+ 13 files changed, 56 deletions(-)
+
+diff --git a/mingw-w64-crt/math/arm-common/acoshl.c b/mingw-w64-crt/math/arm-common/acoshl.c
+index c2157bebc..451926e3b 100644
+--- a/mingw-w64-crt/math/arm-common/acoshl.c
++++ b/mingw-w64-crt/math/arm-common/acoshl.c
+@@ -8,9 +8,5 @@
+ 
+ long double acoshl(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return acosh(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/asinhl.c b/mingw-w64-crt/math/arm-common/asinhl.c
+index 556b3c4f5..7276467f8 100644
+--- a/mingw-w64-crt/math/arm-common/asinhl.c
++++ b/mingw-w64-crt/math/arm-common/asinhl.c
+@@ -8,9 +8,5 @@
+ 
+ long double asinhl(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return asinh(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/atanhl.c b/mingw-w64-crt/math/arm-common/atanhl.c
+index c4d124b9f..7b5180e34 100644
+--- a/mingw-w64-crt/math/arm-common/atanhl.c
++++ b/mingw-w64-crt/math/arm-common/atanhl.c
+@@ -8,9 +8,5 @@
+ 
+ long double atanhl(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return atanh(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/expm1l.c b/mingw-w64-crt/math/arm-common/expm1l.c
+index baf4da23a..09e30d1e5 100644
+--- a/mingw-w64-crt/math/arm-common/expm1l.c
++++ b/mingw-w64-crt/math/arm-common/expm1l.c
+@@ -8,9 +8,5 @@
+ 
+ long double expm1l(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return expm1(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/ilogbl.c b/mingw-w64-crt/math/arm-common/ilogbl.c
+index 1a6865d46..2e7456573 100644
+--- a/mingw-w64-crt/math/arm-common/ilogbl.c
++++ b/mingw-w64-crt/math/arm-common/ilogbl.c
+@@ -8,9 +8,5 @@
+ 
+ int ilogbl(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return ilogb(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/ldexpl.c b/mingw-w64-crt/math/arm-common/ldexpl.c
+index 2c2a9e51a..2a2a3771c 100644
+--- a/mingw-w64-crt/math/arm-common/ldexpl.c
++++ b/mingw-w64-crt/math/arm-common/ldexpl.c
+@@ -8,9 +8,5 @@
+ 
+ long double ldexpl(long double x, int n)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return ldexp(x, n);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/log1pl.c b/mingw-w64-crt/math/arm-common/log1pl.c
+index c2b321a26..183053a42 100644
+--- a/mingw-w64-crt/math/arm-common/log1pl.c
++++ b/mingw-w64-crt/math/arm-common/log1pl.c
+@@ -8,9 +8,5 @@
+ 
+ long double log1pl(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return log1p(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/log2.c b/mingw-w64-crt/math/arm-common/log2.c
+index 42ae3eeeb..7d9c89087 100644
+--- a/mingw-w64-crt/math/arm-common/log2.c
++++ b/mingw-w64-crt/math/arm-common/log2.c
+@@ -47,9 +47,5 @@ float log2f(float x)
+ 
+ long double log2l(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return log2(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/logbl.c b/mingw-w64-crt/math/arm-common/logbl.c
+index fca06754d..4b308a714 100644
+--- a/mingw-w64-crt/math/arm-common/logbl.c
++++ b/mingw-w64-crt/math/arm-common/logbl.c
+@@ -8,9 +8,5 @@
+ 
+ long double logbl(long double x)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return logb(x);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/powl.c b/mingw-w64-crt/math/arm-common/powl.c
+index 46e6b2d45..fa032e99a 100644
+--- a/mingw-w64-crt/math/arm-common/powl.c
++++ b/mingw-w64-crt/math/arm-common/powl.c
+@@ -8,9 +8,5 @@
+ 
+ long double powl(long double x, long double y)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return pow(x, y);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/remainderl.c b/mingw-w64-crt/math/arm-common/remainderl.c
+index 16fef9465..9f9402840 100644
+--- a/mingw-w64-crt/math/arm-common/remainderl.c
++++ b/mingw-w64-crt/math/arm-common/remainderl.c
+@@ -9,9 +9,5 @@
+ 
+ long double remainderl(long double x, long double y)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+   return remainder(x, y);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/remquol.c b/mingw-w64-crt/math/arm-common/remquol.c
+index c9fb1cbb5..2b7119649 100644
+--- a/mingw-w64-crt/math/arm-common/remquol.c
++++ b/mingw-w64-crt/math/arm-common/remquol.c
+@@ -9,9 +9,5 @@
+ 
+ long double remquol(long double x, long double y, int *quo)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return remquo(x, y, quo);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+diff --git a/mingw-w64-crt/math/arm-common/scalbn.c b/mingw-w64-crt/math/arm-common/scalbn.c
+index 0e2f14ab7..d3db6d243 100644
+--- a/mingw-w64-crt/math/arm-common/scalbn.c
++++ b/mingw-w64-crt/math/arm-common/scalbn.c
+@@ -18,11 +18,7 @@ float scalbnf(float x, int exp)
+ 
+ long double scalbnl(long double x, int exp)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return scalbn(x, exp);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+ 
+ double scalbln(double x, long exp)
+@@ -37,9 +33,5 @@ float scalblnf(float x, long exp)
+ 
+ long double scalblnl(long double x, long exp)
+ {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     return scalbln(x, exp);
+-#else
+-#error Not supported on your platform yet
+-#endif
+ }
+-- 
+2.43.0
+

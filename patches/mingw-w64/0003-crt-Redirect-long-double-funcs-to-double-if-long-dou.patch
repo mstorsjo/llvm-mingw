@@ -1,0 +1,624 @@
+From b842f5e3be3052142d8dd419145a8be42c1785e6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 13 Mar 2025 14:14:02 +0200
+Subject: [PATCH 03/24] crt: Redirect long double funcs to double, if long
+ double == double
+
+These cases are files only used for x86; the corresponding cases on
+arm/aarch64 are implemented in separate files (or used from the CRT).
+---
+ mingw-w64-crt/math/cbrtl.c          | 8 ++++++++
+ mingw-w64-crt/math/hypotl.c         | 4 ++++
+ mingw-w64-crt/math/modfl.c          | 4 ++++
+ mingw-w64-crt/math/sqrtl.c          | 8 ++++++++
+ mingw-w64-crt/math/x86/_chgsignl.S  | 4 ++++
+ mingw-w64-crt/math/x86/acosl.c      | 5 +++++
+ mingw-w64-crt/math/x86/asinl.c      | 5 +++++
+ mingw-w64-crt/math/x86/atan2l.c     | 5 +++++
+ mingw-w64-crt/math/x86/atanl.c      | 5 +++++
+ mingw-w64-crt/math/x86/ceill.S      | 4 ++++
+ mingw-w64-crt/math/x86/copysignl.S  | 4 ++++
+ mingw-w64-crt/math/x86/cosl.c       | 8 ++++++++
+ mingw-w64-crt/math/x86/cossinl.c    | 5 +++++
+ mingw-w64-crt/math/x86/exp2l.S      | 4 ++++
+ mingw-w64-crt/math/x86/expl.c       | 8 ++++++++
+ mingw-w64-crt/math/x86/expm1l.c     | 8 ++++++++
+ mingw-w64-crt/math/x86/floorl.S     | 4 ++++
+ mingw-w64-crt/math/x86/fmodl.c      | 5 +++++
+ mingw-w64-crt/math/x86/ilogbl.S     | 4 ++++
+ mingw-w64-crt/math/x86/log10l.S     | 4 ++++
+ mingw-w64-crt/math/x86/log1pl.S     | 4 ++++
+ mingw-w64-crt/math/x86/log2l.S      | 4 ++++
+ mingw-w64-crt/math/x86/logl.c       | 9 +++++++++
+ mingw-w64-crt/math/x86/nearbyintl.S | 4 ++++
+ mingw-w64-crt/math/x86/powl.c       | 8 ++++++++
+ mingw-w64-crt/math/x86/remainderl.S | 4 ++++
+ mingw-w64-crt/math/x86/remquol.S    | 4 ++++
+ mingw-w64-crt/math/x86/sinl.c       | 8 ++++++++
+ mingw-w64-crt/math/x86/tanl.S       | 4 ++++
+ 29 files changed, 155 insertions(+)
+
+diff --git a/mingw-w64-crt/math/cbrtl.c b/mingw-w64-crt/math/cbrtl.c
+index 40e02ed8f..156278980 100644
+--- a/mingw-w64-crt/math/cbrtl.c
++++ b/mingw-w64-crt/math/cbrtl.c
+@@ -5,6 +5,13 @@
+  */
+ #include "cephes_mconf.h"
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++long double cbrtl(long double x)
++{
++	return cbrt(x);
++}
++#else
++
+ static const long double CBRT2  = 1.2599210498948731647672L;
+ static const long double CBRT4  = 1.5874010519681994747517L;
+ static const long double CBRT2I = 0.79370052598409973737585L;
+@@ -80,3 +87,4 @@ long double cbrtl(long double x)
+ 		x = -x;
+ 	return (x);
+ }
++#endif
+diff --git a/mingw-w64-crt/math/hypotl.c b/mingw-w64-crt/math/hypotl.c
+index 563aeb498..950d2f01f 100644
+--- a/mingw-w64-crt/math/hypotl.c
++++ b/mingw-w64-crt/math/hypotl.c
+@@ -28,6 +28,9 @@ Direct inquiries to 30 Frost Street, Cambridge, MA 02140
+ long double
+ hypotl (long double x, long double y)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return hypot(x, y);
++#else
+   int exx;
+   int eyy;
+   int  scale;
+@@ -79,4 +82,5 @@ hypotl (long double x, long double y)
+ 
+   /* Undo scaling */
+   return (scalbnl (xx, scale));
++#endif
+ }
+diff --git a/mingw-w64-crt/math/modfl.c b/mingw-w64-crt/math/modfl.c
+index 33593e6de..1d1f5b5b0 100644
+--- a/mingw-w64-crt/math/modfl.c
++++ b/mingw-w64-crt/math/modfl.c
+@@ -10,6 +10,9 @@
+ long double
+ modfl (long double value, long double* iptr)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return modf(value, (double*) iptr);
++#else
+   long double int_part = 0.0L;
+   /* truncate */
+ #if defined(_AMD64_) || defined(__x86_64__)
+@@ -38,4 +41,5 @@ modfl (long double value, long double* iptr)
+   if (iptr)
+     *iptr = int_part;
+   return (isinf (value) ?  0.0L : value - int_part);
++#endif
+ }
+diff --git a/mingw-w64-crt/math/sqrtl.c b/mingw-w64-crt/math/sqrtl.c
+index ffd818591..b545ae91f 100644
+--- a/mingw-w64-crt/math/sqrtl.c
++++ b/mingw-w64-crt/math/sqrtl.c
+@@ -42,5 +42,13 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double sqrtl(long double x) {
++    return sqrt(x);
++}
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "sqrt.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/_chgsignl.S b/mingw-w64-crt/math/x86/_chgsignl.S
+index ae601b2c4..ead8f9f76 100644
+--- a/mingw-w64-crt/math/x86/_chgsignl.S
++++ b/mingw-w64-crt/math/x86/_chgsignl.S
+@@ -28,6 +28,9 @@
+ 	.globl __MINGW_USYMBOL(_chgsignl)
+ 	.def	__MINGW_USYMBOL(_chgsignl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(_chgsignl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp	__MINGW_USYMBOL(_chgsign)
++#else
+ #if defined(_AMD64_) || defined(__x86_64__)
+ 	movq	(%rdx), %rax
+ 	movq	8(%rdx), %rdx
+@@ -43,4 +46,5 @@ __MINGW_USYMBOL(_chgsignl):
+ 	fldt	4(%esp)
+ 	ret
+ #endif
++#endif
+ 
+diff --git a/mingw-w64-crt/math/x86/acosl.c b/mingw-w64-crt/math/x86/acosl.c
+index 553d06f75..badc4246b 100644
+--- a/mingw-w64-crt/math/x86/acosl.c
++++ b/mingw-w64-crt/math/x86/acosl.c
+@@ -4,9 +4,13 @@
+  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+  */
+ long double acosl (long double x);
++double acos (double x);
+ 
+ long double acosl (long double x)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return acos (x);
++#else
+   long double res = 0.0L;
+ 
+   /* acosl = atanl (sqrtl(1 - x^2) / x) */
+@@ -20,4 +24,5 @@ long double acosl (long double x)
+ 	"fpatan"
+ 	: "=t" (res) : "0" (x) : "st(1)");
+   return res;
++#endif
+ }
+diff --git a/mingw-w64-crt/math/x86/asinl.c b/mingw-w64-crt/math/x86/asinl.c
+index 35df3b5dd..d4add9363 100644
+--- a/mingw-w64-crt/math/x86/asinl.c
++++ b/mingw-w64-crt/math/x86/asinl.c
+@@ -11,9 +11,13 @@
+ 
+ /* asin = atan (x / sqrt(1 - x^2)) */
+ long double asinl (long double x);
++double asin (double x);
+ 
+ long double asinl (long double x)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return asin (x);
++#else
+   long double res = 0.0L;
+ 
+   asm volatile (
+@@ -25,4 +29,5 @@ long double asinl (long double x)
+ 	"fpatan"
+ 	: "=t" (res) : "0" (x) : "st(1)");
+   return res;
++#endif
+ }
+diff --git a/mingw-w64-crt/math/x86/atan2l.c b/mingw-w64-crt/math/x86/atan2l.c
+index a4300cbf4..5a9593860 100644
+--- a/mingw-w64-crt/math/x86/atan2l.c
++++ b/mingw-w64-crt/math/x86/atan2l.c
+@@ -4,11 +4,16 @@
+  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+  */
+ long double atan2l (long double y, long double x);
++double atan2 (double y, double x);
+ 
+ long double
+ atan2l (long double y, long double x)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return atan2 (y, x);
++#else
+   long double res = 0.0L;
+   asm volatile ("fpatan" : "=t" (res) : "u" (y), "0" (x) : "st(1)");
+   return res;
++#endif
+ }
+diff --git a/mingw-w64-crt/math/x86/atanl.c b/mingw-w64-crt/math/x86/atanl.c
+index d289ef08c..8397876af 100644
+--- a/mingw-w64-crt/math/x86/atanl.c
++++ b/mingw-w64-crt/math/x86/atanl.c
+@@ -4,10 +4,14 @@
+  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+  */
+ long double atanl (long double x);
++double atan (double x);
+ 
+ long double
+ atanl (long double x)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return atan (x);
++#else
+   long double res = 0.0L;
+ 
+   asm volatile (
+@@ -15,4 +19,5 @@ atanl (long double x)
+        "fpatan"
+        : "=t" (res) : "0" (x));
+   return res;
++#endif
+ }
+diff --git a/mingw-w64-crt/math/x86/ceill.S b/mingw-w64-crt/math/x86/ceill.S
+index 04b609333..8025c7996 100644
+--- a/mingw-w64-crt/math/x86/ceill.S
++++ b/mingw-w64-crt/math/x86/ceill.S
+@@ -15,6 +15,9 @@
+ 	.globl __MINGW_USYMBOL(ceill)
+ 	.def	__MINGW_USYMBOL(ceill);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(ceill):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp	__MINGW_USYMBOL(ceil)
++#else
+ #if defined(_AMD64_) || defined(__x86_64__)
+ 	fldt	(%rdx)
+ 	subq	$24,%rsp
+@@ -53,3 +56,4 @@ __MINGW_USYMBOL(ceill):
+ 	addl $8,%esp
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/copysignl.S b/mingw-w64-crt/math/x86/copysignl.S
+index 6f98c7a5d..58704f546 100644
+--- a/mingw-w64-crt/math/x86/copysignl.S
++++ b/mingw-w64-crt/math/x86/copysignl.S
+@@ -21,6 +21,9 @@
+ 	.globl __MINGW_USYMBOL(copysignl)
+ 	.def	__MINGW_USYMBOL(copysignl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(copysignl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp	__MINGW_USYMBOL(copysign)
++#else
+ #if defined(_AMD64_) || defined(__x86_64__)
+ 	movq	(%rdx), %rax
+ 	movq	%rax, (%rcx)
+@@ -42,3 +45,4 @@ __MINGW_USYMBOL(copysignl):
+ 	fldt	4(%esp)
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/cosl.c b/mingw-w64-crt/math/x86/cosl.c
+index f798862d3..36cc21ea6 100644
+--- a/mingw-w64-crt/math/x86/cosl.c
++++ b/mingw-w64-crt/math/x86/cosl.c
+@@ -42,5 +42,13 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double cosl(long double x) {
++    return cos(x);
++}
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "cos.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/cossinl.c b/mingw-w64-crt/math/x86/cossinl.c
+index cfd172dcb..1adc6e674 100644
+--- a/mingw-w64-crt/math/x86/cossinl.c
++++ b/mingw-w64-crt/math/x86/cossinl.c
+@@ -5,9 +5,13 @@
+  */
+ 
+ void sincosl (long double __x, long double *p_sin, long double *p_cos);
++void sincos (double __x, double *p_sin, double *p_cos);
+ 
+ void sincosl (long double __x, long double *p_sin, long double *p_cos)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  sincos (__x, (double*) p_sin, (double*) p_cos);
++#else
+   long double c, s;
+ 
+   __asm__ __volatile__ ("fsincos\n\t"
+@@ -26,4 +30,5 @@ void sincosl (long double __x, long double *p_sin, long double *p_cos)
+     "1:" : "=t" (c), "=u" (s) : "0" (__x) : "eax");
+   *p_sin = s;
+   *p_cos = c;
++#endif
+ }
+diff --git a/mingw-w64-crt/math/x86/exp2l.S b/mingw-w64-crt/math/x86/exp2l.S
+index 2e58c37b8..6e4f20892 100644
+--- a/mingw-w64-crt/math/x86/exp2l.S
++++ b/mingw-w64-crt/math/x86/exp2l.S
+@@ -15,6 +15,9 @@
+ .globl __MINGW_USYMBOL(exp2l)
+ 	.def	__MINGW_USYMBOL(exp2l);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(exp2l):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(exp2)
++#else
+ #ifdef __x86_64__
+ 	fldt	(%rdx)
+ 	fxam				/* Is NaN or +-Inf?  */
+@@ -90,3 +93,4 @@ __MINGW_USYMBOL(exp2l):
+ 	fldz				/* Set result to 0.  */
+ 2:	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/expl.c b/mingw-w64-crt/math/x86/expl.c
+index 7f4be6239..b589d6ea3 100644
+--- a/mingw-w64-crt/math/x86/expl.c
++++ b/mingw-w64-crt/math/x86/expl.c
+@@ -42,5 +42,13 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double expl(long double x) {
++    return exp(x);
++}
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "exp.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/expm1l.c b/mingw-w64-crt/math/x86/expm1l.c
+index 625fbb1d7..4507ede12 100644
+--- a/mingw-w64-crt/math/x86/expm1l.c
++++ b/mingw-w64-crt/math/x86/expm1l.c
+@@ -42,5 +42,13 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double expm1l(long double x) {
++    return expm1(x);
++}
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "expm1.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/floorl.S b/mingw-w64-crt/math/x86/floorl.S
+index 6a08d590a..237ad808e 100644
+--- a/mingw-w64-crt/math/x86/floorl.S
++++ b/mingw-w64-crt/math/x86/floorl.S
+@@ -15,6 +15,9 @@
+ 	.globl __MINGW_USYMBOL(floorl)
+ 	.def	__MINGW_USYMBOL(floorl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(floorl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp	__MINGW_USYMBOL(floor)
++#else
+ #if defined(_AMD64_) || defined(__x86_64__)
+ 	fldt	(%rdx)
+ 	subq	$24,%rsp
+@@ -61,3 +64,4 @@ __MINGW_USYMBOL(floorl):
+ 	addl	$8,%esp
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/fmodl.c b/mingw-w64-crt/math/x86/fmodl.c
+index 462b6fa79..8af93facc 100644
+--- a/mingw-w64-crt/math/x86/fmodl.c
++++ b/mingw-w64-crt/math/x86/fmodl.c
+@@ -4,10 +4,14 @@
+  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+  */
+ long double fmodl (long double x, long double y);
++double fmod (double x, double y);
+ 
+ long double
+ fmodl (long double x, long double y)
+ {
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++  return fmod (x, y);
++#else
+   long double res = 0.0L;
+ 
+   asm volatile (
+@@ -18,4 +22,5 @@ fmodl (long double x, long double y)
+        "fstp    %%st(1)"
+        : "=t" (res) : "0" (x), "u" (y) : "ax", "st(1)");
+   return res;
++#endif
+ }
+diff --git a/mingw-w64-crt/math/x86/ilogbl.S b/mingw-w64-crt/math/x86/ilogbl.S
+index 14be7e54c..6f1fbd95b 100644
+--- a/mingw-w64-crt/math/x86/ilogbl.S
++++ b/mingw-w64-crt/math/x86/ilogbl.S
+@@ -15,6 +15,9 @@
+ .globl __MINGW_USYMBOL(ilogbl)
+ 	.def	__MINGW_USYMBOL(ilogbl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(ilogbl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(ilogb)
++#else
+ #ifdef __x86_64__
+ 	fldt	(%rcx)
+ 	fxam			/* Is NaN or +-Inf?  */
+@@ -67,3 +70,4 @@ __MINGW_USYMBOL(ilogbl):
+ 	movl	$0x7fffffff, %eax
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/log10l.S b/mingw-w64-crt/math/x86/log10l.S
+index 33d45a3a8..69bbe9062 100644
+--- a/mingw-w64-crt/math/x86/log10l.S
++++ b/mingw-w64-crt/math/x86/log10l.S
+@@ -27,6 +27,9 @@ limit:	.double 0.29
+ .globl __MINGW_USYMBOL(log10l)
+ 	.def	__MINGW_USYMBOL(log10l);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(log10l):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(log10)
++#else
+ #ifdef __x86_64__
+ 	fldlg2			// log10(2)
+ 	fldt	(%rdx)		// x : log10(2)
+@@ -91,3 +94,4 @@ __MINGW_USYMBOL(log10l):
+ 	fstp	%st(1)
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/log1pl.S b/mingw-w64-crt/math/x86/log1pl.S
+index a56bcf4ec..47a85ceeb 100644
+--- a/mingw-w64-crt/math/x86/log1pl.S
++++ b/mingw-w64-crt/math/x86/log1pl.S
+@@ -38,6 +38,9 @@ one:	.double 1.0
+ .globl __MINGW_USYMBOL(log1pl)
+ 	.def	__MINGW_USYMBOL(log1pl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(log1pl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(log1p)
++#else
+ #ifdef __x86_64__
+ 	fldln2
+ 	fldt	(%rdx)
+@@ -100,3 +103,4 @@ __MINGW_USYMBOL(log1pl):
+ 	fstp	%st(1)
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/log2l.S b/mingw-w64-crt/math/x86/log2l.S
+index 771cd8ae4..1764e5d09 100644
+--- a/mingw-w64-crt/math/x86/log2l.S
++++ b/mingw-w64-crt/math/x86/log2l.S
+@@ -21,6 +21,9 @@ limit:	.double 0.29
+ .globl __MINGW_USYMBOL(log2l)
+ 	.def	__MINGW_USYMBOL(log2l);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(log2l):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(log2)
++#else
+ #ifdef __x86_64__
+ 	fldl	one(%rip)
+ 	fldt	(%rdx)		// x : 1
+@@ -85,3 +88,4 @@ __MINGW_USYMBOL(log2l):
+ 	fstp	%st(1)
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/logl.c b/mingw-w64-crt/math/x86/logl.c
+index a0fa386dc..bbcb16d76 100644
+--- a/mingw-w64-crt/math/x86/logl.c
++++ b/mingw-w64-crt/math/x86/logl.c
+@@ -42,5 +42,14 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double logl(long double x) {
++    return log(x);
++}
++
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "log.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/nearbyintl.S b/mingw-w64-crt/math/x86/nearbyintl.S
+index 38825344f..9a1a07125 100644
+--- a/mingw-w64-crt/math/x86/nearbyintl.S
++++ b/mingw-w64-crt/math/x86/nearbyintl.S
+@@ -15,6 +15,9 @@
+ 	.globl __MINGW_USYMBOL(nearbyintl)
+ 	.def	__MINGW_USYMBOL(nearbyintl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(nearbyintl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp	__MINGW_USYMBOL(nearbyint)
++#else
+ #if defined(_AMD64_) || defined(__x86_64__)
+ 	fldt	(%rdx)
+ 	movq	%rcx,%r8
+@@ -50,3 +53,4 @@ __MINGW_USYMBOL(nearbyintl):
+ 	popl	%eax
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/powl.c b/mingw-w64-crt/math/x86/powl.c
+index 686437069..741bf6720 100644
+--- a/mingw-w64-crt/math/x86/powl.c
++++ b/mingw-w64-crt/math/x86/powl.c
+@@ -42,5 +42,13 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double powl(long double x, long double y) {
++    return pow(x, y);
++}
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "pow.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/remainderl.S b/mingw-w64-crt/math/x86/remainderl.S
+index a69e38296..cb91377db 100644
+--- a/mingw-w64-crt/math/x86/remainderl.S
++++ b/mingw-w64-crt/math/x86/remainderl.S
+@@ -15,6 +15,9 @@
+ .globl __MINGW_USYMBOL(remainderl)
+ 	.def	__MINGW_USYMBOL(remainderl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(remainderl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp	__MINGW_USYMBOL(remainder)
++#else
+ #ifdef __x86_64__
+ 	fldt	(%r8)
+ 	fldt	(%rdx)
+@@ -37,3 +40,4 @@ __MINGW_USYMBOL(remainderl):
+ 	fstp	%st(1)
+ 	ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/remquol.S b/mingw-w64-crt/math/x86/remquol.S
+index 42cc2a78d..233e65523 100644
+--- a/mingw-w64-crt/math/x86/remquol.S
++++ b/mingw-w64-crt/math/x86/remquol.S
+@@ -14,6 +14,9 @@
+ #endif
+ .globl __MINGW_USYMBOL(remquol)
+ __MINGW_USYMBOL(remquol):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(remquo)
++#else
+ #ifdef __x86_64__
+  	pushq	%rcx
+         fldt (%r8)
+@@ -73,3 +76,4 @@ __MINGW_USYMBOL(remquol):
+       
+         ret
+ #endif
++#endif
+diff --git a/mingw-w64-crt/math/x86/sinl.c b/mingw-w64-crt/math/x86/sinl.c
+index 0bbb71d37..d9394b426 100644
+--- a/mingw-w64-crt/math/x86/sinl.c
++++ b/mingw-w64-crt/math/x86/sinl.c
+@@ -42,5 +42,13 @@
+  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++#include <math.h>
++
++long double sinl(long double x) {
++    return sin(x);
++}
++#else
+ #define _NEW_COMPLEX_LDOUBLE 1
+ #include "sin.def.h"
++#endif
+diff --git a/mingw-w64-crt/math/x86/tanl.S b/mingw-w64-crt/math/x86/tanl.S
+index f11b53920..00f9c0765 100644
+--- a/mingw-w64-crt/math/x86/tanl.S
++++ b/mingw-w64-crt/math/x86/tanl.S
+@@ -15,6 +15,9 @@
+ .globl __MINGW_USYMBOL(tanl)
+ 	.def	__MINGW_USYMBOL(tanl);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(tanl):
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	jmp __MINGW_USYMBOL(tan)
++#else
+ #ifdef __x86_64__
+ 	fldt	(%rdx)
+ 	fptan
+@@ -60,3 +63,4 @@ __MINGW_USYMBOL(tanl):
+ 	fstp	%st(0)
+ 	ret
+ #endif
++#endif
+-- 
+2.43.0
+

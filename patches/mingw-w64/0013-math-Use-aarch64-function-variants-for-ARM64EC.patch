@@ -1,0 +1,368 @@
+From d2a2b7c9891110ea498cb2a721d6bd3a768094d8 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 21:11:39 +0100
+Subject: [PATCH 13/24] math: Use aarch64 function variants for ARM64EC
+
+---
+ mingw-w64-crt/math/cephes_mconf.h | 6 ++++--
+ mingw-w64-crt/math/fma.c          | 5 +++--
+ mingw-w64-crt/math/fmaf.c         | 5 +++--
+ mingw-w64-crt/math/fmal.c         | 6 ++++--
+ mingw-w64-crt/math/fpclassifyl.c  | 5 +++--
+ mingw-w64-crt/math/frexpl.c       | 3 ++-
+ mingw-w64-crt/math/llrint.c       | 2 +-
+ mingw-w64-crt/math/llrintf.c      | 2 +-
+ mingw-w64-crt/math/llrintl.c      | 3 ++-
+ mingw-w64-crt/math/lrint.c        | 6 +++---
+ mingw-w64-crt/math/lrintf.c       | 6 +++---
+ mingw-w64-crt/math/lrintl.c       | 5 +++--
+ mingw-w64-crt/math/modf.c         | 2 +-
+ mingw-w64-crt/math/modff.c        | 2 +-
+ mingw-w64-crt/math/modfl.c        | 2 +-
+ mingw-w64-crt/math/rintl.c        | 2 +-
+ mingw-w64-crt/math/signbitl.c     | 4 ++--
+ mingw-w64-crt/math/sqrt.def.h     | 5 +++--
+ 18 files changed, 41 insertions(+), 30 deletions(-)
+
+diff --git a/mingw-w64-crt/math/cephes_mconf.h b/mingw-w64-crt/math/cephes_mconf.h
+index f502f187b..9dec43d86 100644
+--- a/mingw-w64-crt/math/cephes_mconf.h
++++ b/mingw-w64-crt/math/cephes_mconf.h
+@@ -66,7 +66,8 @@ extern double __QNAN;
+ #endif
+ 
+ /*long double*/
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_) || \
++    defined(__arm64ec__) || defined(_ARM64EC_)
+ #define MAXNUML	1.7976931348623158E308
+ #define MAXLOGL	7.09782712893383996843E2
+ #define MINLOGL	-7.08396418532264106224E2
+@@ -84,7 +85,8 @@ extern double __QNAN;
+ #define PIL	3.1415926535897932384626L
+ #define PIO2L	1.5707963267948966192313L
+ #define PIO4L	7.8539816339744830961566E-1L
+-#endif /* defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_) */
++#endif /* defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++          defined(__arm64ec__) || defined(_ARM64EC_) */
+ 
+ #define isfinitel isfinite
+ #define isinfl isinf
+diff --git a/mingw-w64-crt/math/fma.c b/mingw-w64-crt/math/fma.c
+index 6774be787..8844aa499 100644
+--- a/mingw-w64-crt/math/fma.c
++++ b/mingw-w64-crt/math/fma.c
+@@ -17,7 +17,7 @@ double fma(double x, double y, double z){
+   return z;
+ }
+ 
+-#elif defined(_ARM64_) || defined(__aarch64__)
++#elif defined(_ARM64_) || defined(__aarch64__) || defined(_ARM64EC_) || defined(__arm64ec__)
+ 
+ /* Use hardware FMA on ARM64. */
+ double fma(double x, double y, double z){
+@@ -29,7 +29,8 @@ double fma(double x, double y, double z){
+   return z;
+ }
+ 
+-#elif defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#elif (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__)
+ 
+ #include <math.h>
+ #include <stdint.h>
+diff --git a/mingw-w64-crt/math/fmaf.c b/mingw-w64-crt/math/fmaf.c
+index 4661e4b82..411bf5bcc 100644
+--- a/mingw-w64-crt/math/fmaf.c
++++ b/mingw-w64-crt/math/fmaf.c
+@@ -17,7 +17,7 @@ float fmaf(float x, float y, float z){
+   return z;
+ }
+ 
+-#elif defined(_ARM64_) || defined(__aarch64__)
++#elif defined(_ARM64_) || defined(__aarch64__) || defined(_ARM64EC_) || defined(__arm64ec__)
+ 
+ /* Use hardware FMA on ARM64. */
+ float fmaf(float x, float y, float z){
+@@ -29,7 +29,8 @@ float fmaf(float x, float y, float z){
+   return z;
+ }
+ 
+-#elif defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#elif (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__)
+ 
+ #include <math.h>
+ #include <stdint.h>
+diff --git a/mingw-w64-crt/math/fmal.c b/mingw-w64-crt/math/fmal.c
+index 67e5c503a..0e9b217dd 100644
+--- a/mingw-w64-crt/math/fmal.c
++++ b/mingw-w64-crt/math/fmal.c
+@@ -5,7 +5,8 @@
+  */
+ long double fmal(long double x, long double y, long double z);
+ 
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
++#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__) || \
++  defined(_ARM64EC_) || defined(__arm64ec__)
+ 
+ double fma(double x, double y, double z);
+ 
+@@ -14,7 +15,8 @@ long double fmal(long double x, long double y, long double z){
+   return fma(x, y, z);
+ }
+ 
+-#elif defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#elif (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__)
+ 
+ /**
+  * x87-specific software-emulated FMA by LH_Mouse (lh_mouse at 126 dot com).
+diff --git a/mingw-w64-crt/math/fpclassifyl.c b/mingw-w64-crt/math/fpclassifyl.c
+index 3ee487e13..0e11d0b61 100644
+--- a/mingw-w64-crt/math/fpclassifyl.c
++++ b/mingw-w64-crt/math/fpclassifyl.c
+@@ -6,7 +6,7 @@
+ #include <math.h>
+ 
+ int __fpclassifyl (long double _x){
+-#if defined(__x86_64__) || defined(_AMD64_)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+     __mingw_ldbl_type_t hlp;
+     unsigned int e;
+     hlp.x = _x;
+@@ -23,7 +23,8 @@ int __fpclassifyl (long double _x){
+       return (((hlp.lh.high & 0x7fffffff) | hlp.lh.low) == 0 ?
+ 	      FP_INFINITE : FP_NAN);
+     return FP_NORMAL;
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_) || \
++    defined(__arm64ec__) || defined(_ARM64EC_)
+     return __fpclassify(_x);
+ #elif defined(__i386__) || defined(_X86_)
+   unsigned short sw;
+diff --git a/mingw-w64-crt/math/frexpl.c b/mingw-w64-crt/math/frexpl.c
+index f60b68bcd..49dd54ba4 100644
+--- a/mingw-w64-crt/math/frexpl.c
++++ b/mingw-w64-crt/math/frexpl.c
+@@ -15,7 +15,8 @@ long double frexpl(long double value, int* exp)
+   return frexp(value, exp);
+ }
+ 
+-#elif defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#elif (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__)
+ 
+ #include <stdint.h>
+ 
+diff --git a/mingw-w64-crt/math/llrint.c b/mingw-w64-crt/math/llrint.c
+index 4ba7af7e6..6b8b02a60 100644
+--- a/mingw-w64-crt/math/llrint.c
++++ b/mingw-w64-crt/math/llrint.c
+@@ -9,7 +9,7 @@
+ long long llrint (double x) 
+ {
+   long long retval = 0ll;
+-#if defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || defined(_X86_) || defined(__i386__)
+   __asm__ __volatile__ ("fistpll %0"  : "=m" (retval) : "t" (x) : "st");
+ #else
+   int mode = fegetround();
+diff --git a/mingw-w64-crt/math/llrintf.c b/mingw-w64-crt/math/llrintf.c
+index e8085ec4e..38f7c3c2f 100644
+--- a/mingw-w64-crt/math/llrintf.c
++++ b/mingw-w64-crt/math/llrintf.c
+@@ -9,7 +9,7 @@
+ long long llrintf (float x) 
+ {
+   long long retval = 0ll;
+-#if defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || defined(_X86_) || defined(__i386__)
+   __asm__ __volatile__ ("fistpll %0"  : "=m" (retval) : "t" (x) : "st");
+ #else
+   int mode = fegetround();
+diff --git a/mingw-w64-crt/math/llrintl.c b/mingw-w64-crt/math/llrintl.c
+index 6a2bf73d8..a264b333a 100644
+--- a/mingw-w64-crt/math/llrintl.c
++++ b/mingw-w64-crt/math/llrintl.c
+@@ -9,7 +9,8 @@
+ long long llrintl (long double x) 
+ {
+   long long retval = 0ll;
+-#if defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__) 
+   __asm__ __volatile__ ("fistpll %0"  : "=m" (retval) : "t" (x) : "st");
+ #else
+   int mode = fegetround();
+diff --git a/mingw-w64-crt/math/lrint.c b/mingw-w64-crt/math/lrint.c
+index 7831446be..4e4caa86e 100644
+--- a/mingw-w64-crt/math/lrint.c
++++ b/mingw-w64-crt/math/lrint.c
+@@ -5,14 +5,14 @@
+  */
+ #include <math.h>
+ 
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+ #include <xmmintrin.h>
+ #endif
+ 
+ long lrint (double x) 
+ {
+   long retval = 0L;
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+   retval = _mm_cvtsd_si32(_mm_load_sd(&x));
+ #elif defined(_X86_) || defined(__i386__)
+   __asm__ __volatile__ ("fistpl %0"  : "=m" (retval) : "t" (x) : "st");
+@@ -22,7 +22,7 @@ long lrint (double x)
+     "vcvtr.s32.f64    %[tmp], %[src]\n\t"
+     "fmrs             %[dst], %[tmp]\n\t"
+     : [dst] "=r" (retval), [tmp] "=t" (temp) : [src] "w" (x));
+-#elif defined(__aarch64__) || defined(_ARM64_)
++#elif defined(__aarch64__) || defined(_ARM64_) || defined(__arm64ec__) || defined(_ARM64EC_)
+   __asm__ __volatile__ (
+     "frintx %d1, %d1\n\t"
+     "fcvtzs %w0, %d1\n\t"
+diff --git a/mingw-w64-crt/math/lrintf.c b/mingw-w64-crt/math/lrintf.c
+index 1e8902f03..5b3533ede 100644
+--- a/mingw-w64-crt/math/lrintf.c
++++ b/mingw-w64-crt/math/lrintf.c
+@@ -5,14 +5,14 @@
+  */
+ #include <math.h>
+ 
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+ #include <xmmintrin.h>
+ #endif
+ 
+ long lrintf (float x) 
+ {
+   long retval = 0l;
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+   retval = _mm_cvtss_si32(_mm_load_ss(&x));
+ #elif defined(_X86_) || defined(__i386__)
+   __asm__ __volatile__ ("fistpl %0"  : "=m" (retval) : "t" (x) : "st");
+@@ -21,7 +21,7 @@ long lrintf (float x)
+     "vcvtr.s32.f32    %[src], %[src]\n\t"
+     "fmrs             %[dst], %[src]\n\t"
+     : [dst] "=r" (retval), [src] "+w" (x));
+-#elif defined(__aarch64__) || defined(_ARM64_)
++#elif defined(__aarch64__) || defined(_ARM64_) || defined(__arm64ec__) || defined(_ARM64EC_)
+   __asm__ __volatile__ (
+     "frintx %s1, %s1\n\t"
+     "fcvtzs %w0, %s1\n\t"
+diff --git a/mingw-w64-crt/math/lrintl.c b/mingw-w64-crt/math/lrintl.c
+index d710fac05..cacdf2005 100644
+--- a/mingw-w64-crt/math/lrintl.c
++++ b/mingw-w64-crt/math/lrintl.c
+@@ -8,9 +8,10 @@
+ long lrintl (long double x) 
+ {
+   long retval = 0l;
+-#if defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__)
+   __asm__ __volatile__ ("fistpl %0"  : "=m" (retval) : "t" (x) : "st");
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_) || defined(__arm64ec__) || defined(_ARM64EC_)
+     retval = lrint(x);
+ #endif
+   return retval;
+diff --git a/mingw-w64-crt/math/modf.c b/mingw-w64-crt/math/modf.c
+index d2623095c..bf541fad2 100644
+--- a/mingw-w64-crt/math/modf.c
++++ b/mingw-w64-crt/math/modf.c
+@@ -12,7 +12,7 @@ modf (double value, double* iptr)
+ {
+   double int_part = 0.0;
+   /* truncate */
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+   asm volatile ("subq $8, %%rsp\n"
+     "fnstcw 4(%%rsp)\n"
+     "movzwl 4(%%rsp), %%eax\n"
+diff --git a/mingw-w64-crt/math/modff.c b/mingw-w64-crt/math/modff.c
+index dcf19cfed..d2f8514d4 100644
+--- a/mingw-w64-crt/math/modff.c
++++ b/mingw-w64-crt/math/modff.c
+@@ -13,7 +13,7 @@ modff (float value, float* iptr)
+   float int_part = 0.0F;
+   /* truncate */ 
+   /* truncate */
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+   asm volatile ("subq $8, %%rsp\n"
+     "fnstcw 4(%%rsp)\n"
+     "movzwl 4(%%rsp), %%eax\n"
+diff --git a/mingw-w64-crt/math/modfl.c b/mingw-w64-crt/math/modfl.c
+index 1d1f5b5b0..8fa7fec6c 100644
+--- a/mingw-w64-crt/math/modfl.c
++++ b/mingw-w64-crt/math/modfl.c
+@@ -15,7 +15,7 @@ modfl (long double value, long double* iptr)
+ #else
+   long double int_part = 0.0L;
+   /* truncate */
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+   asm volatile ("subq $8, %%rsp\n"
+     "fnstcw 4(%%rsp)\n"
+     "movzwl 4(%%rsp), %%eax\n"
+diff --git a/mingw-w64-crt/math/rintl.c b/mingw-w64-crt/math/rintl.c
+index 1c3780330..b3cc8e9e7 100644
+--- a/mingw-w64-crt/math/rintl.c
++++ b/mingw-w64-crt/math/rintl.c
+@@ -7,7 +7,7 @@
+ 
+ long double rintl (long double x) {
+   long double retval = 0.0L;
+-#if defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || defined(_X86_) || defined(__i386__)
+   __asm__ __volatile__ ("frndint;": "=t" (retval) : "0" (x));
+ #elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+     retval = rint(x);
+diff --git a/mingw-w64-crt/math/signbitl.c b/mingw-w64-crt/math/signbitl.c
+index 19f2938db..b4dba713b 100644
+--- a/mingw-w64-crt/math/signbitl.c
++++ b/mingw-w64-crt/math/signbitl.c
+@@ -9,11 +9,11 @@
+ 
+ 
+ int __signbitl (long double x) {
+-#if defined(__x86_64__) || defined(_AMD64_)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__))
+     __mingw_ldbl_type_t ld;
+     ld.x = x;
+     return ((ld.lh.sign_exponent & 0x8000) != 0);
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_) || defined(__arm64ec__) || defined(_ARM64EC_)
+     return __signbit(x);
+ #elif defined(__i386__) || defined(_X86_)
+   unsigned short sw;
+diff --git a/mingw-w64-crt/math/sqrt.def.h b/mingw-w64-crt/math/sqrt.def.h
+index ed1e663ba..3734b1ed9 100644
+--- a/mingw-w64-crt/math/sqrt.def.h
++++ b/mingw-w64-crt/math/sqrt.def.h
+@@ -77,13 +77,14 @@ __FLT_ABI (sqrt) (__FLT_TYPE x)
+ #else
+   asm volatile ("fsqrtd %[dst], %[src];\n" : [dst] "=w" (res) : [src] "w" (x));
+ #endif
+-#elif defined(__aarch64__) || defined(_ARM64_)
++#elif defined(__aarch64__) || defined(_ARM64_) || defined(__arm64ec__) || defined(_ARM64EC_)
+ #if _NEW_COMPLEX_FLOAT
+   asm volatile ("fsqrt %s[dst], %s[src]\n" : [dst] "=w" (res) : [src] "w" (x));
+ #else
+   asm volatile ("fsqrt %d[dst], %d[src]\n" : [dst] "=w" (res) : [src] "w" (x));
+ #endif
+-#elif defined(_X86_) || defined(__i386__) || defined(_AMD64_) || defined(__x86_64__)
++#elif (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || \
++  defined(_X86_) || defined(__i386__)
+   asm volatile ("fsqrt" : "=t" (res) : "0" (x));
+ #else
+ #error Not supported on your platform yet
+-- 
+2.43.0
+

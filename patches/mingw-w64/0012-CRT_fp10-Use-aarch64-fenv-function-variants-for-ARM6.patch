@@ -1,0 +1,26 @@
+From 1e252a2a4e6dd10a7e3ac81257832313ce1bfcf7 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 20:59:41 +0100
+Subject: [PATCH 12/24] CRT_fp10: Use aarch64 fenv function variants for
+ ARM64EC
+
+---
+ mingw-w64-crt/crt/CRT_fp10.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/crt/CRT_fp10.c b/mingw-w64-crt/crt/CRT_fp10.c
+index f39b5175f..35dd3b064 100644
+--- a/mingw-w64-crt/crt/CRT_fp10.c
++++ b/mingw-w64-crt/crt/CRT_fp10.c
+@@ -11,7 +11,7 @@ void _fpreset (void)
+ #if defined(_ARM_) || defined(__arm__)
+   __asm__ __volatile__ (
+     "vmsr	fpscr, %0\n\t" : : "r"(0 /* INITIAL_FPSCR */));
+-#elif defined(_ARM64_) || defined(__aarch64__)
++#elif defined(_ARM64_) || defined(__aarch64__) || defined(__arm64ec__)
+   __asm__ __volatile__ (
+     "msr	fpcr, %0\n\t" : : "r"(0LL /* INITIAL_FPSCR */));
+ #else
+-- 
+2.43.0
+

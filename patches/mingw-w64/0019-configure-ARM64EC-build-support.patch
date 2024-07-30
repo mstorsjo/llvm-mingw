@@ -1,0 +1,94 @@
+From e5be3be1852019dd245dcd89db7aa7d168719491 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Sat, 16 Sep 2023 00:03:00 +0100
+Subject: [PATCH 19/24] configure: ARM64EC build support
+
+---
+ mingw-w64-crt/Makefile.am  | 13 ++++++++++++-
+ mingw-w64-crt/configure.ac | 12 ++++++++++--
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/mingw-w64-crt/Makefile.am b/mingw-w64-crt/Makefile.am
+index 1e5a0d14b..ae0cf59ae 100644
+--- a/mingw-w64-crt/Makefile.am
++++ b/mingw-w64-crt/Makefile.am
+@@ -28,13 +28,18 @@ CPPFLAGS32=-m32 -masm=att
+ CPPFLAGS64=-m64 -masm=att
+ AM_DLLTOOLFLAGS=-k --as=$(AS) --output-lib $@
+ DLLTOOLFLAGSARM32=-m arm
+-DLLTOOLFLAGSARM64=-m arm64
++if ARM64EC
++    DLLTOOLFLAGSARM64=-m arm64ec
++else
++    DLLTOOLFLAGSARM64=-m arm64
++endif
+ DLLTOOLFLAGS32=--as-flags=--32 -m i386
+ DLLTOOLFLAGS64=--as-flags=--64 -m i386:x86-64
+ DTDEFARM32=$(DLLTOOL) $(DLLTOOLFLAGSARM32) $(AM_DLLTOOLFLAGS) --input-def
+ DTDEFARM64=$(DLLTOOL) $(DLLTOOLFLAGSARM64) $(AM_DLLTOOLFLAGS) --input-def
+ DTDEF32=$(DLLTOOL) $(DLLTOOLFLAGS32) $(AM_DLLTOOLFLAGS) --input-def
+ DTDEF64=$(DLLTOOL) $(DLLTOOLFLAGS64) $(AM_DLLTOOLFLAGS) --input-def
++
+ if DLLTOOL_HAS_TEMP_PREFIX
+   AM_DLLTOOLFLAGS += --temp-prefix $(basename $@)
+ endif
+@@ -1021,6 +1026,12 @@ src_libmingwex=\
+   stdio/vsnprintf.c        stdio/vsnwprintf.c \
+   stdio/wtoll.c            stdio/mingw_asprintf.c    stdio/mingw_vasprintf.c
+ 
++# Include the default load config struct only for Control Flow Guard support or ARM64EC.
++if ARM64EC
++src_libmingwex+=\
++  misc/mingw_arm64ec_support.S
++endif
++
+ # these go into both 32 and 64 bit x86 versions:
+ src_libmingwex_x86=\
+   math/cbrtl.c              math/erfl.c               math/fdiml.c              math/fmal.c               math/fmaxl.c              \
+diff --git a/mingw-w64-crt/configure.ac b/mingw-w64-crt/configure.ac
+index f4f8d954d..85d0ade4e 100644
+--- a/mingw-w64-crt/configure.ac
++++ b/mingw-w64-crt/configure.ac
+@@ -156,7 +156,7 @@ AC_ARG_ENABLE([libarm64],
+     [Build the WinARM64 libraries])],
+   [],
+   [AS_CASE([$host_cpu],
+-    [aarch64*],[enable_libarm64=yes],
++    [aarch64* | arm64*],[enable_libarm64=yes],
+     [*],[enable_libarm64=no])
+   ])
+ AC_MSG_RESULT([$enable_libarm64])
+@@ -181,7 +181,7 @@ AS_CASE([$host_cpu],
+     libx8632suffx=lib
+     libarm64suffx=libarm64
+     libarm32suffx=libarm32],
+-  [aarch64*],[
++  [aarch64* | arm64*],[
+     libx8664suffx=libx8664
+     libx8632suffx=libx8632
+     libarm64suffx=lib
+@@ -210,6 +210,8 @@ AC_SUBST([LIBX8632SUFFIXDIR],[$libx8632suffx])
+ AC_SUBST([LIBARM64SUFFIXDIR],[$libarm64suffx])
+ AC_SUBST([LIBARM32SUFFIXDIR],[$libarm32suffx])
+ 
++AM_CONDITIONAL([ARM64EC],[test $host_cpu = arm64ec])
++
+ # Checks for features.
+ 
+ AC_MSG_CHECKING([whether to enable globbing])
+@@ -377,6 +379,12 @@ AC_MSG_CHECKING([whether the linker provides __ImageBase symbol])
+ 
+ cat <<_ACEOF >conftest.$ac_ext
+ extern unsigned char __ImageBase[[]];
++
++#ifdef __arm64ec__
++// Define a dummy call helper to satisfy the linker
++void *__os_arm64x_dispatch_ret;
++#endif
++
+ void __main(void) {
+ }
+ int main(void) {
+-- 
+2.43.0
+

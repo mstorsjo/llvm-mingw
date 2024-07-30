@@ -1,0 +1,67 @@
+From 074e3752f1557bd4c17e2731394f474881ea82b8 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 21:36:09 +0100
+Subject: [PATCH 14/24] scanf: Use aarch64 function variants for ARM64EC
+
+---
+ mingw-w64-crt/stdio/scanf.S           |  4 ++--
+ mingw-w64-crt/stdio/scanf2-template.S | 10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/mingw-w64-crt/stdio/scanf.S b/mingw-w64-crt/stdio/scanf.S
+index 50e628a89..db6bc70ce 100644
+--- a/mingw-w64-crt/stdio/scanf.S
++++ b/mingw-w64-crt/stdio/scanf.S
+@@ -25,7 +25,7 @@
+              expanded as variadic arguments when calling func
+ */
+ 
+-#if defined (__x86_64__)
++#if defined (__x86_64__) && !defined(__arm64ec__)
+ 
+     .text
+     .align 16
+@@ -200,7 +200,7 @@ __argtos:
+     add     sp, sp, r8, lsl #2
+     pop     {r4-r8, pc}
+ 
+-#elif defined (__aarch64__)
++#elif defined (__aarch64__) || defined(__arm64ec__)
+ 
+     .text
+     .align 2
+diff --git a/mingw-w64-crt/stdio/scanf2-template.S b/mingw-w64-crt/stdio/scanf2-template.S
+index 3c9aa2a4b..b0a6ca2db 100644
+--- a/mingw-w64-crt/stdio/scanf2-template.S
++++ b/mingw-w64-crt/stdio/scanf2-template.S
+@@ -11,22 +11,22 @@
+         .p2align 4,,15
+         .globl  FCT
+         .def    FCT;    .scl    2;      .type   32;     .endef
+-#ifdef __x86_64__
++#if defined(__x86_64__) && !defined(__arm64ec__)
+         .seh_proc       FCT
+ #endif
+ FCT:
+-#ifdef __x86_64__
++#if defined(__x86_64__) && !defined(__arm64ec__)
+         .seh_endprologue
+ #endif
+-#if defined(_AMD64_) || defined(__x86_64__) || defined(_X86_) || defined(__i386__)
++#if (defined(_AMD64_) && !defined(_ARM64EC_)) || (defined(__x86_64__) && !defined(__arm64ec__)) || defined(_X86_) || defined(__i386__)
+         jmp     FWD
+ #elif defined(_ARM_) || defined(__arm__)
+         .thumb_func
+         b       FWD
+-#elif defined(_ARM64_) || defined(__aarch64__)
++#elif defined(_ARM64_) || defined(__aarch64__) || defined(_ARM64EC_) || defined(__arm64ec__)
+         b       FWD
+ #endif
+-#ifdef __x86_64__
++#if defined(__x86_64__) && !defined(__arm64ec__)
+         .seh_endproc
+ #endif
+         .def    FWD;  .scl    2;      .type   32;     .endef
+-- 
+2.43.0
+

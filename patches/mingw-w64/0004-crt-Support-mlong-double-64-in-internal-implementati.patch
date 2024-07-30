@@ -1,0 +1,201 @@
+From d632586b7d19809133d0a2937b048169431d2a4e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Thu, 13 Mar 2025 14:17:25 +0200
+Subject: [PATCH 04/24] crt: Support -mlong-double-64 in internal
+ implementations using x87
+
+These functions take and return long double, and are used as such
+even for the regular double versions of functions.
+
+These functions are only used when using msvcr*, they aren't used
+when linking against UCRT.
+---
+ mingw-w64-crt/math/x86/cosl_internal.S | 19 ++++++++++++++++++-
+ mingw-w64-crt/math/x86/exp.def.h       |  8 ++++++++
+ mingw-w64-crt/math/x86/internal_logl.S | 22 ++++++++++++++++++++++
+ mingw-w64-crt/math/x86/sinl_internal.S | 22 ++++++++++++++++++++++
+ 4 files changed, 70 insertions(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/math/x86/cosl_internal.S b/mingw-w64-crt/math/x86/cosl_internal.S
+index 3c8f60d14..e7c2370a3 100644
+--- a/mingw-w64-crt/math/x86/cosl_internal.S
++++ b/mingw-w64-crt/math/x86/cosl_internal.S
+@@ -16,7 +16,13 @@
+ 	.def	__MINGW_USYMBOL(__cosl_internal);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(__cosl_internal):
+ #ifdef __x86_64__
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	sub	$16, %rsp
++	movsd	%xmm0, (%rsp)
++	fldl	(%rsp)
++#else
+ 	fldt	(%rdx)
++#endif
+ 	fcos
+ 	fnstsw	%ax
+ 	testl	$0x400,%eax
+@@ -30,12 +36,23 @@ __MINGW_USYMBOL(__cosl_internal):
+ 	jnz	2b
+ 	fstp	%st(1)
+ 	fcos
+-1:	movq %rcx,%rax
++1:
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fstpl (%rsp)
++	movsd	(%rsp), %xmm0
++	add	$16, %rsp
++#else
++	movq %rcx,%rax
+ 	movq	$0,8(%rcx)
+ 	fstpt (%rcx)
++#endif
+ 	ret
++#else
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fldl	4(%esp)
+ #else
+ 	fldt	4(%esp)
++#endif
+ 	fcos
+ 	fnstsw	%ax
+ 	testl	$0x400,%eax
+diff --git a/mingw-w64-crt/math/x86/exp.def.h b/mingw-w64-crt/math/x86/exp.def.h
+index 33a176aec..6e5173eb3 100644
+--- a/mingw-w64-crt/math/x86/exp.def.h
++++ b/mingw-w64-crt/math/x86/exp.def.h
+@@ -82,7 +82,11 @@ __expl_internal (long double x)
+     "addl $8, %%esp\n\tpop %%eax\n"
+ #endif
+        "fld %%st(1)\n\t"        /* 3  i               */
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++       "fldl %2\n\t"            /* 4  c0              */
++#else
+        "fldt %2\n\t"            /* 4  c0              */
++#endif
+        "fld %%st(2)\n\t"        /* 5  xi              */
+        "fmul %%st(1),%%st\n\t"  /* 5  c0 xi           */
+        "fsubp %%st,%%st(2)\n\t" /* 4  f = c0 xi  - i  */
+@@ -90,7 +94,11 @@ __expl_internal (long double x)
+        "fsub %%st(3),%%st\n\t"  /* 5  xf = x - xi     */
+        "fmulp %%st,%%st(1)\n\t" /* 4  c0 xf           */
+        "faddp %%st,%%st(1)\n\t" /* 3  f = f + c0 xf   */
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++       "fldl %3\n\t"            /* 4                  */
++#else
+        "fldt %3\n\t"            /* 4                  */
++#endif
+        "fmul %%st(4),%%st\n\t"  /* 4  c1 * x          */
+        "faddp %%st,%%st(1)\n\t" /* 3  f = f + c1 * x  */
+        "f2xm1\n\t"		/* 3 2^(fract(x * log2(e))) - 1 */
+diff --git a/mingw-w64-crt/math/x86/internal_logl.S b/mingw-w64-crt/math/x86/internal_logl.S
+index f8a075774..087aa4052 100644
+--- a/mingw-w64-crt/math/x86/internal_logl.S
++++ b/mingw-w64-crt/math/x86/internal_logl.S
+@@ -23,7 +23,13 @@ limit:	.double 0.29
+ __MINGW_USYMBOL(__logl_internal):
+ #ifdef __x86_64__
+ 	fldln2			// log(2)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	sub	$16, %rsp
++	movsd	%xmm0, (%rsp)
++	fldl	(%rsp)		// x : log(2)
++#else
+ 	fldt	(%rdx)		// x : log(2)
++#endif
+ 	fld	%st		// x : x : log(2)
+ 	fsubl	one(%rip)	// x-1 : x : log(2)
+ 	fld	%st		// x-1 : x-1 : x : log(2)
+@@ -34,20 +40,36 @@ __MINGW_USYMBOL(__logl_internal):
+ 	jz	2f
+ 	fstp	%st(1)		// x-1 : log(2)
+ 	fyl2xp1			// log(x)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fstpl	(%rsp)
++	movsd	(%rsp), %xmm0
++	add	$16, %rsp
++#else
+ 	movq	%rcx,%rax
+ 	movq	$0,8(%rcx)
+ 	fstpt	(%rcx)
++#endif
+ 	ret
+ 
+ 2:	fstp	%st(0)		// x : log(2)
+ 	fyl2x			// log(x)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fstpl	(%rsp)
++	movsd	(%rsp), %xmm0
++	add	$16, %rsp
++#else
+ 	movq	%rcx,%rax
+ 	movq	$0,8(%rcx)
+ 	fstpt	(%rcx)
++#endif
+ 	ret
+ #else
+ 	fldln2			// log(2)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fldl	4(%esp)		// x : log(2)
++#else
+ 	fldt	4(%esp)		// x : log(2)
++#endif
+ 	fld	%st		// x : x : log(2)
+ 	fsubl	one		// x-1 : x : log(2)
+ 	fld	%st		// x-1 : x-1 : x : log(2)
+diff --git a/mingw-w64-crt/math/x86/sinl_internal.S b/mingw-w64-crt/math/x86/sinl_internal.S
+index 6d766b098..198f9c6c9 100644
+--- a/mingw-w64-crt/math/x86/sinl_internal.S
++++ b/mingw-w64-crt/math/x86/sinl_internal.S
+@@ -16,14 +16,26 @@
+ 	.def	__MINGW_USYMBOL(__sinl_internal);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(__sinl_internal):
+ #ifdef __x86_64__
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	sub	$16, %rsp
++	movsd	%xmm0, (%rsp)
++	fldl	(%rsp)
++#else
+ 	fldt	(%rdx)
++#endif
+ 	fsin
+ 	fnstsw	%ax
+ 	testl	$0x400,%eax
+ 	jnz	1f
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fstpl	(%rsp)
++	movsd	(%rsp), %xmm0
++	add	$16, %rsp
++#else
+ 	movq	%rcx,%rax
+         movq	$0,8(%rcx)
+ 	fstpt	(%rcx)
++#endif
+ 	ret
+ 1:	fldpi
+ 	fadd	%st(0)
+@@ -34,12 +46,22 @@ __MINGW_USYMBOL(__sinl_internal):
+ 	jnz	2b
+ 	fstp	%st(1)
+ 	fsin
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fstpl	(%rsp)
++	movsd	(%rsp), %xmm0
++	add	$16, %rsp
++#else
+ 	movq	%rcx,%rax
+ 	movq	$0,8(%rcx)
+ 	fstpt	(%rcx)
++#endif
+ 	ret
++#else
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++	fldl	4(%esp)
+ #else
+ 	fldt	4(%esp)
++#endif
+ 	fsin
+ 	fnstsw	%ax
+ 	testl	$0x400,%eax
+-- 
+2.43.0
+

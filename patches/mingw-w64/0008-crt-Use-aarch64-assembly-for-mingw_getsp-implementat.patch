@@ -1,0 +1,38 @@
+From 1718932ca7fbb95f504a33ab73d941d0b9290a0a Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Wed, 12 Mar 2025 13:05:50 +0100
+Subject: [PATCH 08/24] crt: Use aarch64 assembly for mingw_getsp
+ implementation on ARM64EC.
+
+Signed-off-by: Jacek Caban <jacek@codeweavers.com>
+---
+ mingw-w64-crt/misc/mingw_getsp.S | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/mingw-w64-crt/misc/mingw_getsp.S b/mingw-w64-crt/misc/mingw_getsp.S
+index 1e83b7383..08dfc37e1 100644
+--- a/mingw-w64-crt/misc/mingw_getsp.S
++++ b/mingw-w64-crt/misc/mingw_getsp.S
+@@ -15,7 +15,10 @@
+ 	.globl __MINGW_USYMBOL(mingw_getsp)
+ 	.def	__MINGW_USYMBOL(mingw_getsp);	.scl	2;	.type	32;	.endef
+ __MINGW_USYMBOL(mingw_getsp):
+-#if defined(_AMD64_) || defined(__x86_64__)
++#if defined(_ARM64_) || defined(__aarch64__) || defined(__arm64ec__)
++	mov	x0, sp
++	ret
++#elif defined(_AMD64_) || defined(__x86_64__)
+ 	leaq  8(%rsp),%rax
+ 	ret
+ #elif defined(_X86_) || defined(__i386__)
+@@ -24,7 +27,4 @@ __MINGW_USYMBOL(mingw_getsp):
+ #elif defined(_ARM_) || defined(__arm__)
+ 	mov	r0, sp
+ 	bx	lr
+-#elif defined(_ARM64_) || defined(__aarch64__)
+-	mov	x0, sp
+-	ret
+ #endif
+-- 
+2.43.0
+

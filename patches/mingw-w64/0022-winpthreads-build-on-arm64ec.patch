@@ -1,0 +1,54 @@
+From d03124f3665652bd1cdfa0ed2d835988f7e01f82 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Sat, 6 Apr 2024 13:05:03 +0100
+Subject: [PATCH 22/24] winpthreads: build on arm64ec
+
+---
+ .../winpthreads/src/libgcc/dll_dependency.S      |  2 +-
+ mingw-w64-libraries/winpthreads/src/thread.c     | 16 ----------------
+ 2 files changed, 1 insertion(+), 17 deletions(-)
+
+diff --git a/mingw-w64-libraries/winpthreads/src/libgcc/dll_dependency.S b/mingw-w64-libraries/winpthreads/src/libgcc/dll_dependency.S
+index 0496e9406..21e1c8905 100644
+--- a/mingw-w64-libraries/winpthreads/src/libgcc/dll_dependency.S
++++ b/mingw-w64-libraries/winpthreads/src/libgcc/dll_dependency.S
+@@ -1,5 +1,5 @@
+ /* Implementation for gcc's internal stack-allocation routines.  */
+-#if defined(__i386__) || defined(__x86_64__)
++#if defined(__i386__) || (defined(__x86_64__) && !defined(__arm64ec__))
+ .global ___chkstk
+ .global	__alloca
+ 
+diff --git a/mingw-w64-libraries/winpthreads/src/thread.c b/mingw-w64-libraries/winpthreads/src/thread.c
+index d5b3aaa05..75c3702cc 100644
+--- a/mingw-w64-libraries/winpthreads/src/thread.c
++++ b/mingw-w64-libraries/winpthreads/src/thread.c
+@@ -1546,25 +1546,9 @@ pthread_create_wrapper (void *args)
+     {
+       intptr_t trslt = (intptr_t) 128;
+       /* Provide to this thread a default exception handler.  */
+-      #ifdef __SEH__
+-	asm ("\t.tl_start:\n");
+-      #endif      /* Call function and save return value */
+       pthread_mutex_unlock (&mtx_pthr_locked);
+       if (tv->func)
+         trslt = (intptr_t) tv->func(tv->ret_arg);
+-      #ifdef __SEH__
+-	asm ("\tnop\n\t.tl_end: nop\n"
+-#ifdef __arm__
+-	  "\t.seh_handler __C_specific_handler, %except\n"
+-#else
+-	  "\t.seh_handler __C_specific_handler, @except\n"
+-#endif
+-	  "\t.seh_handlerdata\n"
+-	  "\t.long 1\n"
+-	  "\t.rva .tl_start, .tl_end, _gnu_exception_handler ,.tl_end\n"
+-	  "\t.text"
+-	  );
+-      #endif
+       pthread_mutex_lock (&mtx_pthr_locked);
+       tv->ret_arg = (void*) trslt;
+       /* Clean up destructors */
+-- 
+2.43.0
+

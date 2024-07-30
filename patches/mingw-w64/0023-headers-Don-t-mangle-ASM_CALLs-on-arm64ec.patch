@@ -1,0 +1,28 @@
+From 0a8bcff065b3479e605b729936a4af5d7c041a3b Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Wed, 5 Mar 2025 18:13:23 +0000
+Subject: [PATCH 23/24] headers: Don't mangle ASM_CALLs on arm64ec
+
+Have these call the non-mangled versions and leave importing to the compiler.
+---
+ mingw-w64-headers/crt/_mingw_mac.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/mingw-w64-headers/crt/_mingw_mac.h b/mingw-w64-headers/crt/_mingw_mac.h
+index 00ca0d5f5..576f03345 100644
+--- a/mingw-w64-headers/crt/_mingw_mac.h
++++ b/mingw-w64-headers/crt/_mingw_mac.h
+@@ -152,9 +152,7 @@
+ 
+ 
+ #ifdef _ARM64EC_
+-/* USYMBOL implictly stringifies on ARM64EC since assembler directives cannot
+-otherwise begin with a '#' */
+-#define __MINGW_ASM_CALL(func) __asm__(__MINGW_USYMBOL(func))
++#define __MINGW_ASM_CALL(func) __asm__(__MINGW64_STRINGIFY(func))
+ #else
+ #define __MINGW_ASM_CALL(func) __asm__(__MINGW64_STRINGIFY(__MINGW_USYMBOL(func)))
+ 
+-- 
+2.43.0
+

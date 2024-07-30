@@ -1,0 +1,27 @@
+From 02d88506f213ee9504f6b754d0de807234fadd98 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 20:56:53 +0100
+Subject: [PATCH 11/24] headers: Use aarch64 math function vaariants for
+ ARM64EC.
+
+Signed-off-by: Jacek Caban <jacek@codeweavers.com>
+---
+ mingw-w64-headers/crt/math.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mingw-w64-headers/crt/math.h b/mingw-w64-headers/crt/math.h
+index dc1599ed5..58636984e 100644
+--- a/mingw-w64-headers/crt/math.h
++++ b/mingw-w64-headers/crt/math.h
+@@ -824,7 +824,7 @@ __mingw_choose_expr (                                         \
+ 
+   __CRT_INLINE long double __cdecl logbl (long double x)
+   {
+-#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
++#if defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_) || defined(__arm64ec__) || defined(_ARM64EC_)
+   __mingw_ldbl_type_t hlp;
+   int lx, hx;
+ 
+-- 
+2.43.0
+

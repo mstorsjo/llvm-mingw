@@ -1,0 +1,118 @@
+From 2dbafdfbb0c399b3f6d770a438b1d1641a772334 Mon Sep 17 00:00:00 2001
+From: Jacek Caban <jacek@codeweavers.com>
+Date: Tue, 11 Mar 2025 18:20:09 +0100
+Subject: [PATCH 05/24] headers: Use selectany fenv_t pointers for FE_*_ENV
+ macros.
+
+Instead of pseudo-pointers. This avoids mingw-specific special cases in
+fesetenv, improving MSVC compatibility. This changes ABI.
+---
+ mingw-w64-crt/misc/fesetenv.c | 32 ---------------------------
+ mingw-w64-headers/crt/fenv.h  | 41 ++++++++++++++++-------------------
+ 2 files changed, 19 insertions(+), 54 deletions(-)
+
+diff --git a/mingw-w64-crt/misc/fesetenv.c b/mingw-w64-crt/misc/fesetenv.c
+index ac0dffe46..5a4426a30 100644
+--- a/mingw-w64-crt/misc/fesetenv.c
++++ b/mingw-w64-crt/misc/fesetenv.c
+@@ -24,38 +24,6 @@ int fesetenv(const fenv_t *env)
+     unsigned int x87_cw, cw, x87_stat, stat;
+     unsigned int mask = ~0u;
+ 
+-#if defined(__i386__) || defined(__x86_64__)
+-# if !defined(__arm64ec__)
+-    if (env == FE_PC64_ENV)
+-    {
+-        /*
+-         *  fninit initializes the control register to 0x37f,
+-         *  the status register to zero and the tag word to 0FFFFh.
+-         *  The other registers are unaffected.
+-         */
+-        __asm__ __volatile__ ("fninit");
+-        return 0;
+-    }
+-# endif /* __arm64ec__ */
+-    if (env == FE_PC53_ENV)
+-    {
+-        /*
+-         * MS _fpreset() does same *except* it sets control word
+-         * to 0x27f (53-bit precision).
+-         * We force calling _fpreset in msvcrt.dll
+-         */
+-
+-        (* __MINGW_IMP_SYMBOL(_fpreset))();
+-        return 0;
+-    }
+-#endif /* defined(__i386__) || defined(__x86_64__) */
+-    if (env == FE_DFL_ENV)
+-    {
+-        /* Use the choice made at app startup */
+-        _fpreset();
+-        return 0;
+-    }
+-
+     if (!env->_Fe_ctl && !env->_Fe_stat) {
+         _fpreset();
+         return 0;
+diff --git a/mingw-w64-headers/crt/fenv.h b/mingw-w64-headers/crt/fenv.h
+index d5161757d..7d441c287 100644
+--- a/mingw-w64-headers/crt/fenv.h
++++ b/mingw-w64-headers/crt/fenv.h
+@@ -46,28 +46,6 @@
+ 
+ #ifndef RC_INVOKED
+ 
+-#if defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
+-
+-/* If the default argument is used we use this value.  */
+-#define FE_DFL_ENV  ((const fenv_t *) -1l)
+-
+-#else
+-
+-/*The C99 standard (7.6.9) allows us to define implementation-specific macros for
+-  different fp environments */
+-  
+-/* The default Intel x87 floating point environment (64-bit mantissa) */
+-#define FE_PC64_ENV ((const fenv_t *)-1)
+-
+-/* The floating point environment set by MSVCRT _fpreset (53-bit mantissa) */
+-#define FE_PC53_ENV ((const fenv_t *)-2)
+-
+-/* The FE_DFL_ENV macro is required by standard.
+-  fesetenv will use the environment set at app startup.*/
+-#define FE_DFL_ENV ((const fenv_t *) 0)
+-
+-#endif /* defined(_ARM_) || defined(__arm__) */
+-
+ typedef struct
+ {
+     unsigned long _Fe_ctl;
+@@ -81,6 +59,25 @@ typedef unsigned long fexcept_t;
+ extern "C" {
+ #endif
+ 
++/* The FE_DFL_ENV macro is required by standard.
++   fesetenv will use the environment set at app startup.*/
++extern const __MINGW_SELECTANY fenv_t __mingw_fe_dfl_env = { 0, 0 };
++#define FE_DFL_ENV (&__mingw_fe_dfl_env)
++
++/* The C99 standard (7.6.9) allows us to define implementation-specific macros for
++   different fp environments */
++#if defined(__i386__) || defined(__x86_64__)
++
++/* The default Intel x87 floating point environment (64-bit mantissa) */
++extern const __MINGW_SELECTANY fenv_t __mingw_fe_pc64_env = { 0x3f3f003f, 0 };
++#define FE_PC64_ENV (&__mingw_fe_pc64_env)
++
++/* The floating point environment set by MSVCRT _fpreset (53-bit mantissa) */
++extern const __MINGW_SELECTANY fenv_t __mingw_fe_pc53_env = { 0x3f3f103f, 0 };
++#define FE_PC53_ENV (&__mingw_fe_pc53_env)
++
++#endif
++
+ /*TODO: Some of these could be inlined */
+ /* 7.6.2 Exception */
+ 
+-- 
+2.43.0
+

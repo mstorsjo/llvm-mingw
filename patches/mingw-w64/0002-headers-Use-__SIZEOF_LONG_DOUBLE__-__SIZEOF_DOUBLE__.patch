@@ -1,0 +1,82 @@
+From 9cbc38133e631f64c5e5d84b9ba641da787b4d50 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 11 Mar 2025 15:22:34 +0200
+Subject: [PATCH 02/24] headers: Use __SIZEOF_LONG_DOUBLE__ ==
+ __SIZEOF_DOUBLE__ instead of arch checks
+
+---
+ mingw-w64-headers/crt/math.h | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/mingw-w64-headers/crt/math.h b/mingw-w64-headers/crt/math.h
+index 85ef06773..dc1599ed5 100644
+--- a/mingw-w64-headers/crt/math.h
++++ b/mingw-w64-headers/crt/math.h
+@@ -206,7 +206,7 @@ extern "C" {
+ 
+   __CRT_INLINE long double __cdecl fabsl (long double x)
+   {
+-#if defined(__arm__) || defined(__aarch64__)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+     return __builtin_fabsl (x);
+ #else
+     long double res = 0.0l;
+@@ -397,7 +397,9 @@ typedef long double double_t;
+ 
+ #ifndef __CRT__NO_INLINE
+   __CRT_INLINE int __cdecl __fpclassifyl (long double x) {
+-#if defined(__x86_64__) || defined(_AMD64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++    return __fpclassify(x);
++#elif defined(__x86_64__) || defined(_AMD64_)
+     __mingw_ldbl_type_t hlp;
+     unsigned int e;
+     hlp.x = x;
+@@ -414,8 +416,6 @@ typedef long double double_t;
+       return (((hlp.lh.high & 0x7fffffff) | hlp.lh.low) == 0 ?
+               FP_INFINITE : FP_NAN);
+     return FP_NORMAL;
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+-    return __fpclassify(x);
+ #elif defined(__i386__) || defined(_X86_)
+     unsigned short sw;
+     __asm__ __volatile__ ("fxam; fstsw %%ax;" : "=a" (sw): "t" (x));
+@@ -551,7 +551,9 @@ __mingw_choose_expr (                                         \
+ 
+   __CRT_INLINE int __cdecl __isnanl (long double _x)
+   {
+-#if defined(__x86_64__) || defined(_AMD64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++    return __isnan(_x);
++#elif defined(__x86_64__) || defined(_AMD64_)
+     __mingw_ldbl_type_t ld;
+     unsigned int xx, signexp;
+ 
+@@ -561,8 +563,6 @@ __mingw_choose_expr (                                         \
+     signexp |= (xx | (-xx)) >> 31;
+     signexp = 0xfffe - signexp;
+     return (int) signexp >> 16;
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+-    return __isnan(_x);
+ #elif defined(__i386__) || defined(_X86_)
+     unsigned short sw;
+     __asm__ __volatile__ ("fxam;"
+@@ -621,12 +621,12 @@ __mingw_choose_expr (                                         \
+   }
+ 
+   __CRT_INLINE int __cdecl __signbitl (long double x) {
+-#if defined(__x86_64__) || defined(_AMD64_)
++#if __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
++    return __signbit(x);
++#elif defined(__x86_64__) || defined(_AMD64_)
+     __mingw_ldbl_type_t ld;
+     ld.x = x;
+     return ((ld.lh.sign_exponent & 0x8000) != 0);
+-#elif defined(__arm__) || defined(_ARM_) || defined(__aarch64__) || defined(_ARM64_)
+-    return __signbit(x);
+ #elif defined(__i386__) || defined(_X86_)
+     unsigned short stw;
+     __asm__ __volatile__ ("fxam; fstsw %%ax;": "=a" (stw) : "t" (x));
+-- 
+2.43.0
+

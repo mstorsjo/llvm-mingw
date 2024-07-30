@@ -18,7 +18,7 @@ set -e
 
 : ${DEFAULT_WIN32_WINNT:=0x601}
 : ${DEFAULT_MSVCRT:=ucrt}
-: ${MINGW_W64_VERSION:=95ad23696f57b0f966525b574096bd53d48c773a}
+: ${MINGW_W64_VERSION:=9a16c09ba553e528a21fd08b0e56a91b49e2c872}
 
 CFGUARD_FLAGS="--enable-cfguard"
 
@@ -65,6 +65,7 @@ cd mingw-w64
 if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
     [ -z "$SYNC" ] || git fetch
     git checkout $MINGW_W64_VERSION
+    git am -3 ../patches/mingw-w64/*.patch
 fi
 
 [ -z "$CHECKOUT_ONLY" ] || exit 0

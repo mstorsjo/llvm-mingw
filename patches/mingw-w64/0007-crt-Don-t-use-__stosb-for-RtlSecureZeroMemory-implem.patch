@@ -1,0 +1,27 @@
+From 33bccd3892c6dcf779fd81ebebfa6ec8919dc673 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 23:29:14 +0100
+Subject: [PATCH 07/24] crt: Don't use __stosb for RtlSecureZeroMemory
+ implementation on ARM64EC.
+
+Signed-off-by: Jacek Caban <jacek@codeweavers.com>
+---
+ mingw-w64-crt/intrincs/RtlSecureZeroMemory.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/intrincs/RtlSecureZeroMemory.c b/mingw-w64-crt/intrincs/RtlSecureZeroMemory.c
+index 8255a1e23..a5819037e 100644
+--- a/mingw-w64-crt/intrincs/RtlSecureZeroMemory.c
++++ b/mingw-w64-crt/intrincs/RtlSecureZeroMemory.c
+@@ -4,7 +4,7 @@
+ PVOID WINAPI RtlSecureZeroMemory(PVOID ptr,SIZE_T cnt)
+ {
+   volatile char *vptr = (volatile char *)ptr;
+-#ifdef __x86_64
++#if defined(__x86_64__) && !defined(__arm64ec__)
+   __stosb ((PBYTE)((DWORD64)vptr),0,cnt);
+ #else
+   while (cnt != 0)
+-- 
+2.43.0
+

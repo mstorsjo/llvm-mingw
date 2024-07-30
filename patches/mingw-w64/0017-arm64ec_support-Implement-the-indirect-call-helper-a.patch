@@ -1,0 +1,50 @@
+From e824e6ca77d65a60e5318fda682fc9e585dbe890 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 14 Sep 2023 23:41:36 +0100
+Subject: [PATCH 17/24] arm64ec_support: Implement the indirect call helper
+ adjustor thunk
+
+Calls to this are synthesized by the linker where it is used for calling
+into import libraries, this is referred to as an 'Adjustor Thunk' in
+ARM64EC documentation.
+---
+ mingw-w64-crt/misc/mingw_arm64ec_support.S | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/mingw-w64-crt/misc/mingw_arm64ec_support.S b/mingw-w64-crt/misc/mingw_arm64ec_support.S
+index 8f64ed5d5..0ea9d17f7 100644
+--- a/mingw-w64-crt/misc/mingw_arm64ec_support.S
++++ b/mingw-w64-crt/misc/mingw_arm64ec_support.S
+@@ -10,6 +10,29 @@
+ #define ALIGN 16
+ #define EXPORT_SYM(x) .globl x; x:
+ 
++/*
++Calls to this are synthesized by the linker when calling into import libraries,
++this is referred to as an 'Adjustor Thunk' in ARM64EC documentation.
++*/
++	.text
++	.balign ALIGN
++EXPORT_SYM(__icall_helper_arm64ec)
++    .seh_proc "__icall_helper_arm64ec"
++	stp	  fp,   lr, [sp, #-16]!
++	.seh_save_fplr_x 16
++	mov	  fp,   sp
++	.seh_set_fp
++	.seh_endprologue
++	adrp	  x16, __os_arm64x_check_icall
++	ldr       x16, [x16, #:lo12:__os_arm64x_check_icall]
++	blr	  x16
++	.seh_startepilogue
++	ldp	  fp,  lr,  [sp], #16
++	.seh_save_fplr_x 16
++	.seh_endepilogue
++	br    x11
++    .seh_endproc
++
+ /*
+ These symbols are updated at runtime by the dynamic linker to point to emulator
+ helper routines.
+-- 
+2.43.0
+
