@@ -121,7 +121,7 @@ for arch in $ARCHS; do
     armv7)
         FLAGS="--disable-lib32 --disable-lib64 --enable-libarm32"
         ;;
-    aarch64)
+    aarch64|arm64ec)
         FLAGS="--disable-lib32 --disable-lib64 --enable-libarm64"
         ;;
     i686)
