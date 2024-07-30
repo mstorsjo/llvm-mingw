@@ -40,6 +40,7 @@ i686)    M=i386pe   ;;
 x86_64)  M=i386pep  ;;
 armv7)   M=thumb2pe ;;
 aarch64) M=arm64pe  ;;
+arm64ec) M=arm64ecpe ;;
 esac
 FLAGS="-m $M"
 case $TARGET_OS in
