@@ -46,6 +46,7 @@ cp -a $CLANG_RESOURCE_DIR $DEST/lib/clang/$CLANG_VERSION
 
 # Copy all arch-specific subdirectories plus the "generic" one, as is.
 for arch in generic $ARCHS; do
+    rm -rf $DEST/$arch-w64-mingw32
     cp -a $SRC/$arch-w64-mingw32 $DEST/$arch-w64-mingw32
 done
 
