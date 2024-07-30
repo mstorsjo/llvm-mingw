@@ -23,7 +23,7 @@ fi
 SRC="$1"
 DEST="$2"
 
-: ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
+: ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64 arm64ec}}
 
 CLANG_RESOURCE_DIR="$("$SRC/bin/clang" --print-resource-dir)"
 CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
