@@ -23,14 +23,14 @@ ENABLE_CFGUARD=1
 CFGUARD_CFLAGS="-mguard=cf"
 
 while [ $# -gt 0 ]; do
-    if [ "$1" = "--build-sanitizers" ]; then
+    if [ "$1" = "--build-all" ]; then
         SRC_DIR=..
-        BUILD_SUFFIX=-sanitizers
-        SANITIZERS=1
+        BUILD_SUFFIX=-all
+        ALL=1
         BUILD_BUILTINS=FALSE
         # Override the default cfguard options here; this unfortunately
         # also overrides the user option if --enable-cfguard is passed
-        # before --build-sanitizers (although that combination isn't
+        # before --build-all (although that combination isn't
         # really intended/supported anyway).
         CFGUARD_CFLAGS=
         ENABLE_CFGUARD=
@@ -46,10 +46,10 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--build-sanitizers] [--enable-cfguard|--disable-cfguard] dest"
+    echo "$0 [--build-all] [--enable-cfguard|--disable-cfguard] dest"
     exit 1
 fi
-if [ -n "$SANITIZERS" ] && [ -n "$ENABLE_CFGUARD" ]; then
+if [ -n "$ALL" ] && [ -n "$ENABLE_CFGUARD" ]; then
     echo "warning: Sanitizers may not work correctly with Control Flow Guard enabled." 1>&2
 fi
 
@@ -85,7 +85,7 @@ cd llvm-project/compiler-rt
 WORKDIR=$(mktemp -d); trap "rm -rf $WORKDIR" 0
 
 for arch in $ARCHS; do
-    if [ -n "$SANITIZERS" ]; then
+    if [ -n "$ALL" ]; then
         case $arch in
         i686|x86_64)
             # Sanitizers on windows only support x86.
@@ -127,7 +127,7 @@ for arch in $ARCHS; do
     cmake --build . ${CORES:+-j${CORES}}
     cmake --install . --prefix "${WORKDIR}/install"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
-    if [ -n "$SANITIZERS" ]; then
+    if [ -n "$ALL" ]; then
         mv "${WORKDIR}/install/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     INSTALLED=1
@@ -136,7 +136,7 @@ done
 
 if [ -z "$INSTALLED" ]; then
     # Don't try to move the installed files in place, if nothing was
-    # installed (e.g. if building with --build-sanitizers but not for x86).
+    # installed (e.g. if building with --build-all but not for x86).
     exit 0
 fi
 

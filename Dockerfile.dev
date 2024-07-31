@@ -115,7 +115,7 @@ RUN cd test && \
 # Build sanitizers. Ubsan includes <typeinfo> from the C++ headers, so
 # we need to build this after libcxx.
 # $CFGUARD_ARGS is intentionally omitted here.
-RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers
+RUN ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-all
 
 # Sanitizers on windows only support x86.
 RUN cd test && \

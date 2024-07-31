@@ -34,7 +34,7 @@ RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
     ./build-compiler-rt.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     ./build-libcxx.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
-    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
+    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-all && \
     ./build-openmp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS && \
     rm -rf /build/*
 
