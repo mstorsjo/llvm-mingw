@@ -93,17 +93,6 @@ fi
 
 
 for arch in $ARCHS; do
-    if [ -n "$SANITIZERS" ]; then
-        case $arch in
-        i686|x86_64)
-            # Sanitizers on windows only support x86.
-            ;;
-        *)
-            continue
-            ;;
-        esac
-    fi
-
     [ -z "$CLEAN" ] || rm -rf build-$arch$BUILD_SUFFIX
     mkdir -p build-$arch$BUILD_SUFFIX
     cd build-$arch$BUILD_SUFFIX
@@ -136,19 +125,24 @@ for arch in $ARCHS; do
     cmake --install . --prefix "$INSTALL_PREFIX"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then
-        mv "$INSTALL_PREFIX/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        case $arch in
+        aarch64)
+            # asan doesn't work on aarch64 or armv7; make this clear by omitting
+            # the installed files altogether.
+            rm "$INSTALL_PREFIX/lib/windows/libclang_rt.asan"*aarch64*
+            ;;
+        armv7)
+            rm "$INSTALL_PREFIX/lib/windows/libclang_rt.asan"*arm*
+            ;;
+        *)
+            mv "$INSTALL_PREFIX/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+            ;;
+        esac
     fi
-    INSTALLED=1
     cd ..
 done
 
 if [ "$INSTALL_PREFIX" != "$CLANG_RESOURCE_DIR" ]; then
-    if [ -z "$INSTALLED" ]; then
-        # Don't try to move the installed files in place, if nothing was
-        # installed (e.g. if building with --build-sanitizers but not for x86).
-        exit 0
-    fi
-
     # symlink to system headers - skip copy
     rm -rf "$INSTALL_PREFIX/include"
 
