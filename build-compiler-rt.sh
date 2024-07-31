@@ -90,8 +90,12 @@ for arch in $ARCHS; do
         i686|x86_64)
             # Sanitizers on windows only support x86.
             ;;
-        *)
+        armv7)
+            # Nothing else than builtins gets built for armv7.
             continue
+            ;;
+        aarch64)
+            # The sanitizers can be built for aarch64, but asan doesn't work.
             ;;
         esac
     fi
@@ -128,7 +132,13 @@ for arch in $ARCHS; do
     cmake --install . --prefix "${WORKDIR}/install"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$ALL" ]; then
-        mv "${WORKDIR}/install/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        if [ "$arch" = "aarch64" ]; then
+            # asan doesn't work on aarch64; make this clear by omitting
+            # the installed files altogether.
+            rm "${WORKDIR}/install/lib/windows/libclang_rt.asan"*aarch64*
+        else
+            mv "${WORKDIR}/install/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        fi
     fi
     INSTALLED=1
     cd ..
@@ -136,7 +146,7 @@ done
 
 if [ -z "$INSTALLED" ]; then
     # Don't try to move the installed files in place, if nothing was
-    # installed (e.g. if building with --build-all but not for x86).
+    # installed (e.g. if building with --build-all for armv7).
     exit 0
 fi
 
