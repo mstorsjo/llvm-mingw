@@ -119,7 +119,7 @@ normal GCC/binutils based MinGW.
   variables.
 - The runtime libraries libunwind, libcxxabi and libcxx also assume that the
   target is Windows 7 or newer.
-- The sanitizers are only supported on x86.
+- Address sanitizer is only supported on x86.
 - LLD doesn't support linker script (in the COFF part of LLD). Linker script can be used for
   reprogramming how the linker lays out the output, but is in most cases
   in MinGW setups only used for passing lists of object files to link.
