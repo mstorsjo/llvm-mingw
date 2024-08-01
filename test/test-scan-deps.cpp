@@ -20,7 +20,7 @@
 #include <version>
 
 // Test that we have set the expected architecture defines.
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(__arm64ec__)
 #ifndef EXPECT_x86_64
 #include <intentionally-missing-header>
 #endif
@@ -34,6 +34,10 @@
 #endif
 #elif defined(__arm__)
 #ifndef EXPECT_armv7
+#include <intentionally-missing-header>
+#endif
+#elif defined(__arm64ec__)
+#ifndef EXPECT_arm64ec
 #include <intentionally-missing-header>
 #endif
 #endif
