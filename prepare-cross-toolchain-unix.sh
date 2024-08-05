@@ -25,7 +25,7 @@ DEST="$2"
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
-CLANG_RESOURCE_DIR="$("$SRC/bin/clang" --print-resource-dir)"
+CLANG_RESOURCE_DIR="$(echo "$SRC/lib/clang/"*)"
 CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
 
 # Copy the clang resource files (include, lib, share). The clang cross
