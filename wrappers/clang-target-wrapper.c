@@ -96,8 +96,11 @@ int _tmain(int argc, TCHAR* argv[]) {
     exec_argv[arg++] = _T("-fuse-ld=lld");
     exec_argv[arg++] = _T("--end-no-unused-arguments");
 
-    for (int i = 1; i < argc; i++)
-        exec_argv[arg++] = argv[i];
+    for (int i = 1; i < argc; i++) {
+        if (_tcsncmp(argv[i], _T("-Wl,-rpath,"), 11) != 0 && _tcsncmp(argv[i], _T("-Wl,-rpath="), 11) != 0) {
+            exec_argv[arg++] = argv[i];
+        }
+    }
 
     if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
         // Default linker flags; passed after any user specified -l options,
