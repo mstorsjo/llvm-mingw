@@ -56,6 +56,22 @@ fi
 CLANG="$DIR/clang"
 FLAGS=""
 FLAGS="$FLAGS --start-no-unused-arguments"
+
+# Strip -Wl,-rpath,anything and -Wl,-rpath=anything arguments
+strip_rpath_args() {
+    for arg in "$@"; do
+        case $arg in
+        -Wl,-rpath,*|-Wl,-rpath=*)
+            ;;
+        *)
+            echo "$arg"
+            ;;
+        esac
+    done
+}
+
+ARGS=$(strip_rpath_args "$@")
+
 case $EXE in
 clang++|g++|c++)
     FLAGS="$FLAGS --driver-mode=g++"
@@ -113,4 +129,4 @@ FLAGS="$FLAGS -stdlib=libc++"
 FLAGS="$FLAGS -fuse-ld=lld"
 FLAGS="$FLAGS --end-no-unused-arguments"
 
-$CCACHE "$CLANG" $FLAGS "$@" $LINKER_FLAGS
+$CCACHE "$CLANG" $FLAGS $ARGS $LINKER_FLAGS
