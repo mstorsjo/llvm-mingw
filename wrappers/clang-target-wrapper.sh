@@ -59,14 +59,24 @@ FLAGS="$FLAGS --start-no-unused-arguments"
 
 # Strip -Wl,-rpath,anything and -Wl,-rpath=anything arguments
 strip_rpath_args() {
+    # Initialize an array to hold the filtered arguments
+    filtered_args=()
+
+    # Loop through all the arguments
     for arg in "$@"; do
         case $arg in
         -Wl,-rpath,*|-Wl,-rpath=*)
             ;;
         *)
-            echo "$arg"
+            # If it is not a -Wl,-rpath argument, add it to the filtered_args array
+            filtered_args+=("$arg")
             ;;
         esac
+    done
+
+    # Output the filtered arguments, preserving quoting
+    for arg in "${filtered_args[@]}"; do
+        echo "$arg"
     done
 }
 
@@ -129,4 +139,4 @@ FLAGS="$FLAGS -stdlib=libc++"
 FLAGS="$FLAGS -fuse-ld=lld"
 FLAGS="$FLAGS --end-no-unused-arguments"
 
-$CCACHE "$CLANG" $FLAGS $ARGS $LINKER_FLAGS
+$CCACHE "$CLANG" $FLAGS "${ARGS[@]}" $LINKER_FLAGS
