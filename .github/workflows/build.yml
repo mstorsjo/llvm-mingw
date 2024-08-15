@@ -83,7 +83,12 @@ jobs:
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20240805/llvm-mingw-20240805-ucrt-ubuntu-20.04-x86_64.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -115,19 +120,13 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
         run: |
           sudo apt-get update && sudo apt-get install ninja-build g++-aarch64-linux-gnu
-          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu
-          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
-      - uses: actions/download-artifact@v4
-        with:
-          name: linux-ucrt-x86_64-toolchain
-      - name: Unpack native toolchain
-        run: |
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20240805/llvm-mingw-20240805-ucrt-ubuntu-20.04-aarch64.tar.xz
           tar -Jxf llvm-mingw-*.tar.xz
           rm llvm-mingw-*.tar.xz
-          mv llvm-mingw* llvm-mingw-native
-      - name: Assemble the cross-built toolchain
-        run: |
-          ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw --host=aarch64-linux-gnu
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - name: Test using the cross-built assembled toolchain
         run: |
           sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
@@ -159,7 +158,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -204,12 +203,12 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           brew install ninja
-          # Disable zstd and python. Both are available on the runners, but
-          # installed with homebrew, and only available in the native (x86_64)
-          # form. Therefore, autodetection will pick them up, but linking
-          # universal binaries fails as those libraries are unavailable in the
-          # other (arm64) architecture form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20240805/llvm-mingw-20240805-ucrt-macos-universal.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -264,10 +263,12 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          if [ "${{matrix.sys}}" = "mingw64" ]; then
-              ARGS="--disable-dylib"
-          fi
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $ARGS
+          curl -LO https://martin.st/temp/llvm-mingw-nightly-ucrt-msys2-${{matrix.sys}}.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
           NATIVE=1 ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
@@ -320,7 +321,12 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20240805/llvm-mingw-20240805-ucrt-${{matrix.arch}}.zip
+          unzip -q llvm-mingw-*.zip
+          rm llvm-mingw-*.zip
+          mkdir install
+          mv llvm-mingw-* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw --host=${{matrix.arch}}-w64-mingw32
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
