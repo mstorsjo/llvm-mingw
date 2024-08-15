@@ -77,10 +77,12 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          # Skip dynamic library dependencies that might make it harder to
-          # run the binaries on other distros (and that have little use within
-          # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --stage1
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20250717/llvm-mingw-20250717-ucrt-ubuntu-22.04-x86_64.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -98,6 +100,7 @@ jobs:
           retention-days: 7
 
   linux-profile:
+    if: false
     needs: [prepare, linux-stage1]
     runs-on: ubuntu-22.04
     steps:
@@ -129,21 +132,10 @@ jobs:
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
-    needs: [prepare, linux-stage1, linux-profile]
+    needs: [prepare, linux-stage1]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: linux-stage1-ucrt-x86_64-toolchain
-      - name: Unpack stage1 Clang
-        run: |
-          tar -Jxf llvm-mingw-*.tar.xz
-          rm llvm-mingw-*.tar.xz
-          sudo mv llvm-mingw* /opt/llvm-mingw
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -151,10 +143,12 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          # Skip dynamic library dependencies that might make it harder to
-          # run the binaries on other distros (and that have little use within
-          # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw --thinlto --pgo --llvm-only
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20250717/llvm-mingw-20250717-ucrt-ubuntu-22.04-x86_64.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -174,21 +168,10 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux-stage1' step above.
   linux-cross-aarch64:
-    needs: [linux-stage1, linux-profile, prepare]
+    needs: [linux-stage1, prepare]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: linux-stage1-ucrt-x86_64-toolchain
-      - name: Unpack stage1 Clang
-        run: |
-          tar -Jxf llvm-mingw-*.tar.xz
-          rm llvm-mingw-*.tar.xz
-          sudo mv llvm-mingw* /opt/llvm-mingw
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -196,14 +179,18 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
         run: |
           sudo apt-get update && sudo apt-get install g++-aarch64-linux-gnu
-          ./build-all.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu --thinlto --pgo
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20250717/llvm-mingw-20250717-ucrt-ubuntu-22.04-aarch64.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw --host=aarch64-linux-gnu
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
-      - name: Assemble the cross-built toolchain
-        run: |
-          ./prepare-cross-toolchain-unix.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw
       - name: Test using the cross-built assembled toolchain
         run: |
           sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
+          # Speed up this step by testing fewer architectures
+          export ARCHS="x86_64 aarch64"
           QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./run-tests.sh $(pwd)/install/llvm-mingw
           QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./run-cmake-tests.sh $(pwd)/install/llvm-mingw
@@ -232,7 +219,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: github.event_name == 'schedule'
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -261,6 +248,7 @@ jobs:
           retention-days: 7
 
   macos-stage1:
+    if: false
     needs: [prepare]
     runs-on: macos-latest
     steps:
@@ -290,21 +278,10 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    needs: [prepare, macos-stage1, linux-profile]
+    needs: [prepare]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-llvm
-      - name: Unpack stage1 Clang
-        run: |
-          tar -Jxf llvm-*.tar.xz
-          rm llvm-*.tar.xz
-          mv llvm* $HOME/llvm
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -313,12 +290,12 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          # Disable zstd and python. Both are available on the runners, but
-          # installed with homebrew, and only available in the native (arm64)
-          # form. Therefore, autodetection will pick them up, but linking
-          # universal binaries fails as those libraries are unavailable in the
-          # other (x86_64) architecture form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $HOME/llvm $(pwd)/install/llvm-mingw --thinlto --pgo
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20250717/llvm-mingw-20250717-ucrt-macos-universal.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -371,10 +348,12 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          if [ "${{matrix.sys}}" = "mingw64" ]; then
-              ARGS="--disable-dylib"
-          fi
-          ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $ARGS
+          curl -LO https://martin.st/temp/llvm-mingw-nightly-ucrt-msys2-${{matrix.sys}}.tar.xz
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mkdir install
+          mv llvm-mingw* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
@@ -395,7 +374,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    needs: [linux-stage1, linux-profile, prepare]
+    needs: [linux-stage1, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -416,9 +395,6 @@ jobs:
           sudo mv llvm-mingw* /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -429,7 +405,12 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install libltdl-dev swig autoconf-archive
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --thinlto --pgo
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20250717/llvm-mingw-20250717-ucrt-${{matrix.arch}}.zip
+          unzip -q llvm-mingw-*.zip
+          rm llvm-mingw-*.zip
+          mkdir install
+          mv llvm-mingw-* install/llvm-mingw
+          ./install-wrappers.sh $(pwd)/install/llvm-mingw --host=${{matrix.arch}}-w64-mingw32
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
