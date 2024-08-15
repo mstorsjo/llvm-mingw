@@ -87,6 +87,7 @@ jobs:
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
+          ./run-cmake-tests.sh $(pwd)/install/llvm-mingw
           cd install
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
@@ -132,6 +133,7 @@ jobs:
           sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
           QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           QEMU_LD_PREFIX=/usr/aarch64-linux-gnu RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
+          QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./run-cmake-tests.sh $(pwd)/install/llvm-mingw
       - name: Package the toolchain
         env:
           TAG: ${{needs.prepare.outputs.TAG}}
@@ -176,6 +178,7 @@ jobs:
           LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_TERMINFO=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb --enable-asserts
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
+          ./run-cmake-tests.sh $(pwd)/install/llvm-mingw
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" llvm-mingw
       - uses: actions/upload-artifact@v4
@@ -210,6 +213,7 @@ jobs:
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           RUN_I686=false RUN_X86_64=false ./run-tests.sh $(pwd)/install/llvm-mingw
+          ./run-cmake-tests.sh $(pwd)/install/llvm-mingw
           cd install
           NAME=llvm-mingw-$TAG-ucrt-macos-universal
           mv llvm-mingw $NAME
@@ -268,6 +272,7 @@ jobs:
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
           NATIVE=1 ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
+          ./run-cmake-tests.sh $(pwd)/install/llvm-mingw
           cd install
           NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
           mv llvm-mingw $NAME
@@ -350,6 +355,9 @@ jobs:
           install: >-
             unzip
             make
+          pacboy: >-
+            cmake:p
+            ninja:p
       - uses: actions/download-artifact@v4
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
@@ -365,6 +373,7 @@ jobs:
           NATIVE=1 ./test-libcxx-module.sh /llvm-mingw
           ./run-tests.sh /llvm-mingw
           ./run-lldb-tests.sh /llvm-mingw
+          ./run-cmake-tests.sh /llvm-mingw
 
   # Run libcxx's tests with the cross-built i686/x86_64 toolchains from above.
   # (This builds its own copy of libcxx, but it should be pretty much
