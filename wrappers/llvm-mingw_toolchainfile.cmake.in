@@ -39,15 +39,22 @@ elseif(NOT CMAKE_SYSTEM_PROCESSOR)
   set(CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
 endif()
 
-set(CMAKE_SYSROOT "${_prefix}${CMAKE_SYSTEM_PROCESSOR}-w64-mingw32")
+set(_sysroot "${_prefix}${CMAKE_SYSTEM_PROCESSOR}-w64-mingw32")
+if(NOT CMAKE_HOST_WIN32)
+  # Not setting CMAKE_SYSROOT on Windows. In the case of toolchains on
+  # Windows, the headers are in ${_prefix}include (and not symlinked into
+  # ${_sysroot}include), and won't be found if we pass the sysroot parameter
+  # to the compiler.
+  set(CMAKE_SYSROOT "${_sysroot}")
+endif()
 
 # cmake-style list of paths
-set(_respath "${CMAKE_SYSROOT}/lib/pkgconfig" "${CMAKE_SYSROOT}/share/pkgconfig")
+set(_respath "${_sysroot}/lib/pkgconfig" "${_sysroot}/share/pkgconfig")
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.20")
   cmake_path(CONVERT "${_respath}" TO_NATIVE_PATH_LIST _respath)
   set(ENV{PKG_CONFIG_LIBDIR} "${_respath}")
-  cmake_path(NATIVE_PATH CMAKE_SYSROOT _respath)
+  cmake_path(NATIVE_PATH _sysroot _respath)
   set(ENV{PKG_CONFIG_SYSROOT_DIR} "${_respath}")
 else()
   if(CMAKE_HOST_WIN32)
@@ -56,7 +63,7 @@ else()
     string(REPLACE ";" ":" _respath "${_respath}")
   endif()
   set(ENV{PKG_CONFIG_LIBDIR} "${_respath}")
-  file(TO_NATIVE_PATH "${CMAKE_SYSROOT}" _respath)
+  file(TO_NATIVE_PATH "${_sysroot}" _respath)
   set(ENV{PKG_CONFIG_SYSROOT_DIR} "${_respath}")
 endif()
 
@@ -78,6 +85,7 @@ unset(_exesuff)
 
 unset(_prefix)
 unset(_respath)
+unset(_sysroot)
 
 set(CMAKE_C_COMPILER_TARGET ${CMAKE_SYSTEM_PROCESSOR}-w64-mingw32)
 set(CMAKE_CXX_COMPILER_TARGET ${CMAKE_C_COMPILER_TARGET})
