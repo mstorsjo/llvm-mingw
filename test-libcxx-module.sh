@@ -26,6 +26,13 @@ export PATH=$PREFIX/bin:$PATH
 
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
+case $(uname) in
+MINGW*|MSYS*)
+    NATIVE=1
+    ;;
+*)
+esac
+
 for arch in $ARCHS; do
     # TODO: This should ideally use "$CXX -print-file-name=libc++.modules.json", then parse the json to find the relevant cppm file and include directory.
     $arch-w64-mingw32-clang++ -I$PREFIX/share/libc++/v1 -std=gnu++23 -Wno-reserved-module-identifier -x c++-module -fmodule-output=std.pcm -o std.cppm.obj -c $PREFIX/share/libc++/v1/std.cppm

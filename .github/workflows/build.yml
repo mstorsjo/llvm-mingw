@@ -266,7 +266,7 @@ jobs:
           ./build-all.sh $(pwd)/install/llvm-mingw --disable-clang-tools-extra --disable-lldb $ARGS
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./copy-msys-dependencies.sh $(pwd)/install/llvm-mingw ${{matrix.sys}}
-          NATIVE=1 ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
+          ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
           cd install
           NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
@@ -362,7 +362,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run tests
         run: |
-          NATIVE=1 ./test-libcxx-module.sh /llvm-mingw
+          ./test-libcxx-module.sh /llvm-mingw
           ./run-tests.sh /llvm-mingw
           ./run-lldb-tests.sh /llvm-mingw
 
