@@ -10,7 +10,14 @@ endif()
 if(NOT CMAKE_SYSTEM_NAME AND NOT CMAKE_HOST_WIN32)
   set(CMAKE_SYSTEM_NAME Windows)
 endif()
-if(NOT CMAKE_SYSTEM_PROCESSOR)
+# The toolchain file gets reincluded multiple times; once CMake has concluded
+# that we're not cross compiling, it reruns the toolchain file, with
+# CMAKE_SYSTEM_NAME set, and CMAKE_SYSTEM_PROCESSOR reset to
+# CMAKE_HOST_SYSTEM_PROCESSOR (not the value we set before, thus not matching
+# the arch names we expect). In this case, CMAKE_CROSSCOMPILING has been
+# defined to false though. Thus, in such a rerun, reinitialize
+# CMAKE_SYSTEM_PROCESSOR to the value we expect.
+if(NOT CMAKE_SYSTEM_PROCESSOR OR (DEFINED CMAKE_CROSSCOMPILING AND NOT CMAKE_CROSSCOMPILING))
   set(CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
   if(CMAKE_HOST_WIN32)
     # inspect clang's default target architecture
