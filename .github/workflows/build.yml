@@ -358,7 +358,6 @@ jobs:
           unzip -q llvm-mingw-*.zip
           rm llvm-mingw-*.zip
           mv llvm-mingw-* /llvm-mingw
-          echo /llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - name: Run tests
         run: |
