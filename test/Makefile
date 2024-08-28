@@ -264,8 +264,6 @@ LOCAL_RUNTIMES = $(patsubst $(RUNTIMES_SRC)/%, %, $(wildcard $(addprefix $(RUNTI
 $(LOCAL_RUNTIMES): %$(DLLEXT): $(RUNTIMES_SRC)/%$(DLLEXT)
 	cp -a $< $@
 	$(COPY_TARGET)
-
-all: $(LOCAL_RUNTIMES)
 endif
 
 TESTS = $(filter-out %$(DLLEXT), $(TARGETS))
