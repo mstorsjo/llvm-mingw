@@ -35,7 +35,7 @@ void nop_sled_target(void) {
     __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
     __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(__arm64ec__)
     // On x86_64 the stack frame has to be aligned to 16 bytes. Since we
     // skipped the prologue we need to manually realign it to prevent
     // alignment-related crashes when calling puts() or exit().
