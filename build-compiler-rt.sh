@@ -81,8 +81,16 @@ else
 fi
 
 cd llvm-project/compiler-rt
-# Use a staging directory in case parts of the resource dir are immutable
-WORKDIR=$(mktemp -d); trap "rm -rf $WORKDIR" 0
+
+INSTALL_PREFIX="$CLANG_RESOURCE_DIR"
+
+if [ -h "$CLANG_RESOURCE_DIR/include" ]; then
+    # Symlink to system headers; use a staging directory in case parts
+    # of the resource dir are immutable
+    WORKDIR="$(mktemp -d)"; trap "rm -rf $WORKDIR" 0
+    INSTALL_PREFIX="$WORKDIR/install"
+fi
+
 
 for arch in $ARCHS; do
     if [ -n "$SANITIZERS" ]; then
@@ -125,23 +133,24 @@ for arch in $ARCHS; do
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         $SRC_DIR
     cmake --build . ${CORES:+-j${CORES}}
-    cmake --install . --prefix "${WORKDIR}/install"
+    cmake --install . --prefix "$INSTALL_PREFIX"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then
-        mv "${WORKDIR}/install/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
+        mv "$INSTALL_PREFIX/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
     fi
     INSTALLED=1
     cd ..
 done
 
-if [ -z "$INSTALLED" ]; then
-    # Don't try to move the installed files in place, if nothing was
-    # installed (e.g. if building with --build-sanitizers but not for x86).
-    exit 0
-fi
+if [ "$INSTALL_PREFIX" != "$CLANG_RESOURCE_DIR" ]; then
+    if [ -z "$INSTALLED" ]; then
+        # Don't try to move the installed files in place, if nothing was
+        # installed (e.g. if building with --build-sanitizers but not for x86).
+        exit 0
+    fi
 
-if [ -h "$CLANG_RESOURCE_DIR/include" ]; then
     # symlink to system headers - skip copy
-    rm -rf ${WORKDIR}/install/include
+    rm -rf "$INSTALL_PREFIX/include"
+
+    cp -r "$INSTALL_PREFIX/." $CLANG_RESOURCE_DIR
 fi
-cp -r ${WORKDIR}/install/. $CLANG_RESOURCE_DIR
