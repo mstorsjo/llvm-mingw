@@ -1,6 +1,7 @@
 name: Test installing with a system clang
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   docker-build:
