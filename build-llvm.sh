@@ -65,6 +65,9 @@ while [ $# -gt 0 ]; do
     --disable-clang-tools-extra)
         unset CLANG_TOOLS_EXTRA
         ;;
+    --no-llvm-tool-reuse)
+        NO_LLVM_TOOL_REUSE=1
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -186,7 +189,7 @@ if [ -n "$HOST" ]; then
     fi
 
 
-    if [ -n "$native" ]; then
+    if [ -n "$native" ] && [ -z "$NO_LLVM_TOOL_REUSE" ]; then
         CMAKEFLAGS="$CMAKEFLAGS -DLLVM_NATIVE_TOOL_DIR=$native"
     fi
     CROSS_ROOT=$(cd $(dirname $(command -v $HOST-gcc))/../$HOST && pwd)
