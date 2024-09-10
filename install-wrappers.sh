@@ -123,6 +123,7 @@ fi
 
 mkdir -p "$PREFIX/bin"
 cp wrappers/*-wrapper.sh "$PREFIX/bin"
+cp wrappers/mingw32-common.cfg $PREFIX/bin
 for arch in $ARCHS; do
     cp wrappers/$arch-w64-windows-gnu.cfg $PREFIX/bin
 done
