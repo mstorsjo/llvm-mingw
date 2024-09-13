@@ -142,8 +142,10 @@ if [ -n "$EXEEXT" ]; then
     # when invoked from outside of MSYS.
     CTW_SUFFIX=$EXEEXT
     CTW_LINK_SUFFIX=$EXEEXT
+    CSDW=clang-scan-deps-wrapper$EXEEXT
 else
     CTW_SUFFIX=.sh
+    CSDW=clang-scan-deps
 fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
@@ -151,7 +153,7 @@ for arch in $ARCHS; do
         for exec in clang clang++ gcc g++ c++ as; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
-        ln -sf clang-scan-deps-wrapper$CTW_SUFFIX $arch-w64-$target_os-clang-scan-deps$CTW_LINK_SUFFIX
+        ln -sf $CSDW $arch-w64-$target_os-clang-scan-deps$CTW_LINK_SUFFIX
         for exec in addr2line ar ranlib nm objcopy readelf size strings strip llvm-ar llvm-ranlib; do
             if [ -n "$EXEEXT" ]; then
                 link_target=llvm-wrapper
