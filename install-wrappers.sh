@@ -139,10 +139,10 @@ $CC wrappers/llvm-wrapper.c -o "$PREFIX/bin/llvm-wrapper$EXEEXT" -O2 -Wl,-s $WRA
 if [ -n "$EXEEXT" ]; then
     # For Windows, we should prefer the executable wrapper, which also works
     # when invoked from outside of MSYS.
-    CTW_SUFFIX=$EXEEXT
     CTW_LINK_SUFFIX=$EXEEXT
+    CTW=clang-target-wrapper$EXEEXT
 else
-    CTW_SUFFIX=.sh
+    CTW=clang
 fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
@@ -153,7 +153,7 @@ for arch in $ARCHS; do
         ;;
     esac
     for exec in clang clang++ gcc g++ c++ as; do
-        ln -sf clang-target-wrapper$CTW_SUFFIX $triple-$exec$CTW_LINK_SUFFIX
+        ln -sf $CTW $triple-$exec$CTW_LINK_SUFFIX
     done
     for exec in addr2line ar ranlib nm objcopy objdump readelf size strings strip llvm-ar llvm-ranlib; do
         if [ -n "$EXEEXT" ]; then
