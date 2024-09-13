@@ -32,6 +32,7 @@ FLAGS=()
 while [ $# -gt 0 ]; do
     if [ -n "$got_flags" ]; then
         CMD_EXE="$1"
+        FLAGS+=("$1")
         shift
         break
     elif [ "$1" = "--" ]; then
@@ -60,7 +61,7 @@ if [ -n "$CMD_EXE" ]; then
 fi
 
 if [ -n "$TARGET" ]; then
-    "$EXE" "${FLAGS[@]}" "$CMD_EXE" -target $TARGET -stdlib=libc++ "$@"
+    "$EXE" "${FLAGS[@]}" -target $TARGET -stdlib=libc++ "$@"
 else
     "$EXE" "${FLAGS[@]}" "$@"
 fi
