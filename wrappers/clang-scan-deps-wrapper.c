@@ -63,7 +63,7 @@ int _tmain(int argc, TCHAR *argv[]) {
         if (sep)
             *sep = '\0';
         TCHAR *dash = _tcsrchr(cmd_exe, '-');
-        const TCHAR *target = NULL;
+        int has_target = 0;
         if (dash) {
             *dash = '\0';
             const TCHAR *cmd_exe_suffix = dash + 1;
@@ -76,14 +76,15 @@ int _tmain(int argc, TCHAR *argv[]) {
                 !_tcscmp(cmd_exe_suffix, _T("cc")) ||
                 !_tcscmp(cmd_exe_suffix, _T("c99")) ||
                 !_tcscmp(cmd_exe_suffix, _T("c11"))) {
-                target = cmd_exe;
+                has_target = 1;
             }
         }
+        const TCHAR *target = NULL;
 #ifdef _WIN32
         // On Windows, we want to set our default target even if no target
         // was found in cmd_exe, as we want to support running with a foreign
         // clang-scan-deps-real.exe binary, that could have any default.
-        if (!target)
+        if (!has_target)
             target = _T(DEFAULT_TARGET);
 #endif
 
@@ -92,6 +93,8 @@ int _tmain(int argc, TCHAR *argv[]) {
             // -target after cmd_exe.
             exec_argv[arg++] = _T("-target");
             exec_argv[arg++] = target;
+        }
+        if (target || has_target) {
             exec_argv[arg++] = _T("-stdlib=libc++");
         }
     }

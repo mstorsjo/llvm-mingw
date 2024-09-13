@@ -45,8 +45,6 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -n "$CMD_EXE" ]; then
-    # If CMD_EXE is a <triple>-<exe> style command, pick up the
-    # target triple from there.
     CMD_BASENAME="$(basename "$CMD_EXE")"
     CMD_BASENAME="${CMD_BASENAME%.*}"
     CMD_TARGET="${CMD_BASENAME%-*}"
@@ -54,14 +52,14 @@ if [ -n "$CMD_EXE" ]; then
     if [ "$CMD_TARGET" != "$CMD_BASENAME" ]; then
         case $CMD_EXE_SUFFIX in
         clang|clang++|gcc|g++|c++|as|cc|c99|c11)
-            TARGET="$CMD_TARGET"
+            IS_CLANG=1
             ;;
         esac
     fi
 fi
 
-if [ -n "$TARGET" ]; then
-    "$EXE" "${FLAGS[@]}" -target $TARGET -stdlib=libc++ "$@"
+if [ -n "$IS_CLANG" ]; then
+    "$EXE" "${FLAGS[@]}" -stdlib=libc++ "$@"
 else
     "$EXE" "${FLAGS[@]}" "$@"
 fi
