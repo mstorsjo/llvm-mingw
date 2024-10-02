@@ -141,6 +141,12 @@ if [ -n "$EXEEXT" ]; then
 else
     CTW_SUFFIX=.sh
 fi
+toolchainfile_path=share/cmake; toolchainfile_rev=../..
+mkdir -p "$PREFIX/$toolchainfile_path"
+sed "s,@RELPATH@,$toolchainfile_rev,g" wrappers/llvm-mingw_toolchainfile.cmake.in >"$PREFIX/$toolchainfile_path/llvm-mingw_toolchainfile.cmake"
+for arch in $ARCHS; do
+    sed "s,@ARCH@,${arch},g" wrappers/llvm-mingw_toolchainfile_arch.cmake.in >"$PREFIX/$toolchainfile_path/${arch}-w64-mingw32_toolchainfile.cmake"
+done
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
     for target_os in $TARGET_OSES; do
