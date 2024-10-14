@@ -67,6 +67,20 @@ c11)
     FLAGS="$FLAGS -std=c11"
     ;;
 esac
+case $ARCH in
+i686)
+    # Dwarf is the default for i686.
+    ;;
+x86_64)
+    # SEH is the default for x86_64.
+    ;;
+armv7)
+    # SEH is the default for armv7.
+    ;;
+aarch64)
+    # SEH is the default for aarch64.
+    ;;
+esac
 LINKER_FLAGS=""
 case $TARGET_OS in
 mingw32uwp)
@@ -93,6 +107,10 @@ mingw32uwp)
 esac
 
 FLAGS="$FLAGS -target $TARGET"
+FLAGS="$FLAGS -rtlib=compiler-rt"
+FLAGS="$FLAGS -unwindlib=libunwind"
+FLAGS="$FLAGS -stdlib=libc++"
+FLAGS="$FLAGS -fuse-ld=lld"
 FLAGS="$FLAGS --end-no-unused-arguments"
 
 $CCACHE "$CLANG" $FLAGS "$@" $LINKER_FLAGS
