@@ -69,6 +69,15 @@ const char *context = "";
         } \
     } while (0)
 
+#define TEST_XSTR(strcmp, type, x, expect, fmt) do { \
+        const type *str = (x); \
+        tests++; \
+        if (!str || strcmp(str, (expect))) { \
+            fails++; \
+            printf("%s:%d: %sexpected \"" fmt "\", got \"" fmt "\"\n", __FILE__, __LINE__, context, (expect), str); \
+        } \
+    } while (0)
+
 #define TEST_FLT(x, expect) do { \
         tests++; \
         if ((x) != (expect)) { \
@@ -467,6 +476,36 @@ void test_strings() {
         }
     }
     tests++;
+#endif
+}
+
+void test_tokenize() {
+#define TEST_STRTOK(strtok, type, prefix, strcmp, fmt) do { \
+        type buf[] = prefix ## " foo bar baz "; \
+        TEST_XSTR(strcmp, type, strtok(buf, prefix ## " "), prefix ## "foo", fmt); \
+        TEST_XSTR(strcmp, type, strtok(NULL, prefix ## " "), prefix ## "bar", fmt); \
+        TEST_XSTR(strcmp, type, strtok(NULL, prefix ## " "), prefix ## "baz", fmt); \
+        TEST(strtok(NULL, prefix ## " ") == NULL); \
+    } while (0)
+#define TEST_STRTOK_R(strtok_r, type, prefix, strcmp, fmt) do { \
+        type buf[] = prefix ## " foo bar baz "; \
+        type *ptr; \
+        TEST_XSTR(strcmp, type, strtok_r(buf, prefix ## " ", &ptr), prefix ## "foo", fmt); \
+        TEST_XSTR(strcmp, type, strtok_r(NULL, prefix ## " ", &ptr), prefix ## "bar", fmt); \
+        TEST_XSTR(strcmp, type, strtok_r(NULL, prefix ## " ", &ptr), prefix ## "baz", fmt); \
+        TEST(strtok_r(NULL, prefix ## " ", &ptr) == NULL); \
+    } while (0)
+    TEST_STRTOK(strtok, char, , strcmp, "%s");
+#ifndef _MSC_VER
+    TEST_STRTOK_R(strtok_r, char, , strcmp, "%s");
+#endif
+    TEST_STRTOK_R(wcstok, wchar_t, L, wcscmp, "%ls");
+#ifdef _WIN32
+    TEST_STRTOK(_wcstok, wchar_t, L, wcscmp, "%ls");
+    TEST_STRTOK_R(wcstok_s, wchar_t, L, wcscmp, "%ls");
+#ifdef __cplusplus
+    TEST_STRTOK(wcstok, wchar_t, L, wcscmp, "%ls");
+#endif
 #endif
 }
 
@@ -2161,6 +2200,7 @@ void test_win32_intrinsics() {
 
 int main(int argc, char *argv[]) {
     test_strings();
+    test_tokenize();
     test_parse_numbers();
     test_environment();
     test_math_rounding();
