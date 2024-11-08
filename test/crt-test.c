@@ -78,6 +78,8 @@ const char *context = "";
         } \
     } while (0)
 
+#define TEST_WSTR(x, expect) TEST_XSTR(wcscmp, wchar_t, x, expect, "%ls")
+
 #define TEST_FLT(x, expect) do { \
         tests++; \
         if ((x) != (expect)) { \
@@ -212,6 +214,68 @@ int vsscanf_wrap(const char *str, const char *fmt, ...) {
     return ret;
 }
 
+int vswprintf_wrap(wchar_t *buf, size_t n, const wchar_t *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vswprintf(buf, n, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+#ifdef _WIN32
+#ifdef __cplusplus
+int vswprintf_overload_wrap(wchar_t *buf, const wchar_t *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vswprintf(buf, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif
+
+int _vscprintf_wrap(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = _vscprintf(fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+int _vswprintf_wrap(wchar_t *buf, const wchar_t *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = _vswprintf(buf, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+int _vsnwprintf_wrap(wchar_t *buf, size_t n, const wchar_t *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = _vsnwprintf(buf, n, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+#ifdef __MINGW32__
+int vsnwprintf_wrap(wchar_t *buf, size_t n, const wchar_t *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vsnwprintf(buf, n, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif
+
+int _vscwprintf_wrap(const wchar_t *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = _vscwprintf(fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif
+
 double int_to_double(uint64_t i) {
     union {
         uint64_t i;
@@ -221,6 +285,12 @@ double int_to_double(uint64_t i) {
     return u.d;
 }
 
+void fill_wchar(wchar_t *buf, wchar_t c, size_t n) {
+    for (size_t i = 0; i < n; i++)
+        buf[i] = c;
+}
+
+#define ARRAYLEN(x) (sizeof(x)/sizeof(*x))
 
 void test_strings() {
     char buf[200];
@@ -396,6 +466,114 @@ void test_strings() {
     fmt[4] = 'x';
     snprintf(buf, sizeof(buf), fmt, 42);
     TEST_STR(buf, "0002a");
+
+#ifdef _WIN32
+    TEST_INT(_scprintf("%d", 12345), 5);
+    TEST_INT(_vscprintf_wrap("%d", 12345), 5);
+#endif
+
+    wchar_t wbuf[200], wbuf2[5];
+    int ret;
+    fill_wchar(wbuf, '#', ARRAYLEN(wbuf));
+    ret = swprintf(wbuf, ARRAYLEN(wbuf), L"%d", 42);
+    TEST_INT(ret, 2);
+    TEST_WSTR(wbuf, L"42");
+    TEST_INT(wbuf[ARRAYLEN(wbuf)-1], '#');
+
+    fill_wchar(wbuf, '#', ARRAYLEN(wbuf));
+    ret = vswprintf_wrap(wbuf, ARRAYLEN(wbuf), L"%d", 42);
+    TEST_INT(ret, 2);
+    TEST_WSTR(wbuf, L"42");
+    TEST_INT(wbuf[ARRAYLEN(wbuf)-1], '#');
+
+    fill_wchar(wbuf2, '#', ARRAYLEN(wbuf2));
+    ret = swprintf(wbuf2, ARRAYLEN(wbuf2), L"%d", 12345);
+    TEST_INT(ret, -1);
+#ifndef __GLIBC__
+    // On overflow, glibc doesn't seem to null terminate the array.
+    // https://sourceware.org/bugzilla/show_bug.cgi?id=27857, fixed in
+    // glibc 2.37.
+    TEST_INT(wbuf2[ARRAYLEN(wbuf2)-1], '\0');
+#endif
+    wbuf2[ARRAYLEN(wbuf2)-1] = '\0';
+    TEST_WSTR(wbuf2, L"1234");
+
+#ifdef _WIN32
+#ifdef __cplusplus
+    fill_wchar(wbuf, '#', ARRAYLEN(wbuf));
+    ret = swprintf(wbuf, L"%d", 42);
+    TEST_WSTR(wbuf, L"42");
+    TEST_INT(ret, 2);
+    TEST_INT(wbuf[ARRAYLEN(wbuf)-1], '#');
+
+    fill_wchar(wbuf, '#', ARRAYLEN(wbuf));
+    ret = vswprintf_overload_wrap(wbuf, L"%d", 42);
+    TEST_WSTR(wbuf, L"42");
+    TEST_INT(ret, 2);
+    TEST_INT(wbuf[ARRAYLEN(wbuf)-1], '#');
+#endif
+
+    fill_wchar(wbuf, '#', ARRAYLEN(wbuf));
+    ret = _swprintf(wbuf, L"%d", 42);
+    TEST_WSTR(wbuf, L"42");
+    TEST_INT(ret, 2);
+    TEST_INT(wbuf[ARRAYLEN(wbuf)-1], '#');
+
+    fill_wchar(wbuf, '#', ARRAYLEN(wbuf));
+    ret = _vswprintf_wrap(wbuf, L"%d", 42);
+    TEST_WSTR(wbuf, L"42");
+    TEST_INT(ret, 2);
+    TEST_INT(wbuf[ARRAYLEN(wbuf)-1], '#');
+
+    fill_wchar(wbuf2, '#', ARRAYLEN(wbuf2));
+    ret = _snwprintf(wbuf2, ARRAYLEN(wbuf2), L"%d", 12345);
+    TEST_INT(ret, 5);
+    // On overflow, _snwprintf doesn't null terminate.
+    TEST_INT(wbuf2[ARRAYLEN(wbuf2)-1], '5');
+    wbuf2[ARRAYLEN(wbuf2)-1] = '\0';
+    TEST_WSTR(wbuf2, L"1234");
+
+    fill_wchar(wbuf2, '#', ARRAYLEN(wbuf2));
+    ret = _snwprintf(wbuf2, ARRAYLEN(wbuf2), L"%d", 123456);
+    TEST_INT(ret, -1);
+    // On overflow, _snwprintf doesn't null terminate.
+    TEST_INT(wbuf2[ARRAYLEN(wbuf2)-1], '5');
+    wbuf2[ARRAYLEN(wbuf2)-1] = '\0';
+    TEST_WSTR(wbuf2, L"1234");
+
+    fill_wchar(wbuf2, '#', ARRAYLEN(wbuf2));
+    ret = _vsnwprintf_wrap(wbuf2, ARRAYLEN(wbuf2), L"%d", 12345);
+    TEST_INT(ret, 5);
+    // On overflow, _vsnwprintf doesn't null terminate.
+    TEST_INT(wbuf2[ARRAYLEN(wbuf2)-1], '5');
+    wbuf2[ARRAYLEN(wbuf2)-1] = '\0';
+    TEST_WSTR(wbuf2, L"1234");
+
+#ifdef __MINGW32__
+    fill_wchar(wbuf2, '#', ARRAYLEN(wbuf2));
+    ret = snwprintf(wbuf2, ARRAYLEN(wbuf2), L"%d", 123456);
+    TEST_INT(ret, 6);
+    // On overflow, snwprintf null terminates.
+    TEST_INT(wbuf2[ARRAYLEN(wbuf2)-1], '\0');
+    wbuf2[ARRAYLEN(wbuf2)-1] = '\0';
+    TEST_WSTR(wbuf2, L"1234");
+
+    TEST_INT(snwprintf(NULL, 0, L"%d", 123456), 6);
+
+    fill_wchar(wbuf2, '#', ARRAYLEN(wbuf2));
+    ret = vsnwprintf_wrap(wbuf2, ARRAYLEN(wbuf2), L"%d", 123456);
+    TEST_INT(ret, 6);
+    // On overflow, vsnwprintf null terminates.
+    TEST_INT(wbuf2[ARRAYLEN(wbuf2)-1], '\0');
+    wbuf2[ARRAYLEN(wbuf2)-1] = '\0';
+    TEST_WSTR(wbuf2, L"1234");
+
+    TEST_INT(vsnwprintf_wrap(NULL, 0, L"%d", 123456), 6);
+#endif
+
+    TEST_INT(_scwprintf(L"%d", 123456), 6);
+    TEST_INT(_vscwprintf_wrap(L"%d", 123456), 6);
+#endif
 
     uint64_t val0, val1, val2, val3, val4, val5, val6, val7, val8, val9;
     if (sscanf("baadf00dcafe baadf00dcaff baadf00dcb00 baadf00dcb01 baadf00dcb02 baadf00dcb03 baadf00dcb04 baadf00dcb05 baadf00dcb06 baadf00dcb07", "%" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64" %" SCNx64, &val0, &val1, &val2, &val3, &val4, &val5, &val6, &val7, &val8, &val9) != 10) {
