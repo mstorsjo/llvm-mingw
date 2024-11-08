@@ -34,6 +34,10 @@
 #include <windows.h>
 #endif
 
+#if defined(__MINGW32__) && defined(__MSVCRT_VERSION__) && __MSVCRT_VERSION__ < 0xE00 && defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO == 0
+#define MSVCRT_DLL_NOANSI
+#endif
+
 #ifndef _WIN32
 extern char **environ;
 #endif
@@ -284,11 +288,15 @@ void test_strings() {
 
     memset(buf, '#', sizeof(buf));
     snprintf(buf, sizeof(buf), "%f", 3.141592654);
+#ifndef MSVCRT_DLL_NOANSI
     TEST_STR(buf, "3.141593");
+#endif
     TEST_INT(buf[sizeof(buf)-1], '#');
 
     snprintf(buf, sizeof(buf), "%e", 42.0);
+#ifndef MSVCRT_DLL_NOANSI
     TEST_STR(buf, "4.200000e+01");
+#endif
     snprintf(buf, sizeof(buf), "%a", 42.0);
     // Different implementations of printf differ in formatting of %a
     // (with differing number of trailing zeros). Additionally, with
@@ -298,6 +306,7 @@ void test_strings() {
     snprintf(buf, sizeof(buf), "%g", 42.0);
     TEST_STR(buf, "42");
     snprintf(buf, sizeof(buf), "%g", 0.000061035156250);
+#ifndef MSVCRT_DLL_NOANSI
     TEST_STR(buf, "6.10352e-05");
     const char formats[] = "feagFEAG";
     for (int i = 0; formats[i]; i++) {
@@ -321,17 +330,21 @@ void test_strings() {
             TEST_STR(buf, "nan");
 #endif
     }
+#endif /* !MSVCRT_DLL_NOANSI */
 #if !defined(__MINGW32__) || (!defined(__i386__) && !defined(__x86_64__)) || (defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO)
     // On mingw, long double formatting on x86 only works if __USE_MINGW_ANSI_STDIO is defined.
     long double print_val_ld = 42.0L;
     snprintf(buf, sizeof(buf), "%Lf", print_val_ld);
     TEST_STR(buf, "42.000000");
     snprintf(buf, sizeof(buf), "%Le", print_val_ld);
+#ifndef MSVCRT_DLL_NOANSI
     TEST_STR(buf, "4.200000e+01");
+#endif
     snprintf(buf, sizeof(buf), "%La", print_val_ld);
     TEST_FLT(strtod(buf, NULL), 42.0);
     snprintf(buf, sizeof(buf), "%Lg", print_val_ld);
     TEST_STR(buf, "42");
+#ifndef MSVCRT_DLL_NOANSI
     for (int i = 0; formats[i]; i++) {
         long double inf = INFINITY;
         long double nan = NAN;
@@ -355,7 +368,8 @@ void test_strings() {
             TEST_STR(buf, "nan");
 #endif
     }
-#endif
+#endif /* !MSVCRT_DLL_NOANSI */
+#endif /* long double tests */
     snprintf(buf, sizeof(buf), "%"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64" %"PRIx64, myconst + 0, myconst + 1, myconst + 2, myconst + 3, myconst + 4, myconst + 5, myconst + 6, myconst + 7, myconst + 8, myconst + 9);
     TEST_STR(buf, "baadf00dcafe baadf00dcaff baadf00dcb00 baadf00dcb01 baadf00dcb02 baadf00dcb03 baadf00dcb04 baadf00dcb05 baadf00dcb06 baadf00dcb07");
     char fmt[10] = { '%', '+', '0', '5', 'd', '\0' };
@@ -478,7 +492,9 @@ void test_parse_numbers() {
     TEST_STRTOD(strtod, char, );
     TEST_STRTOD(strtof, char, );
     TEST_STRTOD(strtold, char, );
+#ifndef MSVCRT_DLL_NOANSI
     TEST_STRTOD(wcstod, wchar_t, L);
+#endif
     TEST_STRTOD(wcstof, wchar_t, L);
     TEST_STRTOD(wcstold, wchar_t, L);
 
@@ -512,7 +528,9 @@ void test_parse_numbers() {
     TEST_STRTOD_RANGE_EXPECT(strtod, prefix, -1.e-400, -0.0)
 
     TEST_STRTOD_64B_RANGE(strtod, );
+#ifndef MSVCRT_DLL_NOANSI
     TEST_STRTOD_64B_RANGE(wcstod, L);
+#endif
 
 #if !defined(_MSC_VER) && (__SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__)
 #define TEST_STRTOLD_80B_RANGE(strtold, prefix) \
