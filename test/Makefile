@@ -68,6 +68,7 @@ TESTS_C_DLL = autoimport-lib
 TESTS_C_LINK_DLL = autoimport-main
 TESTS_C_NO_BUILTIN = crt-test
 TESTS_C_ANSI_STDIO = crt-test
+TESTS_C_AS_CPP = crt-test
 TESTS_CPP = hello-cpp global-terminate tlstest-main longjmp-cleanup
 TESTS_CPP_EXCEPTIONS = hello-exception exception-locale exception-reduced
 TESTS_CPP_STATIC = hello-exception
@@ -100,6 +101,7 @@ TARGETS_C_LINK_DLL = $(addsuffix $(EXEEXT), $(TESTS_C_LINK_DLL))
 TARGETS_C_NO_BUILTIN = $(addsuffix -no-builtin$(EXEEXT), $(TESTS_C_NO_BUILTIN))
 TARGETS_C_ANSI_STDIO = $(addsuffix -ansi-stdio$(EXEEXT), $(TESTS_C_ANSI_STDIO))
 TARGETS_C_NOANSI_STDIO = $(addsuffix -noansi-stdio$(EXEEXT), $(TESTS_C_ANSI_STDIO))
+TARGETS_C_AS_CPP = $(addsuffix -cpp$(EXEEXT), $(TESTS_C_AS_CPP))
 TARGETS_CPP = $(addsuffix $(EXEEXT), $(TESTS_CPP))
 TARGETS_CPP_EXCEPTIONS = $(addsuffix $(EXEEXT), $(TESTS_CPP_EXCEPTIONS))
 TARGETS_CPP_EXCEPTIONS_OPT = $(addsuffix -opt$(EXEEXT), $(TESTS_CPP_EXCEPTIONS))
@@ -125,7 +127,7 @@ TARGETS_OMP = $(addsuffix $(EXEEXT), $(TESTS_OMP))
 TARGETS_ATOMIC = $(addsuffix $(EXEEXT), $(TESTS_ATOMIC))
 
 TARGETS = \
-    $(TARGETS_C) $(TARGETS_C_DLL) $(TARGETS_C_LINK_DLL) $(TARGETS_C_NO_BUILTIN) $(TARGETS_C_ANSI_STDIO) $(TARGETS_C_NOANSI_STDIO) \
+    $(TARGETS_C) $(TARGETS_C_DLL) $(TARGETS_C_LINK_DLL) $(TARGETS_C_NO_BUILTIN) $(TARGETS_C_ANSI_STDIO) $(TARGETS_C_NOANSI_STDIO) $(TARGETS_C_AS_CPP) \
     $(TARGETS_CPP) $(TARGETS_CPP_EXCEPTIONS) $(TARGETS_CPP_EXCEPTIONS_OPT) $(TARGETS_CPP_STATIC) $(TARGETS_CPP_DLL) $(TARGETS_CPP_LINK_DLL) \
     $(TARGETS_SSP) $(TARGETS_CFGUARD) $(TARGETS_FORTIFY) \
     $(TARGETS_IDL) $(TARGETS_RES) \
@@ -169,6 +171,9 @@ $(TARGETS_C_ANSI_STDIO): %-ansi-stdio$(EXEEXT): %.c
 
 $(TARGETS_C_NOANSI_STDIO): %-noansi-stdio$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -D__USE_MINGW_ANSI_STDIO=0
+
+$(TARGETS_C_AS_CPP): %-cpp$(EXEEXT): %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fno-exceptions -x c++ $< -o $@
 
 $(TARGETS_CPP_EXCEPTIONS_OPT): %-opt$(EXEEXT): %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@ -O2
