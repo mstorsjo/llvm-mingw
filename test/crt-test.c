@@ -187,7 +187,7 @@ const char *(*str_wrap)(const char *str) = str_wrap_impl;
 #define ULL(x) ulonglong_wrap(x ## ULL)
 #define S(x) str_wrap(x)
 
-int vsscanf_wrap(const char* str, const char* fmt, ...) {
+int vsscanf_wrap(const char *str, const char *fmt, ...) {
     va_list ap;
     int ret;
     va_start(ap, fmt);
@@ -2128,7 +2128,7 @@ void test_win32_intrinsics() {
 #endif
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     test_strings();
     test_parse_numbers();
     test_environment();
