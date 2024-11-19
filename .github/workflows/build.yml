@@ -492,7 +492,8 @@ jobs:
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++ `
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
-            -DLIBOMP_ASMFLAGS=${{matrix.asmflag}}
+            -DLIBOMP_ASMFLAGS=${{matrix.asmflag}} `
+            -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
           ninja check-openmp
 
@@ -569,7 +570,8 @@ jobs:
             -DSANITIZER_CXX_ABI=libc++ `
             -DCOMPILER_RT_INCLUDE_TESTS=ON `
             -DCOMPILER_RT_BUILD_LIBFUZZER=OFF `
-            -DCOMPILER_RT_BUILD_ORC=OFF
+            -DCOMPILER_RT_BUILD_ORC=OFF `
+            -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
           ninja check-compiler-rt
 
