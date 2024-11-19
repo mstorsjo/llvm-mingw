@@ -41,7 +41,8 @@ contempory distributions as well.)
 
 There are packages with two different choices of CRT (C runtime) - the
 primary target is UCRT (the Universal C Runtime). The UCRT
-is available preinstalled since Windows 10, but can be installed
+is available preinstalled since Windows 10, but can be
+[installed](https://www.microsoft.com/en-us/download/details.aspx?id=50410)
 on top of Vista or newer. The other legacy alternative is `msvcrt`,
 which produces binaries for (and uses) msvcrt.dll, which is a
 built-in component in all versions of Windows. This allows running
@@ -106,10 +107,12 @@ normal GCC/binutils based MinGW.
   should be freed by the same DLL that allocated it).
 - The windres replacement, llvm-rc, isn't very mature and doesn't support
   everything that GNU windres does.
-- The toolchain defaults to using the Universal CRT (which is only available
-  out of the box since Windows 10, but can be installed on Vista or newer)
-  and defaults to targeting Windows 7. These defaults can be changed in
-  `build-mingw-w64.sh` though.
+- The toolchain defaults to using the Universal CRT and targeting Windows 7.
+  These defaults can be changed in `build-mingw-w64.sh` though. The Universal
+  CRT is only available out of the box since Windows 10, but can be
+  [installed](https://www.microsoft.com/en-us/download/details.aspx?id=50410)
+  on Vista or newer. For x86, there are also releases that run on
+  msvcrt.dll.
 - The toolchain uses Windows native TLS support, which doesn't work properly
   until Windows Vista. This has no effect on code not using thread local
   variables.
