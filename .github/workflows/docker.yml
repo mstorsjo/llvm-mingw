@@ -25,7 +25,7 @@ jobs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success
@@ -80,7 +80,7 @@ jobs:
           ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
         if: ${{matrix.file == 'Dockerfile.toolchain'}}
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success
