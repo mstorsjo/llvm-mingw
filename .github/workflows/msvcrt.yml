@@ -30,7 +30,7 @@ jobs:
       BUILD_DATE_UNIX: ${{steps.get-parameters.outputs.BUILD_DATE_UNIX}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success
@@ -53,7 +53,7 @@ jobs:
         with:
           ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success

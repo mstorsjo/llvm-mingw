@@ -25,7 +25,7 @@ jobs:
       LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success
@@ -47,7 +47,7 @@ jobs:
         run: |
           choco install ninja
       - name: Download toolchain
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
           workflow_conclusion: success
