@@ -34,7 +34,10 @@
 #include <windows.h>
 #endif
 
-#if defined(__MINGW32__) && defined(__MSVCRT_VERSION__) && __MSVCRT_VERSION__ < 0xE00 && defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO == 0
+#if defined(__MINGW32__) && defined(__MSVCRT_VERSION__) && __MSVCRT_VERSION__ < 0xE00
+#define MSVCRT_DLL
+#endif
+#if defined(MSVCRT_DLL) && defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO == 0
 #define MSVCRT_DLL_NOANSI
 #endif
 
@@ -1132,17 +1135,25 @@ void test_math_inspect_manipulate() {
 
     int iret;
 #define TEST_FREXP(frexp) \
-    TEST_FLT(frexp(F(INFINITY), &iret), INFINITY); \
-    TEST_FLT(frexp(F(-INFINITY), &iret), -INFINITY); \
     TEST_FLT_NAN(frexp(F(NAN), &iret), F(NAN)); \
     TEST_FLT_NAN(frexp(-F(NAN), &iret), -F(NAN)); \
     iret = 0; \
     TEST_FLT(frexp(F(0x1.4p+42), &iret), 0.625); \
     TEST_INT(iret, 43)
 
+#define TEST_FREXP_INF(frexp) \
+    TEST_FLT(frexp(F(INFINITY), &iret), INFINITY); \
+    TEST_FLT(frexp(F(-INFINITY), &iret), -INFINITY)
+
     TEST_FREXP(frexp);
     TEST_FREXP(frexpf);
     TEST_FREXP(frexpl);
+#if !defined(MSVCRT_DLL) || !(defined(__arm__) || defined(__aarch64__))
+    // On msvcrt.dll on arm, frexp*(INFINITY) returns NAN, not INFINITY.
+    TEST_FREXP_INF(frexp);
+    TEST_FREXP_INF(frexpf);
+    TEST_FREXP_INF(frexpl);
+#endif
 
 #define TEST_ILOGB(ilogb) \
     TEST_INT(ilogb(F(1.0)), 0); \
