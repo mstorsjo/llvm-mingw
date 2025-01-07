@@ -119,7 +119,7 @@ jobs:
           PYTHON_VERSION_MINGW: ${{needs.prepare.outputs.PYTHON_VERSION_MINGW}}
           TAG: ${{needs.prepare.outputs.TAG}}
         run: |
-          sudo apt-get update && sudo apt-get install autoconf-archive ninja-build
+          sudo apt-get update && sudo apt-get install libltdl-dev swig autoconf-archive ninja-build
           ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
