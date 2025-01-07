@@ -32,7 +32,7 @@ ARG DEFAULT_CRT=ucrt
 ARG CFGUARD_ARGS=--enable-cfguard
 
 COPY build-all.sh build-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh ./
-COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
+COPY wrappers/*.sh wrappers/*.c wrappers/*.h wrappers/*.cfg ./wrappers/
 # Libcxx version 17 requires Clang >= 15, while Libcxx 18 requires Clang >= 16.
 RUN LLVM_VERSION=llvmorg-17.0.6 ./build-all.sh $TOOLCHAIN_PREFIX --host-clang=clang-15 && \
     rm -rf /build/*

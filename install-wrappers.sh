@@ -84,7 +84,7 @@ if [ -n "${HOST_CLANG}" ]; then
 
     # Note: clang will detect the "InstalledDir" based on the path that was used to invoke the tools
     # This might still have some hidden effects
-    printf '#!/bin/sh\nsr=$(dirname "$(dirname "$(readlink -f "$0")")")\nexec %s -resource-dir="$sr"%s --sysroot="$sr" "$@"\n' "$HOST_CLANG_EXE" "$clangres" > $PREFIX/bin/clang
+    printf '#!/bin/sh\nsr=$(dirname "$(dirname "$(readlink -f "$0")")")\nexec %s -resource-dir="$sr"%s --sysroot="$sr" --config-system-dir="$sr"/bin "$@"\n' "$HOST_CLANG_EXE" "$clangres" > $PREFIX/bin/clang
     # printf '#!/bin/sh\nsr=$(dirname "$(dirname "$(readlink -f "$0")")")\nexec %s -resource-dir="$sr"%s --sysroot="$sr" "$@"\n' "$(readlink -f "$HOST_CLANG_EXE")" "$clangres" > $PREFIX/bin/clang
     chmod 755 $PREFIX/bin/clang
     ln -sf clang $PREFIX/bin/clang++
