@@ -22,10 +22,7 @@ WORKDIR /build
 
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
-# build-compiler-rt.sh assumes that sanitizers can be built for all architectures.
-# Sanitizers can be built for aarch64 since LLVM 14 and for armv7 since LLVM 19.
-# For simplicity, just skip building for armv7 when building an older version.
-ARG TOOLCHAIN_ARCHS="i686 x86_64 aarch64"
+ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64"
 
 ARG DEFAULT_CRT=ucrt
 
