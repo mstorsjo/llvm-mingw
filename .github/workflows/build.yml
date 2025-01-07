@@ -605,7 +605,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ffmpeg/ffmpeg
-          ref: n6.0
+          ref: n6.1.2
           path: ffmpeg
       - name: Build ffmpeg
         run: |
@@ -659,7 +659,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ffmpeg/ffmpeg
-          ref: n6.0
+          ref: n6.1.2
           path: ffmpeg
       - name: Build & test ffmpeg
         run: |
