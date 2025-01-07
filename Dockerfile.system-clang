@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -qqy --no-install-recommends \
@@ -10,7 +10,7 @@ RUN apt-get update -qq && \
 
 # Separate step for system-clang; the RUN line above is similar to other dockerfiles.
 RUN apt-get update -qq && \
-    apt-get install -qqy clang-15 lld-15 llvm-15 && \
+    apt-get install -qqy clang-18 lld-18 llvm-18 && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
@@ -33,8 +33,7 @@ ARG CFGUARD_ARGS=--enable-cfguard
 
 COPY build-all.sh build-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh ./
 COPY wrappers/*.sh wrappers/*.c wrappers/*.h wrappers/*.cfg ./wrappers/
-# Libcxx version 17 requires Clang >= 15, while Libcxx 18 requires Clang >= 16.
-RUN LLVM_VERSION=llvmorg-17.0.6 ./build-all.sh $TOOLCHAIN_PREFIX --host-clang=clang-15 && \
+RUN ./build-all.sh $TOOLCHAIN_PREFIX --host-clang=clang-18 && \
     rm -rf /build/*
 
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
