@@ -97,7 +97,7 @@ if [ -n "${HOST_CLANG}" ]; then
     llvmexec="$PATH:$llvmdir/bin"
 
     for exec in ld.lld llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-strip llvm-rc llvm-cvtres \
-                llvm-addr2line llvm-dlltool llvm-readelf llvm-size llvm-strings llvm-addr2line llvm-windres llvm-ml; do
+                llvm-addr2line llvm-dlltool llvm-readelf llvm-size llvm-strings llvm-addr2line llvm-windres llvm-ml llvm-lib; do
         execpath=$(PATH=$llvmexec command -v $exec) && ln -sf $execpath $PREFIX/bin/$exec
     done
 fi
