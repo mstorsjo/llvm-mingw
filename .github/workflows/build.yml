@@ -223,8 +223,7 @@ jobs:
 
   # Test building the toolchain on msys2 (in the mingw64 and clang64
   # environments). The binaries built here rely on the runtime libraries from
-  # the host environment (libstdc++ or libc++). No artifacts are stored from
-  # these builds, but llvm-mingw's tests are run.
+  # the host environment (libstdc++ or libc++).
   msys2:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [prepare]
