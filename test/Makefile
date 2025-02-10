@@ -76,10 +76,10 @@ TESTS_CPP_DLL = tlstest-lib throwcatch-lib
 TESTS_CPP_LINK_DLL = throwcatch-main
 TESTS_SSP = stacksmash
 TESTS_FORTIFY = bufferoverflow crt-test
-ifneq ($(HAVE_SANITIZERS),)
+ifneq ($(HAVE_ASAN),)
     TESTS_ASAN = stacksmash
-    TESTS_UBSAN = ubsan
 endif
+TESTS_UBSAN = ubsan
 ifneq ($(HAVE_OPENMP),)
     TESTS_OMP = hello-omp
 endif
