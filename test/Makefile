@@ -182,7 +182,7 @@ $(TARGETS_CPP) $(TARGETS_CPP_EXCEPTIONS): %$(EXEEXT): %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 $(TARGETS_CPP_STATIC): %-static$(EXEEXT): %.cpp
-	$(CXX) -static $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -static $< -o $@
 
 $(TARGETS_SSP): %$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fstack-protector-strong
@@ -222,21 +222,21 @@ $(TARGETS_RES): %$(EXEEXT): %.c %-rc.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) $+ -o $@
 
 $(TARGETS_OTHER_TARGETS): %-mingw32uwp$(EXEEXT): %.c
-	$(CC_UWP) $< -o $@
+	$(CC_UWP) $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(TARGETS_UWP): %-mingw32$(EXEEXT): %.c
-	$(CC) $< -o $@ -Wimplicit-function-declaration -Werror
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -Wimplicit-function-declaration -Werror
 
 $(TARGETS_UWP_FAIL): .tested.build.%-mingw32uwp$(EXEEXT): %.c
-	@echo $(CC_UWP) $< -o $@ -Wimplicit-function-declaration -Werror
-	@if $(CC_UWP) $< -o $@ -Wimplicit-function-declaration -Werror; then echo ERROR: $@ should have failed; rm -f $@; exit 1; else echo OK: UWP build failed intentionally; touch $@; fi
+	@echo $(CC_UWP) $(CPPFLAGS) $(CFLAGS) $< -o $@ -Wimplicit-function-declaration -Werror
+	@if $(CC_UWP) $(CPPFLAGS) $(CFLAGS) $< -o $@ -Wimplicit-function-declaration -Werror; then echo ERROR: $@ should have failed; rm -f $@; exit 1; else echo OK: UWP build failed intentionally; touch $@; fi
 
 .SECONDEXPANSION:
 $(TARGETS_C_LINK_DLL): %$(EXEEXT): %.c $$(subst -main,-lib,$$*)$(DLLEXT)
-	$(CC) $< -o $@ -L. -l$(subst -main,-lib,$*)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -L. -l$(subst -main,-lib,$*)
 
 $(TARGETS_CPP_LINK_DLL): %$(EXEEXT): %.cpp $$(subst -main,-lib,$$*)$(DLLEXT)
-	$(CXX) $< -o $@ -L. -l$(subst -main,-lib,$*)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@ -L. -l$(subst -main,-lib,$*)
 
 COMPILER_RT_ARCH = $(ARCH)
 ifeq ($(ARCH), i686)
