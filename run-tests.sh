@@ -52,7 +52,9 @@ cat<<EOF > is-ucrt.c
 #endif
 EOF
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
-if ! $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -E is-ucrt.c > /dev/null 2>&1; then
+if $ANY_ARCH-w64-mingw32-gcc$TOOLEXT -E is-ucrt.c > /dev/null 2>&1; then
+    IS_UCRT=1
+else
     # If the default CRT isn't UCRT, we can't build for mingw32uwp.
     unset HAVE_UWP
 fi
@@ -94,30 +96,33 @@ fi
 
 
 for arch in $ARCHS; do
+    unset HAVE_ASAN
     case $arch in
     i686)
         RUN="$RUN_I686"
         COPY="$COPY_I686"
         NATIVE="$NATIVE_X86"
-        HAVE_ASAN=1
+        if [ -n "$IS_UCRT" ]; then
+            HAVE_ASAN=1
+        fi
         ;;
     x86_64)
         RUN="$RUN_X86_64"
         COPY="$COPY_X86_64"
         NATIVE="$NATIVE_X86"
-        HAVE_ASAN=1
+        if [ -n "$IS_UCRT" ]; then
+            HAVE_ASAN=1
+        fi
         ;;
     armv7)
         RUN="$RUN_ARMV7"
         COPY="$COPY_ARMV7"
         NATIVE="$NATIVE_ARMV7"
-        unset HAVE_ASAN
         ;;
     aarch64)
         RUN="$RUN_AARCH64"
         COPY="$COPY_AARCH64"
         NATIVE="$NATIVE_AARCH64"
-        unset HAVE_ASAN
         ;;
     esac
 
