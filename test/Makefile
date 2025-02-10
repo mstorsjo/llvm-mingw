@@ -160,7 +160,7 @@ $(TARGETS_C_DLL): %$(DLLEXT): %.c
 	$(COPY_TARGET)
 
 $(TARGETS_CPP_DLL): %$(DLLEXT): %.cpp
-	$(CXX) $(CPPFLAGS) $(CFLAGS) $< -shared -o $@ -Wl,--out-implib,lib$*.dll.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -shared -o $@ -Wl,--out-implib,lib$*.dll.a
 	$(COPY_TARGET)
 
 $(TARGETS_C_NO_BUILTIN): %-no-builtin$(EXEEXT): %.c
