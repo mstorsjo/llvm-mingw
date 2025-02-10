@@ -47,7 +47,7 @@ cd test
 HAVE_UWP=1
 cat<<EOF > is-ucrt.c
 #include <corecrt.h>
-#if __MSVCRT_VERSION__ < 0x1400 && !defined(_UCRT)
+#if !defined(_UCRT)
 #error not ucrt
 #endif
 EOF
