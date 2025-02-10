@@ -1,0 +1,36 @@
+From 874dc38f3d4afc7e489065d5f2c1d4e2302c4541 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 10 Feb 2025 13:39:12 +0200
+Subject: [PATCH 2/2] crt: Mark _tls_index as used for LTO
+
+If translation units that use thread local variables are built with
+LTO (using native TLS, not emulated TLS), then the implicit access
+to _tls_index isn't visible on the LTO object file level.
+
+Therefore, mark _tls_index as used, so that it gets retained through
+LTO.
+
+This fixes linking user code with LTO, if the base CRT files also
+are built with LTO enabled.
+
+This is similar to 7ef0ba478f664a78a8509c81d5e40a34e821ac8c which
+marked _tls_used as used too.
+---
+ mingw-w64-crt/crt/tlssup.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/mingw-w64-crt/crt/tlssup.c b/mingw-w64-crt/crt/tlssup.c
+index 3ff03971e..de546dcb4 100644
+--- a/mingw-w64-crt/crt/tlssup.c
++++ b/mingw-w64-crt/crt/tlssup.c
+@@ -32,6 +32,7 @@ typedef struct TlsDtorNode {
+   _PVFV funcs[FUNCS_PER_NODE];
+ } TlsDtorNode;
+ 
++__attribute__((used))
+ ULONG _tls_index = 0;
+ 
+ /* TLS raw template data start and end. 
+-- 
+2.43.0
+
