@@ -1,17 +1,18 @@
-From 1ebae3bf9a59eeb924c6aefd1780b95a5527be6c Mon Sep 17 00:00:00 2001
+From 2aa34e8e073d154d4e20286e5726f7670b1deee0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Tue, 31 Oct 2023 00:10:57 +0200
-Subject: [PATCH] crt: Explicitly reference __C_specific_handler for Clang LTO
+Subject: [PATCH 1/2] crt: Explicitly reference __C_specific_handler for Clang
+ LTO
 
 ---
  mingw-w64-crt/crt/crtexe.c | 11 +++++++++++
  1 file changed, 11 insertions(+)
 
 diff --git a/mingw-w64-crt/crt/crtexe.c b/mingw-w64-crt/crt/crtexe.c
-index 03bda5912..94c72fd4d 100644
+index 328cc305b..ca1d6d4bf 100644
 --- a/mingw-w64-crt/crt/crtexe.c
 +++ b/mingw-w64-crt/crt/crtexe.c
-@@ -338,3 +338,14 @@ int __cdecl atexit (_PVFV func)
+@@ -342,3 +342,14 @@ int __cdecl atexit (_PVFV func)
  }
  
  char __mingw_module_is_dll = 0;
@@ -27,5 +28,5 @@ index 03bda5912..94c72fd4d 100644
 +void *__personality_ptr = (void*)__C_specific_handler;
 +#endif
 -- 
-2.34.1
+2.43.0
 
