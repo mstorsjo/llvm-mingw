@@ -56,8 +56,6 @@ fi
 
 cd llvm-project
 
-LLVM_PATH="$(pwd)/llvm"
-
 cd runtimes
 
 if command -v ninja >/dev/null; then
@@ -89,7 +87,6 @@ for arch in $ARCHS; do
         -DCMAKE_SYSTEM_NAME=Windows \
         -DCMAKE_C_COMPILER_WORKS=TRUE \
         -DCMAKE_CXX_COMPILER_WORKS=TRUE \
-        -DLLVM_PATH="$LLVM_PATH" \
         -DCMAKE_AR="$PREFIX/bin/llvm-ar" \
         -DCMAKE_RANLIB="$PREFIX/bin/llvm-ranlib" \
         -DLLVM_ENABLE_RUNTIMES="libunwind;libcxxabi;libcxx" \
