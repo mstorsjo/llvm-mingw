@@ -74,6 +74,7 @@ TESTS_CPP_EXCEPTIONS = hello-exception exception-locale exception-reduced
 TESTS_CPP_STATIC = hello-exception
 TESTS_CPP_DLL = tlstest-lib throwcatch-lib
 TESTS_CPP_LINK_DLL = throwcatch-main
+TESTS_TCHAR = tchar
 TESTS_SSP = stacksmash
 TESTS_FORTIFY = bufferoverflow crt-test
 ifneq ($(HAVE_ASAN),)
@@ -108,6 +109,8 @@ TARGETS_CPP_EXCEPTIONS_OPT = $(addsuffix -opt$(EXEEXT), $(TESTS_CPP_EXCEPTIONS))
 TARGETS_CPP_STATIC = $(addsuffix -static$(EXEEXT), $(TESTS_CPP_STATIC))
 TARGETS_CPP_DLL = $(addsuffix $(DLLEXT), $(TESTS_CPP_DLL))
 TARGETS_CPP_LINK_DLL = $(addsuffix $(EXEEXT), $(TESTS_CPP_LINK_DLL))
+TARGETS_TCHAR_NARROW = $(addsuffix -narrow$(EXEEXT), $(TESTS_TCHAR))
+TARGETS_TCHAR_UNICODE = $(addsuffix -unicode$(EXEEXT), $(TESTS_TCHAR))
 TARGETS_SSP = $(addsuffix $(EXEEXT), $(TESTS_SSP))
 TARGETS_CFGUARD = $(addsuffix $(EXEEXT), $(TESTS_CFGUARD))
 TARGETS_FORTIFY = $(addsuffix -fortify$(EXEEXT), $(TESTS_FORTIFY))
@@ -129,6 +132,7 @@ TARGETS_ATOMIC = $(addsuffix $(EXEEXT), $(TESTS_ATOMIC))
 TARGETS = \
     $(TARGETS_C) $(TARGETS_C_DLL) $(TARGETS_C_LINK_DLL) $(TARGETS_C_NO_BUILTIN) $(TARGETS_C_ANSI_STDIO) $(TARGETS_C_NOANSI_STDIO) $(TARGETS_C_AS_CPP) \
     $(TARGETS_CPP) $(TARGETS_CPP_EXCEPTIONS) $(TARGETS_CPP_EXCEPTIONS_OPT) $(TARGETS_CPP_STATIC) $(TARGETS_CPP_DLL) $(TARGETS_CPP_LINK_DLL) \
+    $(TARGETS_TCHAR_NARROW) $(TARGETS_TCHAR_UNICODE) \
     $(TARGETS_SSP) $(TARGETS_CFGUARD) $(TARGETS_FORTIFY) \
     $(TARGETS_IDL) $(TARGETS_RES) \
     $(TARGETS_OTHER_TARGETS) $(TARGETS_UWP) $(TARGETS_UWP_FAIL) \
@@ -183,6 +187,14 @@ $(TARGETS_CPP) $(TARGETS_CPP_EXCEPTIONS): %$(EXEEXT): %.cpp
 
 $(TARGETS_CPP_STATIC): %-static$(EXEEXT): %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -static $< -o $@
+
+# Build these tests with -D__USE_MINGW_ANSI_STDIO=1 to make sure that tchar
+# routines behave as expected even when normally using mingw stdio functions.
+$(TARGETS_TCHAR_NARROW): %-narrow$(EXEEXT): %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -D__USE_MINGW_ANSI_STDIO=1
+
+$(TARGETS_TCHAR_UNICODE): %-unicode$(EXEEXT): %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -D__USE_MINGW_ANSI_STDIO=1 -municode
 
 $(TARGETS_SSP): %$(EXEEXT): %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ -fstack-protector-strong
