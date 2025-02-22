@@ -91,7 +91,7 @@ jobs:
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-msvcrt-x86_64-toolchain
+          name: 'linux-${{ matrix.ver }}-msvcrt-x86_64-toolchain'
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
