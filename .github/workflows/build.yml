@@ -67,8 +67,14 @@ jobs:
   # Build a cross compiler for Linux, targeting Windows.
   linux:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    strategy:
+      matrix:
+        include:
+          - { ver: '20.04' }
+          - { ver: '22.04' }
+          - { ver: '24.04' }
     needs: [prepare]
-    runs-on: ubuntu-20.04
+    runs-on: 'ubuntu-${{ matrix.ver }}'
     steps:
       - uses: actions/checkout@v4
       - name: Build
