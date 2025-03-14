@@ -95,10 +95,12 @@ else
     HEADER_ROOT="$PREFIX"
 fi
 
+BUILDDIR="build"
+
 cd mingw-w64-headers
-[ -z "$CLEAN" ] || rm -rf build
-mkdir -p build
-cd build
+[ -z "$CLEAN" ] || rm -rf $BUILDDIR
+mkdir -p $BUILDDIR
+cd $BUILDDIR
 ../configure --prefix="$HEADER_ROOT" \
     --enable-idl --with-default-win32-winnt=$DEFAULT_WIN32_WINNT --with-default-msvcrt=$DEFAULT_MSVCRT INSTALL="install -C"
 $MAKE install
@@ -114,9 +116,10 @@ fi
 
 cd mingw-w64-crt
 for arch in $ARCHS; do
-    [ -z "$CLEAN" ] || rm -rf build-$arch
-    mkdir -p build-$arch
-    cd build-$arch
+    BUILDDIR="build-$arch"
+    [ -z "$CLEAN" ] || rm -rf $BUILDDIR
+    mkdir -p $BUILDDIR
+    cd $BUILDDIR
     case $arch in
     armv7)
         FLAGS="--disable-lib32 --disable-lib64 --enable-libarm32"

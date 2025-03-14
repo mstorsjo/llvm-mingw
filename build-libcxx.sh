@@ -73,9 +73,10 @@ else
 fi
 
 for arch in $ARCHS; do
-    [ -z "$CLEAN" ] || rm -rf build-$arch
-    mkdir -p build-$arch
-    cd build-$arch
+    BUILDDIR="build-$arch"
+    [ -z "$CLEAN" ] || rm -rf $BUILDDIR
+    mkdir -p $BUILDDIR
+    cd $BUILDDIR
     [ -n "$NO_RECONF" ] || rm -rf CMake*
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
