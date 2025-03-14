@@ -65,6 +65,8 @@ if [ -n "$HOST" ]; then
     BUILDDIR=$BUILDDIR-$HOST
 fi
 
+BUILDDIR="$BUILDDIR$BUILDDIRSUFFIX"
+
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 cd $BUILDDIR

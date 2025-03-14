@@ -289,6 +289,8 @@ if [ -n "$FULL_LLVM" ]; then
     TOOLCHAIN_ONLY=OFF
 fi
 
+BUILDDIR="$BUILDDIR$BUILDDIRSUFFIX"
+
 cd llvm-project/llvm
 
 PROJECTS="clang;lld"

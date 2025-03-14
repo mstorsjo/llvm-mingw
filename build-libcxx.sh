@@ -73,7 +73,7 @@ else
 fi
 
 for arch in $ARCHS; do
-    BUILDDIR="build-$arch"
+    BUILDDIR="build-$arch$BUILDDIRSUFFIX"
     [ -z "$CLEAN" ] || rm -rf $BUILDDIR
     mkdir -p $BUILDDIR
     cd $BUILDDIR

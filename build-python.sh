@@ -56,6 +56,8 @@ fi
 : ${CORES:=$(sysctl -n hw.ncpu 2>/dev/null)}
 : ${CORES:=4}
 
+BUILDDIR="$BUILDDIR$BUILDDIRSUFFIX"
+
 if [ ! -d libffi ]; then
     git clone https://github.com/libffi/libffi.git
     CHECKOUT_LIBFFI=1
