@@ -93,6 +93,11 @@ fi
 
 
 for arch in $ARCHS; do
+    if [ -n "$SANITIZERS" ] && [ "$arch" = "arm64ec" ]; then
+        # Not supported yet
+        continue
+    fi
+
     BUILDDIR="build-$arch$BUILD_SUFFIX$BUILDDIRSUFFIX"
     [ -z "$CLEAN" ] || rm -rf $BUILDDIR
     mkdir -p $BUILDDIR
