@@ -59,9 +59,11 @@ fi
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 : ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-mingw32 mingw32uwp}}
 
+BUILDDIR="build"
+
 if [ -n "$HOST" ]; then
     CONFIGFLAGS="$CONFIGFLAGS --host=$HOST"
-    CROSS_NAME=-$HOST
+    BUILDDIR=$BUILDDIR-$HOST
     case $HOST in
     *-mingw32)
         EXEEXT=.exe
@@ -105,18 +107,18 @@ fi
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
 
 cd mingw-w64-tools/gendef
-[ -z "$CLEAN" ] || rm -rf build${CROSS_NAME}
-mkdir -p build${CROSS_NAME}
-cd build${CROSS_NAME}
+[ -z "$CLEAN" ] || rm -rf $BUILDDIR
+mkdir -p $BUILDDIR
+cd $BUILDDIR
 ../configure --prefix="$PREFIX" $CONFIGFLAGS
 $MAKE -j$CORES
 $MAKE install-strip
 mkdir -p "$PREFIX/share/gendef"
 install -m644 ../COPYING "$PREFIX/share/gendef"
 cd ../../widl
-[ -z "$CLEAN" ] || rm -rf build${CROSS_NAME}
-mkdir -p build${CROSS_NAME}
-cd build${CROSS_NAME}
+[ -z "$CLEAN" ] || rm -rf $BUILDDIR
+mkdir -p $BUILDDIR
+cd $BUILDDIR
 ../configure --prefix="$PREFIX" --target=$ANY_ARCH-w64-mingw32 --with-widl-includedir="$INCLUDEDIR" $CONFIGFLAGS
 $MAKE -j$CORES
 $MAKE install-strip

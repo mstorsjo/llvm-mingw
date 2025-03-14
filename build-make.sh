@@ -58,14 +58,16 @@ fi
 
 cd make-$MAKE_VERSION
 
+BUILDDIR="build"
+
 if [ -n "$HOST" ]; then
     CONFIGFLAGS="$CONFIGFLAGS --host=$HOST"
-    CROSS_NAME=-$HOST
+    BUILDDIR=$BUILDDIR-$HOST
 fi
 
-[ -z "$CLEAN" ] || rm -rf build$CROSS_NAME
-mkdir -p build$CROSS_NAME
-cd build$CROSS_NAME
+[ -z "$CLEAN" ] || rm -rf $BUILDDIR
+mkdir -p $BUILDDIR
+cd $BUILDDIR
 ../configure --prefix="$PREFIX" $CONFIGFLAGS --program-prefix=mingw32- --enable-job-server LDFLAGS="-Wl,-s"
 make -j$CORES
 make install-binPROGRAMS
