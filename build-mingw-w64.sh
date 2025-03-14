@@ -95,7 +95,7 @@ else
     HEADER_ROOT="$PREFIX"
 fi
 
-BUILDDIR="build"
+BUILDDIR="build$BUILDDIRSUFFIX"
 
 cd mingw-w64-headers
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
@@ -116,7 +116,7 @@ fi
 
 cd mingw-w64-crt
 for arch in $ARCHS; do
-    BUILDDIR="build-$arch"
+    BUILDDIR="build-$arch$BUILDDIRSUFFIX"
     [ -z "$CLEAN" ] || rm -rf $BUILDDIR
     mkdir -p $BUILDDIR
     cd $BUILDDIR

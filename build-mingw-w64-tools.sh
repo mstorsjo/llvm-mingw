@@ -106,6 +106,8 @@ else
 fi
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
 
+BUILDDIR="$BUILDDIR$BUILDDIRSUFFIX"
+
 cd mingw-w64-tools/gendef
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
 mkdir -p $BUILDDIR

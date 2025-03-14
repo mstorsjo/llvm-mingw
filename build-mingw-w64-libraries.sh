@@ -54,7 +54,7 @@ cd mingw-w64/mingw-w64-libraries
 for lib in winpthreads winstorecompat; do
     cd $lib
     for arch in $ARCHS; do
-        BUILDDIR="build-$arch"
+        BUILDDIR="build-$arch$BUILDDIRSUFFIX"
         [ -z "$CLEAN" ] || rm -rf $BUILDDIR
         mkdir -p $BUILDDIR
         cd $BUILDDIR

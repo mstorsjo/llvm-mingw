@@ -132,6 +132,8 @@ if [ -n "$MACOS_REDIST" ]; then
     fi
 fi
 
+BUILDDIR="$BUILDDIR$BUILDDIRSUFFIX"
+
 cd lldb-mi
 
 [ -z "$CLEAN" ] || rm -rf $BUILDDIR
