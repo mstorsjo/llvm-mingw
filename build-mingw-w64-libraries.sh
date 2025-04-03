@@ -50,6 +50,11 @@ if [ ! -d mingw-w64 ] || [ -n "$SYNC" ]; then
     CHECKOUT_ONLY=1 ./build-mingw-w64.sh
 fi
 
+MAKE=make
+if command -v gmake >/dev/null; then
+    MAKE=gmake
+fi
+
 cd mingw-w64/mingw-w64-libraries
 for lib in winpthreads winstorecompat; do
     cd $lib
@@ -61,8 +66,8 @@ for lib in winpthreads winstorecompat; do
         ../configure --host=$arch-w64-mingw32 --prefix="$arch_prefix" --libdir="$arch_prefix/lib" \
             CFLAGS="$USE_CFLAGS" \
             CXXFLAGS="$USE_CFLAGS"
-        make -j$CORES
-        make install
+        $MAKE -j$CORES
+        $MAKE install
         cd ..
         mkdir -p "$arch_prefix/share/mingw32"
         install -m644 COPYING "$arch_prefix/share/mingw32/COPYING.${lib}.txt"
