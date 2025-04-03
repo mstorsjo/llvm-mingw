@@ -19,7 +19,7 @@ jobs:
   # slightly more, when we know a separate build of the same version but with
   # assertions enabled, has passed some amount of tests.
   prepare:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     runs-on: ubuntu-latest
     outputs:
       LLVM_VERSION: ${{steps.get-versions.outputs.LLVM_VERSION}}
@@ -331,7 +331,6 @@ jobs:
   # toolchains from above.
   test-toolchain:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
       run:
@@ -349,8 +348,13 @@ jobs:
           install: >-
             unzip
             make
-      - uses: actions/download-artifact@v4
+      - name: Download toolchain
+        uses: dawidd6/action-download-artifact@v6
         with:
+          workflow: build.yml
+          workflow_conclusion: success
+          branch: master
+          event: push
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
