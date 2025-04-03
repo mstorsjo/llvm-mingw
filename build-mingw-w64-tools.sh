@@ -104,6 +104,8 @@ else
 fi
 ANY_ARCH=$(echo $ARCHS | awk '{print $1}')
 
+CONFIGFLAGS="$CONFIGFLAGS --enable-silent-rules"
+
 cd mingw-w64-tools/gendef
 [ -z "$CLEAN" ] || rm -rf build${CROSS_NAME}
 mkdir -p build${CROSS_NAME}
