@@ -136,7 +136,7 @@ for dep in git cmake ${HOST_CLANG}; do
 done
 
 if [ -n "${HOST_CLANG}" ] && [ "${CFGUARD_ARGS}" = "--enable-cfguard"  ]; then
-    "${HOST_CLANG}" -c -x c -o - - -Werror -mguard=cf </dev/null >/dev/null 2>/dev/null || CFGUARD_ARGS="--disable-cfguard"
+    "${HOST_CLANG}" -target x86_64-w64-mingw32 -c -x c -o - - -Werror -mguard=cf </dev/null >/dev/null 2>/dev/null || CFGUARD_ARGS="--disable-cfguard"
 fi
 
 if [ -n "$FULL_PGO" ]; then
