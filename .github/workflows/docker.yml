@@ -51,7 +51,7 @@ jobs:
         if: true
         uses: docker/login-action@v3
         with:
-          username: ${{secrets.DOCKER_USERNAME}}
+          username: ${{vars.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker images
         if: false
@@ -100,7 +100,7 @@ jobs:
         if: true
         uses: docker/login-action@v3
         with:
-          username: ${{secrets.DOCKER_USERNAME}}
+          username: ${{vars.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker images
         if: false
@@ -137,7 +137,7 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{secrets.DOCKER_USERNAME}}
+          username: ${{vars.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Create final image
         run: |
