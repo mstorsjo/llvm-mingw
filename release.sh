@@ -29,7 +29,7 @@ fi
 
 time docker build -f Dockerfile . -t mstorsjo/llvm-mingw:latest -t mstorsjo/llvm-mingw:$TAG
 
-DISTRO=ubuntu-22.04-$(uname -m)
+DISTRO=ubuntu-24.04-$(uname -m)
 docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
 
 if [ -n "$NATIVEONLY" ]; then
