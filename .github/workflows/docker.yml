@@ -1,5 +1,6 @@
 name: Build docker images
 on:
+  push:
   workflow_dispatch:
     inputs:
       commit:
@@ -25,6 +26,7 @@ jobs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
       - name: Download build parameters
+        if: false
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
@@ -36,7 +38,8 @@ jobs:
       - name: Get build parameters
         id: get-parameters
         run: |
-          cat parameters.txt >> $GITHUB_OUTPUT
+          echo TAG=test >> $GITHUB_OUTPUT
+          #cat parameters.txt >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
   docker-build-dev:
@@ -44,15 +47,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Log in to Docker Hub
-        if: ${{inputs.login}}
+        if: true
         uses: docker/login-action@v3
         with:
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker images
+        if: false
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -62,6 +64,7 @@ jobs:
             mstorsjo/llvm-mingw:dev
             mstorsjo/llvm-mingw:dev-${{needs.prepare.outputs.TAG}}
       - name: Inspect Docker images
+        if: false
         run: |
           docker images
 
@@ -76,10 +79,8 @@ jobs:
           - { file: Dockerfile.toolchain, platforms: linux/arm64, key: arm64 }
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
       - name: Download toolchain
-        if: ${{matrix.file == 'Dockerfile.toolchain'}}
+        if: false
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build.yml
@@ -96,12 +97,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
-        if: ${{inputs.login}}
+        if: true
         uses: docker/login-action@v3
         with:
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker images
+        if: false
         uses: docker/build-push-action@v5
         id: build
         with:
@@ -112,6 +114,7 @@ jobs:
           outputs: |
             type=image,name=mstorsjo/llvm-mingw,push-by-digest=true,name-canonical=true
       - name: Write outputs for later steps
+        if: false
         uses: cloudposse/github-action-matrix-outputs-write@main
         id: out
         with:
@@ -123,7 +126,7 @@ jobs:
   docker-create:
     needs: [docker-build, prepare]
     runs-on: ubuntu-latest
-    if: ${{inputs.push}}
+    if: false
     steps:
       - uses: cloudposse/github-action-matrix-outputs-read@main
         id: read
