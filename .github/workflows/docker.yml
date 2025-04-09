@@ -80,7 +80,7 @@ jobs:
           docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
       - name: Upload image as artifact
         if: ${{ (matrix.file == 'Dockerfile') }}
-        uses: ishworkh/container-image-artifact-upload@v1.0.0
+        uses: ishworkh/container-image-artifact-upload@v2.0.0
         with:
           retention_days: 3
           image: mstorsjo/llvm-mingw:latest
@@ -98,7 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download image
-        uses: ishworkh/container-image-artifact-download@v1.0.0
+        uses: ishworkh/container-image-artifact-download@v2.0.0
         with:
           image: mstorsjo/llvm-mingw:latest
       - name: Build Docker images
