@@ -76,7 +76,7 @@ jobs:
         env:
           TAG: ${{needs.prepare.outputs.TAG}}
         run: |
-          DISTRO=ubuntu-22.04-$(uname -m)
+          DISTRO=ubuntu-24.04-$(uname -m)
           docker run --rm mstorsjo/llvm-mingw:latest sh -c "cd /opt && mv llvm-mingw llvm-mingw-$TAG-ucrt-$DISTRO && tar -Jcvf - --format=ustar --numeric-owner --owner=0 --group=0 llvm-mingw-$TAG-ucrt-$DISTRO" > llvm-mingw-$TAG-ucrt-$DISTRO.tar.xz
       - name: Upload image as artifact
         if: ${{ (matrix.file == 'Dockerfile') }}
