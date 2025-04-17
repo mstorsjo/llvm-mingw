@@ -327,12 +327,10 @@ jobs:
             llvm-mingw-*.zip
           retention-days: 7
 
-  # Run llvm-mingw's tests on x86_64 and i686 with the cross-built corresponding
-  # toolchains from above.
+  # Run llvm-mingw's tests with the cross-built toolchains from above.
   test-toolchain:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows]
-    runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
@@ -342,6 +340,9 @@ jobs:
         arch:
           - x86_64
           - i686
+          - armv7
+          - aarch64
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - uses: msys2/setup-msys2@v2
         with:
