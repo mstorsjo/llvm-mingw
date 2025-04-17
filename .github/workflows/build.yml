@@ -332,7 +332,6 @@ jobs:
   test-toolchain:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows]
-    runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
@@ -342,6 +341,9 @@ jobs:
         arch:
           - x86_64
           - i686
+          - armv7
+          - aarch64
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - uses: msys2/setup-msys2@v2
         with:
