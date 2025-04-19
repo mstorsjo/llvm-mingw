@@ -88,37 +88,36 @@ if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$R
     case $(uname) in
     MINGW*|MSYS*)
         # On Windows/arm64, we may be running x86_64 msys2 emulated, so we
-        # can't rely on "uname -m" here. Inspect the default target architecture
-        # of the native toolchain instead; we can be sure that we can execute
-        # the kind of binary that the toolchain consists of.
-        case $(clang -dumpmachine | sed 's/-.*//') in
-        i686|x86_64)
-            # For i686, we could in theory be running on an i686-only machine,
-            # but let's assume that we can execute x86_64 binaries too
-            # (for wider test coverage).
-            NATIVE_X86=1
-            RUN_X86_64=true
-            RUN_I686=true
-            ;;
-        armv7)
-            # This is most probably running on aarch64 so those probably
-            # could be executed too, but let's skip that for now.
-            NATIVE_ARMV7=1
-            RUN_ARMV7=true
-            ;;
-        aarch64)
-            # Windows/ARM64 can run i686 binaries (and also x86_64 since
-            # Windows 11). Not setting NATIVE_X86 - the asan tests don't run
-            # correctly when emulated on ARM64.
-            # Since Windows 11 24H2 (10.0.26100) armv7 binaries can no longer
-            # be executed, so out of future precaution, don't automatically
-            # try to execute them.
+        # can't rely on "uname -m" here. But the msys2 "uname" output indicates
+        # the real host architecture, and the Windows build version.
+        if [ "$(uname | cut -d - -f 4)" = "ARM64" ]; then
+            # Windows/ARM64 can run i686 binaries. Not setting NATIVE_X86 - the
+            # asan tests don't run correctly when emulated on ARM64.
             NATIVE_AARCH64=1
             RUN_I686=true
-            RUN_X86_64=true
             RUN_AARCH64=true
-            ;;
-        esac
+
+            winbuild="$(uname | cut -d - -f 3)"
+            if [ "$winbuild" -ge 22000 ]; then
+                # Since Windows 11, x86_64 binaries can also be emulated.
+                RUN_X86_64=true
+            fi
+            if [ "$winbuild" -lt 26100 ]; then
+                # Since Windows 11 24H2 armv7 binaries can no longer be
+                # executed. (It is also possible to be unable to run armv7
+                # binaries on older OS versions, if the hardware is incapable
+                # of it, like on Apple Silicon macs.)
+                NATIVE_ARMV7=1
+                RUN_ARMV7=true
+            fi
+        elif [ "$(uname -m)" = "i686" ] && [ "$(uname | cut -d - -f 4)" != "WOW64" ]; then
+            NATIVE_X86=1
+            RUN_I686=true
+        else
+            NATIVE_X86=1
+            RUN_I686=true
+            RUN_X86_64=true
+        fi
         ;;
     Linux)
         if command -v wine >/dev/null; then
