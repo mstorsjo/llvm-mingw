@@ -30,7 +30,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${LLDB:=lldb.exe}
 : ${OBJCOPY:=objcopy.exe}
 
-TARGET=$(clang.exe --version | grep Target: | awk '{print $2}')
+TARGET=$(clang.exe -dumpmachine)
 ARCH="${TARGET%%-*}"
 
 cd test
