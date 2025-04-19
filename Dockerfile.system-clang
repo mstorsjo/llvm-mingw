@@ -38,4 +38,4 @@ ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
 # Test the installation
 COPY test/*.c test/*.cpp test/*.h test/*.idl test/*.rc test/Makefile ./test/
 COPY run-tests.sh ./
-RUN RUN_I686=false RUN_X86_64=false ./run-tests.sh $TOOLCHAIN_PREFIX
+RUN ./run-tests.sh $TOOLCHAIN_PREFIX

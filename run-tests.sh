@@ -76,20 +76,71 @@ fi
 
 : ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
 
-if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ]; then
+# This script can be run in a number of configurations:
+# - On Linux, where one possibly can run tests on the local machine with wine
+#   (if available), and possibly also remotely running tests on a different
+#   machine with suitable COPY_*/RUN_* variables (wrapping scp/ssh).
+# - In WSL, running a native Windows toolchain. (We don't detect this case
+#   automatically, but require the caller to set the suitable RUN_ variables.)
+# - In an msys2 shell.
+
+if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$RUN_AARCH64" ]; then
     case $(uname) in
     MINGW*|MSYS*)
-        NATIVE_X86=1
-        RUN_X86_64=true
-        RUN_I686=true
-        ;;
-    *)
-        case $(uname -m) in
-        x86_64)
-            : ${RUN_X86_64:=wine}
-            : ${RUN_I686:=wine}
+        # On Windows/arm64, we may be running x86_64 msys2 emulated, so we
+        # can't rely on "uname -m" here. Inspect the default target architecture
+        # of the native toolchain instead; we can be sure that we can execute
+        # the kind of binary that the toolchain consists of.
+        case $(clang -dumpmachine | sed 's/-.*//') in
+        i686|x86_64)
+            # For i686, we could in theory be running on an i686-only machine,
+            # but let's assume that we can execute x86_64 binaries too
+            # (for wider test coverage).
+            NATIVE_X86=1
+            RUN_X86_64=true
+            RUN_I686=true
+            ;;
+        armv7)
+            # This is most probably running on aarch64 so those probably
+            # could be executed too, but let's skip that for now.
+            NATIVE_ARMV7=1
+            RUN_ARMV7=true
+            ;;
+        aarch64)
+            # Windows/ARM64 can run i686 binaries (and also x86_64 since
+            # Windows 11). Not setting NATIVE_X86 - the asan tests don't run
+            # correctly when emulated on ARM64.
+            # Since Windows 11 24H2 (10.0.26100) armv7 binaries can no longer
+            # be executed, so out of future precaution, don't automatically
+            # try to execute them.
+            NATIVE_AARCH64=1
+            RUN_I686=true
+            RUN_X86_64=true
+            RUN_AARCH64=true
             ;;
         esac
+        ;;
+    Linux)
+        if command -v wine >/dev/null; then
+            # On Linux, use Wine if available. (On macOS, it's less clear
+            # what Wine can execute; it's most likely an x86_64 version
+            # emulated with Rosetta. Thus don't automatically use Wine on
+            # macOS.)
+            case $(uname -m) in
+            x86_64)
+                # Assume that Wine, if installed, supports both 32 and 64 bit
+                # binaries.
+                : ${RUN_X86_64:=wine}
+                : ${RUN_I686:=wine}
+                ;;
+            aarch64)
+                # Don't assume that the installed Wine can run armv7 binaries
+                # too. (Versions since Wine 10.2 can, if both an armv7 and
+                # aarch64 version is installed together.)
+                : ${RUN_AARCH64:=wine}
+                ;;
+            esac
+        fi
         ;;
     esac
 fi
