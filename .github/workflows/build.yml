@@ -434,19 +434,21 @@ jobs:
           ninja
           ninja check-cxx check-cxxabi check-unwind
 
-  # Run the OpenMP tests with the cross-built i686/x86_64 toolchains from above.
+  # Run the OpenMP tests with the cross-built toolchains from above.
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         include:
           - { arch: i686, asmflag: }
           - { arch: x86_64, asmflag: -m64 }
+          - { arch: armv7 }
+          - { arch: aarch64 }
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Install dependencies
         run: |
