@@ -96,6 +96,7 @@ jobs:
             -DLIBUNWIND_USE_COMPILER_RT=YES `
             -DLIBCXXABI_USE_LLVM_UNWINDER=YES `
             -DLIBCXX_EXTRA_SITE_DEFINES="__USE_MINGW_ANSI_STDIO=1" `
+            -DCMAKE_INSTALL_MESSAGE=NEVER `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
           ninja check-cxx check-cxxabi check-unwind
