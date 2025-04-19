@@ -42,6 +42,12 @@ Darwin)
     MAKEOPTS="-O"
 esac
 
+if [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+    # Detect running in WSL
+    export WSL=1
+    export TOOLEXT=.exe
+fi
+
 cd test
 
 HAVE_UWP=1
@@ -80,8 +86,7 @@ fi
 # - On Linux, where one possibly can run tests on the local machine with wine
 #   (if available), and possibly also remotely running tests on a different
 #   machine with suitable COPY_*/RUN_* variables (wrapping scp/ssh).
-# - In WSL, running a native Windows toolchain. (We don't detect this case
-#   automatically, but require the caller to set the suitable RUN_ variables.)
+# - In WSL, running a native Windows toolchain.
 # - In an msys2 shell.
 
 if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$RUN_AARCH64" ]; then
@@ -120,7 +125,35 @@ if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$R
         fi
         ;;
     Linux)
-        if command -v wine >/dev/null; then
+        if [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+            # On WSL, inspect the architecture.
+            case $(uname -m) in
+            x86_64)
+                NATIVE_X86=1
+                RUN_I686=true
+                RUN_X86_64=true
+                ;;
+            aarch64)
+                # Windows/ARM64 can run i686 binaries. Not setting NATIVE_X86
+                # - the asan tests don't run correctly when emulated on ARM64.
+                NATIVE_AARCH64=1
+                RUN_I686=true
+                RUN_AARCH64=true
+
+                # Since Windows 11, x86_64 binaries can also be emulated.
+                # We don't know if we are on a new enough version, so only
+                # set this if RUN_X86_64 isn't already set.
+                : ${RUN_X86_64:=true}
+
+                # Since Windows 11 24H2 (10.0.26100) armv7 binaries can no
+                # longer be executed. We don't know the version, but assume we
+                # can execute them; the caller can set RUN_ARMV7=false
+                # otherwise.
+                NATIVE_ARMV7=1
+                : ${RUN_ARMV7:=true}
+                ;;
+            esac
+        elif command -v wine >/dev/null; then
             # On Linux, use Wine if available. (On macOS, it's less clear
             # what Wine can execute; it's most likely an x86_64 version
             # emulated with Rosetta. Thus don't automatically use Wine on
