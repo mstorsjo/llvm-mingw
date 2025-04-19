@@ -41,13 +41,15 @@ jobs:
 
   test-libcxx:
     needs: [prepare]
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { arch: x86_64, prefix: i686-w64-mingw32- }
-          - { arch: x86_64, prefix: }
+          - { arch: x86_64,  target_arch: i686    }
+          - { arch: x86_64,  target_arch: x86_64  }
+          - { arch: aarch64, target_arch: armv7   }
+          - { arch: aarch64, target_arch: aarch64 }
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Install dependencies
         run: |
@@ -87,8 +89,9 @@ jobs:
             -DLIBCXX_ENABLE_WERROR=YES `
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" `
             -DLIBCXX_CXX_ABI=libcxxabi `
-            -DCMAKE_C_COMPILER=${{matrix.prefix}}clang `
-            -DCMAKE_CXX_COMPILER=${{matrix.prefix}}clang++ `
+            -DCMAKE_C_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang `
+            -DCMAKE_CXX_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang++ `
+            -DCMAKE_CXX_COMPILER_TARGET=${{matrix.target_arch}}-w64-windows-gnu `
             -DLIBCXXABI_ENABLE_SHARED=NO `
             -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=YES `
             -DLIBCXX_USE_COMPILER_RT=YES `
@@ -99,4 +102,4 @@ jobs:
             -DCMAKE_INSTALL_MESSAGE=NEVER `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
-          ninja check-cxx check-cxxabi check-unwind
+          ninja ${{startsWith(matrix.arch, 'a') && 'check-cxx' || 'check-cxx check-cxxabi check-unwind'}}
