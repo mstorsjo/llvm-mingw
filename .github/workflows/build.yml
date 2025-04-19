@@ -627,7 +627,15 @@ jobs:
   test-ffmpeg:
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows]
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - i686
+          - x86_64
+          - armv7
+          - aarch64
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     defaults:
       run:
         shell: msys2 {0}
@@ -666,7 +674,7 @@ jobs:
           export PATH=/llvm-mingw/bin:$PATH
           mkdir ffmpeg-build
           cd ffmpeg-build
-          ../ffmpeg/configure --samples=../fate-samples --enable-gpl
+          ../ffmpeg/configure --arch=${{matrix.arch}} --samples=../fate-samples --enable-gpl
           make -j$(nproc)
           make fate-rsync
           make -j$(nproc) fate
