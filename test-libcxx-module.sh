@@ -27,7 +27,7 @@ export PATH=$PREFIX/bin:$PATH
 : ${ARCHS:=${TOOLCHAIN_ARCHS-i686 x86_64 armv7 aarch64}}
 
 case $(uname) in
-MINGW*|MSYS*)
+MINGW*|MSYS*|CYGWIN*)
     NATIVE=1
     ;;
 *)

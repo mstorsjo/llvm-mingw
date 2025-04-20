@@ -129,7 +129,7 @@ set_native() {
 
 if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$RUN_AARCH64" ]; then
     case $(uname) in
-    MINGW*|MSYS*)
+    MINGW*|MSYS*|CYGWIN*)
         # On Windows/arm64, we may be running x86_64 msys2 emulated, so we
         # can't rely on "uname -m" here. But the msys2 "uname" output indicates
         # the real host architecture, and the Windows build version.
