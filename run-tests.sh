@@ -82,6 +82,44 @@ fi
 
 : ${TARGET_OSES:=${TOOLCHAIN_TARGET_OSES-$DEFAULT_OSES}}
 
+set_native() {
+    arch="$1"
+    winbuild="$2"
+    case $arch in
+    i686)
+        NATIVE_X86=1
+        RUN_I686=true
+        ;;
+    x86_64)
+        NATIVE_X86=1
+        RUN_I686=true
+        RUN_X86_64=true
+        ;;
+    armv7)
+        ;;
+    aarch64)
+        # Windows/ARM64 can run i686 binaries. Not setting NATIVE_X86 - the
+        # asan tests don't run correctly when emulated on ARM64.
+        NATIVE_AARCH64=1
+        RUN_I686=true
+        RUN_AARCH64=true
+
+        if [ -n "$winbuild" ] && [ "$winbuild" -ge 22000 ]; then
+            # Since Windows 11, x86_64 binaries can also be emulated.
+            RUN_X86_64=true
+        fi
+        if [ -n "$winbuild" ] && [ "$winbuild" -lt 26100 ]; then
+            # Since Windows 11 24H2 armv7 binaries can no longer be
+            # executed. (It is also possible to be unable to run armv7
+            # binaries on older OS versions, if the hardware is incapable
+            # of it, like on Apple Silicon macs.)
+            NATIVE_ARMV7=1
+            RUN_ARMV7=true
+        fi
+        ;;
+    esac
+}
+
 # This script can be run in a number of configurations:
 # - On Linux, where one possibly can run tests on the local machine with wine
 #   (if available), and possibly also remotely running tests on a different
@@ -96,63 +134,19 @@ if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$R
         # can't rely on "uname -m" here. But the msys2 "uname" output indicates
         # the real host architecture, and the Windows build version.
         if [ "$(uname | cut -d - -f 4)" = "ARM64" ]; then
-            # Windows/ARM64 can run i686 binaries. Not setting NATIVE_X86 - the
-            # asan tests don't run correctly when emulated on ARM64.
-            NATIVE_AARCH64=1
-            RUN_I686=true
-            RUN_AARCH64=true
-
             winbuild="$(uname | cut -d - -f 3)"
-            if [ "$winbuild" -ge 22000 ]; then
-                # Since Windows 11, x86_64 binaries can also be emulated.
-                RUN_X86_64=true
-            fi
-            if [ "$winbuild" -lt 26100 ]; then
-                # Since Windows 11 24H2 armv7 binaries can no longer be
-                # executed. (It is also possible to be unable to run armv7
-                # binaries on older OS versions, if the hardware is incapable
-                # of it, like on Apple Silicon macs.)
-                NATIVE_ARMV7=1
-                RUN_ARMV7=true
-            fi
+            set_native aarch64 $winbuild
         elif [ "$(uname -m)" = "i686" ] && [ "$(uname | cut -d - -f 4)" != "WOW64" ]; then
-            NATIVE_X86=1
-            RUN_I686=true
+            set_native i686
         else
-            NATIVE_X86=1
-            RUN_I686=true
-            RUN_X86_64=true
+            set_native x86_64
         fi
         ;;
     Linux)
         if [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
             # On WSL, inspect the architecture.
-            case $(uname -m) in
-            x86_64)
-                NATIVE_X86=1
-                RUN_I686=true
-                RUN_X86_64=true
-                ;;
-            aarch64)
-                # Windows/ARM64 can run i686 binaries. Not setting NATIVE_X86
-                # - the asan tests don't run correctly when emulated on ARM64.
-                NATIVE_AARCH64=1
-                RUN_I686=true
-                RUN_AARCH64=true
-
-                # Since Windows 11, x86_64 binaries can also be emulated.
-                # We don't know if we are on a new enough version, so only
-                # set this if RUN_X86_64 isn't already set.
-                : ${RUN_X86_64:=true}
-
-                # Since Windows 11 24H2 (10.0.26100) armv7 binaries can no
-                # longer be executed. We don't know the version, but assume we
-                # can execute them; the caller can set RUN_ARMV7=false
-                # otherwise.
-                NATIVE_ARMV7=1
-                : ${RUN_ARMV7:=true}
-                ;;
-            esac
+            winbuild="$(PATH=$PATH:/mnt/c/Windows/System32 cmd.exe /c ver 2>/dev/null | cut -s -d . -f 3)"
+            set_native "$(uname -m)" "$winbuild"
         elif command -v wine >/dev/null; then
             # On Linux, use Wine if available. (On macOS, it's less clear
             # what Wine can execute; it's most likely an x86_64 version
