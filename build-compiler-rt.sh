@@ -129,10 +129,10 @@ for arch in $ARCHS; do
         aarch64)
             # asan doesn't work on aarch64 or armv7; make this clear by omitting
             # the installed files altogether.
-            rm "$INSTALL_PREFIX/lib/windows/libclang_rt.asan"*aarch64*
+            rm -f "$INSTALL_PREFIX/lib/windows/libclang_rt.asan"*aarch64*
             ;;
         armv7)
-            rm "$INSTALL_PREFIX/lib/windows/libclang_rt.asan"*arm*
+            rm -f "$INSTALL_PREFIX/lib/windows/libclang_rt.asan"*arm*
             ;;
         *)
             mv "$INSTALL_PREFIX/lib/windows/"*.dll "$PREFIX/$arch-w64-mingw32/bin"
