@@ -507,13 +507,15 @@ jobs:
     # Only running these tests in scheduled builds.
     if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         arch:
           - x86_64
           - i686
+          - armv7
+          - aarch64
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Install dependencies
         run: |
