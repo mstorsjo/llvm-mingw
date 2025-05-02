@@ -749,6 +749,13 @@ void test_parse_numbers() {
 
     TEST_STRTOD_64B_RANGE(strtod, );
 #ifndef MSVCRT_DLL_NOANSI
+    // This test fails on msvcrt.dll when not using -D__USE_MINGW_ANSI_STDIO=1
+    // (which sets __USE_MINGW_STRTOX), hence the ifdef.
+    //
+    // When using the mingw provided wcstod on x86, this test succeeds (and
+    // thus is included). But when running such a binary emulated on ARM, this
+    // particular test fails, as the range checks in __mingw_wcstod rely on
+    // 80 bit long doubles really having more precision than 64 bit doubles.
     TEST_STRTOD_64B_RANGE(wcstod, L);
 #endif
 
