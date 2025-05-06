@@ -1,5 +1,6 @@
 name: Run libcxx/libcxxabi/libunwind tests
 on:
+  push:
   workflow_dispatch:
     inputs:
       commit:
@@ -29,9 +30,9 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: ${{inputs.pipeline_type}}
+          commit:
+          branch: master
+          event: schedule
           name: parameters
       - name: Get build parameters
         id: get-parameters
@@ -59,9 +60,9 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
-          event: ${{inputs.pipeline_type}}
+          commit:
+          branch: master
+          event: schedule
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
