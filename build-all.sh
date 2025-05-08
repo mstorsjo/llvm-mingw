@@ -24,7 +24,7 @@ HOST_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    --enable-asserts)
+    --enable-asserts|--disable-dylib)
         LLVM_ARGS="$LLVM_ARGS $1"
         ;;
     --host-clang|--host-clang=*)
@@ -35,9 +35,6 @@ while [ $# -gt 0 ]; do
     --full-llvm)
         LLVM_ARGS="$LLVM_ARGS $1"
         FULL_LLVM=1
-        ;;
-    --disable-dylib)
-        LLVM_ARGS="$LLVM_ARGS $1"
         ;;
     --disable-lldb)
         LLVM_ARGS="$LLVM_ARGS $1"
