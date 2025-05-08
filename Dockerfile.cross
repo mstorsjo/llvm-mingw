@@ -39,9 +39,11 @@ RUN if [ -n "$WITH_PYTHON" ]; then \
 
 ARG FULL_LLVM
 
+COPY profile.profdata ./
+
 COPY build-llvm.sh .
 RUN if [ -n "$WITH_PYTHON" ]; then ARG="--with-python"; fi && \
-    ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST $ARG
+    ./build-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST $ARG --thinlto --pgo
 
 COPY build-lldb-mi.sh .
 RUN ./build-lldb-mi.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
