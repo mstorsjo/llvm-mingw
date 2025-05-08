@@ -24,7 +24,7 @@ HOST_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    --enable-asserts|--disable-dylib)
+    --enable-asserts|--disable-dylib|--with-clang|--thinlto)
         LLVM_ARGS="$LLVM_ARGS $1"
         ;;
     --host-clang|--host-clang=*)
@@ -84,7 +84,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--host-clang[=clang]] [--enable-asserts] [--disable-dylib] [--full-llvm] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] [--clean-runtimes] dest"
+    echo "$0 [--host-clang[=clang]] [--enable-asserts] [--disable-dylib] [--with-clang] [--thinlto] [--full-llvm] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--no-tools] [--wipe-runtimes] [--clean-runtimes] dest"
     exit 1
 fi
 
