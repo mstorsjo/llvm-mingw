@@ -75,12 +75,32 @@ export LLVM_DIR="$PREFIX"
 LLVM_SRC="$(pwd)/llvm-project/llvm"
 if [ -d "$LLVM_SRC" ]; then
     SUFFIX=${HOST+-}$HOST
-    for base in build build-asserts; do
-        if [ -d "$LLVM_SRC/$base$SUFFIX" ]; then
-            export LLVM_DIR="$LLVM_SRC/$base$SUFFIX"
-            break
+    DIRS=""
+    cd llvm-project/llvm
+    for dir in build*$SUFFIX; do
+        if [ -z "$SUFFIX" ]; then
+            case $dir in
+            *linux*|*mingw32*)
+                continue
+                ;;
+            esac
+        fi
+        if [ -d "$dir" ]; then
+            DIRS="$DIRS $dir"
         fi
     done
+    if [ -n "$DIRS" ]; then
+        dir="$(ls -td $DIRS | head -1)"
+        export LLVM_DIR="$LLVM_SRC/$dir"
+        echo Using $LLVM_DIR as LLVM build dir
+        break
+    else
+        # No build directory found; this is ok if the installed prefix is a
+        # full (development) install of LLVM. Warn that we didn't find what
+        # we were looking for.
+        echo Warning, did not find a suitable LLVM build dir, assuming $PREFIX contains LLVM development files >&2
+    fi
+    cd ../..
 fi
 
 if [ -n "$HOST" ]; then
