@@ -70,6 +70,10 @@ for arch in $ARCHS; do
     x86_64)
         CMAKEFLAGS="$CMAKEFLAGS -DLIBOMP_ASMFLAGS=-m64"
         ;;
+    arm64ec)
+        # Not yet supported
+        continue
+        ;;
     esac
 
     [ -z "$CLEAN" ] || rm -rf build-$arch
