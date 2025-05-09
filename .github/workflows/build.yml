@@ -434,7 +434,7 @@ jobs:
             -DCMAKE_INSTALL_MESSAGE=NEVER `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
-          ninja ${{startsWith(matrix.arch, 'a') && 'check-cxx' || 'check-cxx check-cxxabi check-unwind'}}
+          ninja check-cxx check-cxxabi check-unwind
 
   # Run the OpenMP tests with the cross-built toolchains from above.
   # This also forces testing the bundled python executables.
