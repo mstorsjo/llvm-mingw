@@ -24,6 +24,7 @@ LINK_DYLIB=ON
 ASSERTSSUFFIX=""
 LLDB=ON
 CLANG_TOOLS_EXTRA=ON
+INSTRUMENTED=OFF
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -71,6 +72,28 @@ while [ $# -gt 0 ]; do
     --macos-native-tools)
         MACOS_NATIVE_TOOLS=1
         ;;
+    --instrumented|--instrumented=*)
+        INSTRUMENTED="${1#--instrumented}"
+        INSTRUMENTED="${INSTRUMENTED#=}"
+        INSTRUMENTED="${INSTRUMENTED:-Frontend}"
+        : ${LLVM_PROFILE_DATA_DIR:=/tmp/llvm-profile}
+        # A fixed BUILDDIR is set at the end for this case.
+        ;;
+    --pgo|--pgo=*)
+        case "$1" in
+        --pgo=*)
+            LLVM_PROFDATA_FILE="${1#--pgo}"
+            LLVM_PROFDATA_FILE="${LLVM_PROFDATA_FILE#=}"
+            ;;
+        esac
+        LLVM_PROFDATA_FILE="${LLVM_PROFDATA_FILE:-profile.profdata}"
+        if [ ! -e "$LLVM_PROFDATA_FILE" ]; then
+            echo Profile \"$LLVM_PROFDATA_FILE\" not found
+            exit 1
+        fi
+        LLVM_PROFDATA_FILE="$(cd "$(dirname "$LLVM_PROFDATA_FILE")" && pwd)/$(basename "$LLVM_PROFDATA_FILE")"
+        BUILDDIR="$BUILDDIR-pgo"
+        ;;
     *)
         PREFIX="$1"
         ;;
@@ -80,12 +103,14 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--with-clang] [--thinlto] [--lto] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] [--macos-native-tools] dest
+        echo $0 [--enable-asserts] [--with-clang] [--thinlto] [--lto] [--instrumented[=type]] [--pgo[=profile]] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] [--macos-native-tools] dest
         exit 1
     fi
 
-    mkdir -p "$PREFIX"
-    PREFIX="$(cd "$PREFIX" && pwd)"
+    if [ -z "$INSTRUMENTED" ]; then
+        mkdir -p "$PREFIX"
+        PREFIX="$(cd "$PREFIX" && pwd)"
+    fi
 fi
 
 if [ ! -d llvm-project ]; then
@@ -316,6 +341,12 @@ if [ -z "$HOST" ] && [ "$(uname)" = "Darwin" ]; then
     fi
 fi
 
+if [ "$INSTRUMENTED" != "OFF" ]; then
+    # For instrumented build, use a hardcoded builddir that we can
+    # locate, and don't install the built files.
+    BUILDDIR="build-instrumented"
+fi
+
 TOOLCHAIN_ONLY=ON
 if [ -n "$FULL_LLVM" ]; then
     TOOLCHAIN_ONLY=OFF
@@ -364,10 +395,19 @@ cmake \
     -DLLVM_LINK_LLVM_DYLIB=$LINK_DYLIB \
     -DLLVM_TOOLCHAIN_TOOLS="llvm-ar;llvm-ranlib;llvm-objdump;llvm-rc;llvm-cvtres;llvm-nm;llvm-strings;llvm-readobj;llvm-dlltool;llvm-pdbutil;llvm-objcopy;llvm-strip;llvm-cov;llvm-profdata;llvm-addr2line;llvm-symbolizer;llvm-windres;llvm-ml;llvm-readelf;llvm-size;llvm-cxxfilt;llvm-lib" \
     ${HOST+-DLLVM_HOST_TRIPLE=$HOST} \
+    -DLLVM_BUILD_INSTRUMENTED=$INSTRUMENTED \
+    ${LLVM_PROFILE_DATA_DIR+-DLLVM_PROFILE_DATA_DIR=$LLVM_PROFILE_DATA_DIR} \
+    ${LLVM_PROFDATA_FILE+-DLLVM_PROFDATA_FILE=$LLVM_PROFDATA_FILE} \
     $CMAKEFLAGS \
     ..
 
-cmake --build . ${CORES:+-j${CORES}}
-cmake --install . --strip
+if [ "$INSTRUMENTED" != "OFF" ]; then
+    # For instrumented builds, don't install the built files (so $PREFIX
+    # is entirely unused).
+    cmake --build . ${CORES:+-j${CORES}} --target clang --target lld
+else
+    cmake --build . ${CORES:+-j${CORES}}
+    cmake --install . --strip
 
-cp ../LICENSE.TXT $PREFIX
+    cp ../LICENSE.TXT $PREFIX
+fi
