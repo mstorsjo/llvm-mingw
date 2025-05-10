@@ -21,6 +21,7 @@ on:
 
 jobs:
   prepare:
+    if: false
     runs-on: ubuntu-latest
     outputs:
       LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
@@ -41,7 +42,6 @@ jobs:
           cat $GITHUB_OUTPUT
 
   test-libcxx:
-    needs: [prepare]
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout llvm-project
         env:
-          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          LLVM_VERSION: 9c67ae861ccb0312fc680414a8441892d169d14a
         run: |
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build and test libcxx
