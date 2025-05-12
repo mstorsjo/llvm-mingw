@@ -48,9 +48,6 @@ jobs:
           - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
-      - name: Install dependencies
-        run: |
-          choco install ninja
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v10
         with:
