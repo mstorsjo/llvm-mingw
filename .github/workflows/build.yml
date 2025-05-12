@@ -495,9 +495,6 @@ jobs:
           - { arch: aarch64, target_arch: aarch64 }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
-      - name: Install dependencies
-        run: |
-          choco install ninja
       - uses: actions/download-artifact@v4
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
@@ -557,9 +554,6 @@ jobs:
           - { arch: aarch64 }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
-      - name: Install dependencies
-        run: |
-          choco install ninja
       - uses: actions/download-artifact@v4
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
@@ -623,9 +617,6 @@ jobs:
           - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
-      - name: Install dependencies
-        run: |
-          choco install ninja
       - uses: actions/download-artifact@v4
         with:
           name: windows-ucrt-${{matrix.arch}}-toolchain
