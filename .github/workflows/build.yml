@@ -484,7 +484,6 @@ jobs:
     # testing with the latest compiler instead of an older release).
     # Therefore, keep the test disabled by default; it's easy to enable
     # temporarily on a branch for testing.
-    if: false
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -546,7 +545,6 @@ jobs:
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -612,7 +610,6 @@ jobs:
   # also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
