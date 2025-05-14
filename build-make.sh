@@ -44,10 +44,10 @@ PREFIX="$(cd "$PREFIX" && pwd)"
 : ${CORES:=4}
 
 download() {
-    if command -v wget >/dev/null; then
-        wget "$1"
-    else
+    if command -v curl >/dev/null; then
         curl -LO "$1"
+    else
+        wget "$1"
     fi
 }
 
