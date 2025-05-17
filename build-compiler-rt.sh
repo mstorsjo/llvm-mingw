@@ -122,6 +122,13 @@ for arch in $ARCHS; do
         -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
         $SRC_DIR
     cmake --build . ${CORES:+-j${CORES}}
+
+    # Skip install on arm64ec, we merge archives instead.
+    if [ "$arch" = "arm64ec" ]; then
+        cd ..
+        continue
+    fi
+
     cmake --install . --prefix "$INSTALL_PREFIX"
     mkdir -p "$PREFIX/$arch-w64-mingw32/bin"
     if [ -n "$SANITIZERS" ]; then
@@ -140,6 +147,20 @@ for arch in $ARCHS; do
         esac
     fi
     cd ..
+done
+
+# Clang expects the aarch64 compiler-rt name on ARM64EC. While this could be adjusted
+# in Clang, the current approach mirrors MSVC, where the core CRT is provided as
+# archives containing both EC and native support. Ideally, the LLVM build system would
+# handle this automatically, but for now we can merge it here.
+for arch in $ARCHS; do
+    if [ "$arch" = "arm64ec" ]; then
+        rm -f "$INSTALL_PREFIX/lib/windows/libclang_rt.builtins-aarch64.a" \
+              "$INSTALL_PREFIX/lib/windows/libclang_rt.builtins-arm64ec.a"
+        "$PREFIX/bin/llvm-lib" -machine:arm64ec "-out:$INSTALL_PREFIX/lib/windows/libclang_rt.builtins-aarch64.a" \
+                               build-aarch64/lib/windows/libclang_rt.builtins-aarch64.a \
+                               build-arm64ec/lib/windows/libclang_rt.builtins-arm64ec.a
+    fi
 done
 
 if [ "$INSTALL_PREFIX" != "$CLANG_RESOURCE_DIR" ]; then
