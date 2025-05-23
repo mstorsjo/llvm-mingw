@@ -107,6 +107,10 @@ set_native() {
         if [ -n "$winbuild" ] && [ "$winbuild" -ge 22000 ]; then
             # Since Windows 11, x86_64 binaries can also be emulated.
             RUN_X86_64=true
+            # arm64ec can also be executed (as it is part of being able to
+            # execute x86_64).
+            RUN_ARM64EC=true
+            NATIVE_ARM64EC=1
         fi
         if [ -n "$winbuild" ] && [ "$winbuild" -lt 26100 ]; then
             # Since Windows 11 24H2 armv7 binaries can no longer be
@@ -206,7 +210,9 @@ for arch in $ARCHS; do
     arm64ec)
         unset HAVE_UBSAN
         unset HAVE_OPENMP
-        unset RUN
+        RUN="$RUN_ARM64EC"
+        COPY="$COPY_ARM64EC"
+        NATIVE="$NATIVE_ARM64EC"
         ;;
     esac
 
