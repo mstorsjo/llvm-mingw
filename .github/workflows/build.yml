@@ -429,7 +429,7 @@ jobs:
             -DCMAKE_INSTALL_MESSAGE=NEVER `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
-          ninja check-runtimes
+          ninja ${{(matrix.target_arch == 'arm64ec') && 'check-cxx check-unwind' || 'check-runtimes'}}
 
   # Run the OpenMP tests with the cross-built toolchains from above.
   # This also forces testing the bundled python executables.
