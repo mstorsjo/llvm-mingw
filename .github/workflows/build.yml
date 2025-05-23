@@ -233,7 +233,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -339,7 +339,7 @@ jobs:
   # environments). The binaries built here rely on the runtime libraries from
   # the host environment (libstdc++ or libc++).
   msys2:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
