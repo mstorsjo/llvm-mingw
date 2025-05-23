@@ -374,8 +374,7 @@ jobs:
     # testing with the latest compiler instead of an older release).
     # Therefore, keep the test disabled by default; it's easy to enable
     # temporarily on a branch for testing.
-    if: false
-    needs: [linux-cross-windows, prepare]
+    if: true
     strategy:
       fail-fast: false
       matrix:
@@ -389,11 +388,9 @@ jobs:
       - name: Install dependencies
         run: |
           choco install ninja
-      - uses: actions/download-artifact@v4
-        with:
-          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
+          curl -LO https://martin.st/temp/llvm-mingw-arm64ec-ucrt-${{matrix.arch}}.zip
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
@@ -504,8 +501,7 @@ jobs:
   # also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-cross-windows, prepare]
+    if: true
     strategy:
       fail-fast: false
       matrix:
@@ -519,11 +515,9 @@ jobs:
       - name: Install dependencies
         run: |
           choco install ninja
-      - uses: actions/download-artifact@v4
-        with:
-          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
+          curl -LO https://martin.st/temp/llvm-mingw-arm64ec-ucrt-${{matrix.arch}}.zip
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
