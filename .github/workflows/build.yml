@@ -542,8 +542,8 @@ jobs:
             -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DLLVM_TARGETS_TO_BUILD=X86 `
-            -DCMAKE_C_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang `
-            -DCMAKE_CXX_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang++
+            -DCMAKE_C_COMPILER=clang `
+            -DCMAKE_CXX_COMPILER=clang++
           ninja not FileCheck llvm-config KillTheDoctor count split-file
           echo "LLVM_CONFIG=$PWD\bin\llvm-config.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
           echo "CMAKE_DIR=$PWD\lib\cmake\llvm" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
