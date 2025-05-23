@@ -102,4 +102,4 @@ jobs:
             -DCMAKE_INSTALL_MESSAGE=NEVER `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
-          ninja check-cxx check-cxxabi check-unwind
+          ninja check-runtimes
