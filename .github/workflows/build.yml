@@ -403,6 +403,8 @@ jobs:
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build and test libcxx
         run: |
@@ -532,6 +534,8 @@ jobs:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
         run: |
           git config --global core.autocrlf false
+          git config --global user.name "LLVM MinGW"
+          git config --global user.email root@localhost
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
       - name: Build test executables
         run: |

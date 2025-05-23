@@ -1,0 +1,27 @@
+From 34c2e60b2d15206a63ed6bb486124d5ea8748484 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Fri, 23 May 2025 12:35:46 +0300
+Subject: [PATCH 1/2] [compiler-rt] [test] Don't apply the "arm" or "armhf"
+ patterns for targets starting with "arm64"
+
+This fixes finding the builtins library for arm64ec.
+---
+ compiler-rt/test/lit.common.configured.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/compiler-rt/test/lit.common.configured.in b/compiler-rt/test/lit.common.configured.in
+index f673a13be9cb..04d1a4df5a54 100644
+--- a/compiler-rt/test/lit.common.configured.in
++++ b/compiler-rt/test/lit.common.configured.in
+@@ -69,7 +69,7 @@ elif config.android:
+   else:
+     set_default("target_suffix", "-%s-android" % config.target_arch)
+ else:
+-  if config.target_arch.startswith("arm"):
++  if config.target_arch.startswith("arm") and not config.target_arch.startswith("arm64"):
+     if config.target_arch.endswith("hf"):
+       set_default("target_suffix", "-armhf")
+     else:
+-- 
+2.43.0
+

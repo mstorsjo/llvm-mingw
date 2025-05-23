@@ -1,0 +1,38 @@
+From 2e1e95d0cb01aa75d5ae06af459325afff6c0a78 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Fri, 23 May 2025 13:38:31 +0300
+Subject: [PATCH 2/2] [libcxx] [test] Extend mingw target checks to cover the
+ arm64ec architecture too
+
+---
+ .../new.delete/new.delete.array/sized_delete_array.pass.cpp      | 1 +
+ .../new.delete/new.delete.single/sized_delete.pass.cpp           | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp b/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp
+index dd0b1d60d28d..175cda39abc2 100644
+--- a/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp
++++ b/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp
+@@ -19,6 +19,7 @@
+ // ADDITIONAL_COMPILE_FLAGS(target=i686-w64-windows-gnu): -fsized-deallocation
+ // ADDITIONAL_COMPILE_FLAGS(target=aarch64-w64-windows-gnu): -fsized-deallocation
+ // ADDITIONAL_COMPILE_FLAGS(target=armv7-w64-windows-gnu): -fsized-deallocation
++// ADDITIONAL_COMPILE_FLAGS(target=arm64ec-w64-windows-gnu): -fsized-deallocation
+ 
+ // Android clang-r536225 identifies as clang-19.0 but it predates the real
+ // LLVM 19.0.0, so it also leaves sized deallocation off by default.
+diff --git a/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp b/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp
+index 9469af1c78f3..29229650cc19 100644
+--- a/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp
++++ b/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp
+@@ -19,6 +19,7 @@
+ // ADDITIONAL_COMPILE_FLAGS(target=i686-w64-windows-gnu): -fsized-deallocation
+ // ADDITIONAL_COMPILE_FLAGS(target=aarch64-w64-windows-gnu): -fsized-deallocation
+ // ADDITIONAL_COMPILE_FLAGS(target=armv7-w64-windows-gnu): -fsized-deallocation
++// ADDITIONAL_COMPILE_FLAGS(target=arm64ec-w64-windows-gnu): -fsized-deallocation
+ 
+ // Android clang-r536225 identifies as clang-19.0 but it predates the real
+ // LLVM 19.0.0, so it also leaves sized deallocation off by default.
+-- 
+2.43.0
+
