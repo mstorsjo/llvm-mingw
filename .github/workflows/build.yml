@@ -383,6 +383,7 @@ jobs:
           - { arch: x86_64,  target_arch: x86_64  }
           - { arch: aarch64, target_arch: armv7   }
           - { arch: aarch64, target_arch: aarch64 }
+          - { arch: aarch64, target_arch: arm64ec }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Install dependencies
@@ -505,11 +506,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - x86_64
-          - i686
-          - armv7
-          - aarch64
+        include:
+          - { arch: i686,    target_arch: i686    }
+          - { arch: x86_64,  target_arch: x86_64  }
+          - { arch: armv7,   target_arch: armv7   }
+          - { arch: aarch64, target_arch: aarch64 }
+          - { arch: aarch64, target_arch: arm64ec }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Install dependencies
@@ -540,8 +542,8 @@ jobs:
             -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DLLVM_TARGETS_TO_BUILD=X86 `
-            -DCMAKE_C_COMPILER=clang `
-            -DCMAKE_CXX_COMPILER=clang++
+            -DCMAKE_C_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang `
+            -DCMAKE_CXX_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang++
           ninja not FileCheck llvm-config KillTheDoctor count split-file
           echo "LLVM_CONFIG=$PWD\bin\llvm-config.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
           echo "CMAKE_DIR=$PWD\lib\cmake\llvm" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
@@ -559,9 +561,9 @@ jobs:
             -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
-            -DCMAKE_C_COMPILER=clang `
-            -DCMAKE_CXX_COMPILER=clang++ `
-            -DCMAKE_C_COMPILER_TARGET=${{matrix.arch}}-w64-windows-gnu `
+            -DCMAKE_C_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang `
+            -DCMAKE_CXX_COMPILER=${{matrix.target_arch}}-w64-mingw32-clang++ `
+            -DCMAKE_C_COMPILER_TARGET=${{matrix.target_arch}}-w64-windows-gnu `
             -DCOMPILER_RT_DEFAULT_TARGET_ONLY=TRUE `
             -DCOMPILER_RT_USE_BUILTINS_LIBRARY=TRUE `
             -DLLVM_CONFIG_PATH="$Env:LLVM_CONFIG" `
