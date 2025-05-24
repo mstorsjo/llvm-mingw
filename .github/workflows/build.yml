@@ -199,10 +199,10 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           # Disable zstd and python. Both are available on the runners, but
-          # installed with homebrew, and only available in the native (x86_64)
+          # installed with homebrew, and only available in the native (arm64)
           # form. Therefore, autodetection will pick them up, but linking
           # universal binaries fails as those libraries are unavailable in the
-          # other (arm64) architecture form.
+          # other (x86_64) architecture form.
           MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
