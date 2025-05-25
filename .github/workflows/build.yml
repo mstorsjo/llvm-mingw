@@ -343,7 +343,7 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: mingw64
+          msystem: msys
           install: >-
             unzip
             make
