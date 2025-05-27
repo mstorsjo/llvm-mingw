@@ -796,6 +796,36 @@ jobs:
           make fate-rsync
           make -j$(nproc) fate
 
+  check-stage2:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    needs: [linux, linux-stage1]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: linux*-ucrt-x86_64-toolchain
+          merge-multiple: true
+      - name: Unpack
+        run: |
+          for i in *.tar.xz; do
+            tar -Jxf $i
+            rm $i
+          done
+          mv llvm-mingw-stage1-* stage1
+          mv llvm-mingw-* stage2
+      - name: Benchmark
+        run: |
+          sudo apt-get update && sudo apt-get install hyperfine
+          curl -LO https://sqlite.org/2025/sqlite-amalgamation-3490200.zip
+          unzip sqlite-*.zip
+          mv sqlite-*/sqlite3.c .
+          hyperfine -m 3 -M 6 -L DIR stage1,stage2 "{DIR}/bin/x86_64-w64-mingw32-clang -c sqlite3.c -O3"
+      - name: Compare file contents
+        run: |
+          (cd stage1 && find . | sort > ../files-stage1)
+          (cd stage2 && find . | sort > ../files-stage2)
+          diff -u files-stage1 files-stage2 || true
+
   upload-nightly:
     if: true
     needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain]
