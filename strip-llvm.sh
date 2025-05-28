@@ -78,7 +78,7 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
         ;;
     clang-tidy)
         ;;
-    clang-target-wrapper*)
+    clang-target-wrapper*|clang-scan-deps-wrapper*)
         ;;
     clang-*)
         suffix="${basename#*-}"
