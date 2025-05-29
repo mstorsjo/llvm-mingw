@@ -35,7 +35,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
+          branch: ${{inputs.commit == '' && inputs.branch || ''}}
           event: push
           name: parameters
       - name: Get build parameters
@@ -58,7 +58,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
+          branch: ${{inputs.commit == '' && inputs.branch || ''}}
           event: push
           name: linux-ucrt-x86_64-toolchain
       - name: Unpack original toolchain

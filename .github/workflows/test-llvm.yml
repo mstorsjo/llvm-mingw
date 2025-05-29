@@ -30,7 +30,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
+          branch: ${{inputs.commit == '' && inputs.branch || ''}}
           event: ${{inputs.pipeline_type}}
           name: parameters
       - name: Get build parameters
@@ -58,7 +58,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{inputs.commit}}
-          branch: ${{inputs.branch}}
+          branch: ${{inputs.commit == '' && inputs.branch || ''}}
           event: ${{inputs.pipeline_type}}
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
