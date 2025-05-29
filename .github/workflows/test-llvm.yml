@@ -17,9 +17,12 @@ on:
         options:
         - push
         - schedule
+  schedule:
+    - cron: '30 13 * * 0' # 13:30 UTC on Sundays
 
 jobs:
   prepare:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     runs-on: ubuntu-latest
     outputs:
       LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
@@ -29,9 +32,9 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.commit == '' && inputs.branch || ''}}
-          event: ${{inputs.pipeline_type}}
+          commit: ${{github.event_name != 'schedule' && inputs.commit || ''}}
+          branch: ${{github.event_name == 'schedule' && 'master' || (inputs.commit == '' && inputs.branch || '')}}
+          event: ${{github.event_name == 'schedule' && 'schedule' || inputs.pipeline_type}}
           name: parameters
       - name: Get build parameters
         id: get-parameters
@@ -40,6 +43,7 @@ jobs:
           cat $GITHUB_OUTPUT
 
   test-llvm:
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [prepare]
     strategy:
       fail-fast: false
@@ -57,9 +61,9 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.commit == '' && inputs.branch || ''}}
-          event: ${{inputs.pipeline_type}}
+          commit: ${{github.event_name != 'schedule' && inputs.commit || ''}}
+          branch: ${{github.event_name == 'schedule' && 'master' || (inputs.commit == '' && inputs.branch || '')}}
+          event: ${{github.event_name == 'schedule' && 'schedule' || inputs.pipeline_type}}
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
