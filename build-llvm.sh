@@ -240,6 +240,13 @@ fi
 if [ -n "$COMPILER_LAUNCHER" ]; then
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER_LAUNCHER=$COMPILER_LAUNCHER"
     CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_CXX_COMPILER_LAUNCHER=$COMPILER_LAUNCHER"
+    # Make the LLVM build system set options for forcing relative paths
+    # within the files, e.g. for source file references within assert
+    # messages. This on its own isn't enough for making the cache reusable
+    # across different worktrees though; one also needs to set the ccache
+    # base_dir (CCACHE_BASEDIR) option. When setting that ccache option, this
+    # option here doesn't really have any effect either, except for debug info.
+    CMAKEFLAGS="$CMAKEFLAGS -DLLVM_USE_RELATIVE_PATHS_IN_FILES=ON"
 fi
 
 if [ -n "$LTO" ]; then
