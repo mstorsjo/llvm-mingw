@@ -2,11 +2,8 @@ name: Build msvcrt toolchains
 on:
   workflow_dispatch:
     inputs:
-      commit:
-        description: 'Commit to extract from'
-        type: string
-      branch:
-        description: 'Branch to extract from'
+      ref:
+        description: 'Ref to extract from'
         type: string
         default: 'master'
       upload:
@@ -30,12 +27,11 @@ jobs:
       BUILD_DATE_UNIX: ${{steps.get-parameters.outputs.BUILD_DATE_UNIX}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.commit == '' && inputs.branch || ''}}
+          ref: ${{inputs.ref}}
           event: push
           name: parameters
       - name: Get build parameters
@@ -51,14 +47,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+          ref: ${{inputs.ref}}
       - name: Download toolchain
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.commit == '' && inputs.branch || ''}}
+          ref: ${{inputs.ref}}
           event: push
           name: linux-ucrt-x86_64-toolchain
       - name: Unpack original toolchain
@@ -110,7 +105,7 @@ jobs:
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
         with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+          ref: ${{inputs.ref}}
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -164,7 +159,7 @@ jobs:
           echo /llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
         with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+          ref: ${{inputs.ref}}
       - name: Run tests
         run: |
           ./run-tests.sh /llvm-mingw

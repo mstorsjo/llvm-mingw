@@ -2,11 +2,8 @@ name: Run libcxx/libcxxabi/libunwind tests
 on:
   workflow_dispatch:
     inputs:
-      commit:
-        description: 'Commit to extract from'
-        type: string
-      branch:
-        description: 'Branch to extract from'
+      ref:
+        description: 'Ref to extract from'
         type: string
         default: 'master'
       pipeline_type:
@@ -28,12 +25,11 @@ jobs:
       LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{github.event_name != 'schedule' && inputs.commit || ''}}
-          branch: ${{github.event_name == 'schedule' && 'master' || (inputs.commit == '' && inputs.branch || '')}}
+          ref: ${{github.event_name == 'schedule' && 'master' || inputs.ref}}
           event: ${{github.event_name == 'schedule' && 'schedule' || inputs.pipeline_type}}
           name: parameters
       - name: Get build parameters
@@ -59,12 +55,11 @@ jobs:
         run: |
           choco install ninja
       - name: Download toolchain
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{github.event_name != 'schedule' && inputs.commit || ''}}
-          branch: ${{github.event_name == 'schedule' && 'master' || (inputs.commit == '' && inputs.branch || '')}}
+          ref: ${{github.event_name == 'schedule' && 'master' || inputs.ref}}
           event: ${{github.event_name == 'schedule' && 'schedule' || inputs.pipeline_type}}
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain

@@ -2,11 +2,8 @@ name: Build docker images
 on:
   workflow_dispatch:
     inputs:
-      commit:
-        description: 'Commit to extract from'
-        type: string
-      branch:
-        description: 'Branch to extract from'
+      ref:
+        description: 'Ref to extract from'
         type: string
         default: 'master'
       login:
@@ -25,12 +22,11 @@ jobs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.commit == '' && inputs.branch || ''}}
+          ref: ${{inputs.ref}}
           event: push
           name: parameters
       - name: Get build parameters
@@ -45,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+          ref: ${{inputs.ref}}
       - name: Log in to Docker Hub
         if: ${{inputs.login}}
         uses: docker/login-action@v3
@@ -77,15 +73,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ (inputs.commit != '' && inputs.commit) || inputs.branch }}
+          ref: ${{inputs.ref}}
       - name: Download toolchain
         if: ${{matrix.file == 'Dockerfile.toolchain'}}
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          commit: ${{inputs.commit}}
-          branch: ${{inputs.commit == '' && inputs.branch || ''}}
+          ref: ${{inputs.ref}}
           event: push
           name: linux-ucrt-.*
           name_is_regexp: true
