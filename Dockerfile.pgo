@@ -1,0 +1,11 @@
+ARG BASE=mstorsjo/llvm-mingw:dev
+FROM $BASE
+
+COPY profile.profdata ./
+
+COPY build-llvm.sh build-lldb-mi.sh strip-llvm.sh ./
+RUN export PATH=$TOOLCHAIN_PREFIX/bin:$PATH && \
+    cp -a $TOOLCHAIN_PREFIX /opt/llvm-mingw-pgo && \
+    ./build-llvm.sh /opt/llvm-mingw-pgo --with-clang --thinlto --pgo && \
+    ./build-lldb-mi.sh /opt/llvm-mingw-pgo && \
+    ./strip-llvm.sh /opt/llvm-mingw-pgo
