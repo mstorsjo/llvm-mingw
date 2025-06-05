@@ -22,9 +22,10 @@ ARG DEFAULT_CRT=ucrt
 
 ARG CFGUARD_ARGS=--enable-cfguard
 
-COPY build-all.sh build-llvm.sh build-lldb-mi.sh strip-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh ./
+COPY build-all.sh build-llvm.sh build-lldb-mi.sh strip-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh pgo-training.sh pgo-training.make ./
 COPY wrappers/*.sh wrappers/*.c wrappers/*.h wrappers/*.cfg ./wrappers/
-RUN ./build-all.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT $CFGUARD_ARGS && \
+COPY test/ ./test/
+RUN ./build-all.sh --full-pgo $(pwd)/stage1 $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT $CFGUARD_ARGS && \
     rm -rf /build/*
 
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
