@@ -494,7 +494,7 @@ jobs:
     # testing with the latest compiler instead of an older release).
     # Therefore, keep the test disabled by default; it's easy to enable
     # temporarily on a branch for testing.
-    if: false
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -556,8 +556,7 @@ jobs:
   # Run the OpenMP tests with the cross-built toolchains from above.
   # This also forces testing the bundled python executables.
   test-openmp:
-    # Only running these tests in scheduled builds.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -623,8 +622,7 @@ jobs:
   # Run the compiler-rt tests with the cross-built toolchains from above. This
   # also forces testing the bundled python executables.
   test-compiler-rt:
-    # Only running these tests in scheduled builds.
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -750,7 +748,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: (github.event_name == 'schedule') && (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
