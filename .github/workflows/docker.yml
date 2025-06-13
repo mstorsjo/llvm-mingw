@@ -64,18 +64,11 @@ jobs:
   docker-build:
     needs: [prepare]
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { file: Dockerfile, key: amd64 }
-          - { file: Dockerfile.toolchain, platforms: linux/arm64, key: arm64 }
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{inputs.ref}}
       - name: Download toolchain
-        if: ${{matrix.file == 'Dockerfile.toolchain'}}
         uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
@@ -86,7 +79,6 @@ jobs:
           name_is_regexp: true
           path: toolchain
       - name: Set up QEMU
-        if: ${{matrix.file == 'Dockerfile.toolchain'}}
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -98,42 +90,11 @@ jobs:
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker images
         uses: docker/build-push-action@v5
-        id: build
         with:
           context: .
-          platforms: ${{matrix.platforms}}
+          platforms: linux/amd64,linux/arm64
           push: ${{inputs.push}}
-          file: ./${{matrix.file}}
-          outputs: |
-            type=image,name=mstorsjo/llvm-mingw,push-by-digest=true,name-canonical=true
-      - name: Write outputs for later steps
-        uses: cloudposse/github-action-matrix-outputs-write@main
-        id: out
-        with:
-          matrix-step-name: ${{github.job}}
-          matrix-key: ${{matrix.key}}
-          outputs: |-
-            digest: ${{steps.build.outputs.digest}}
-
-  docker-create:
-    needs: [docker-build, prepare]
-    runs-on: ubuntu-latest
-    if: ${{inputs.push}}
-    steps:
-      - uses: cloudposse/github-action-matrix-outputs-read@main
-        id: read
-        with:
-          matrix-step-name: docker-build
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{vars.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-      - name: Create final image
-        run: |
-          set -x
-          for tag in latest ${{needs.prepare.outputs.TAG}}; do
-              docker buildx imagetools create -t mstorsjo/llvm-mingw:$tag mstorsjo/llvm-mingw@${{fromJson(steps.read.outputs.result).digest.amd64}} mstorsjo/llvm-mingw@${{fromJson(steps.read.outputs.result).digest.arm64}}
-          done
+          file: ./Dockerfile.toolchain
+          tags: |
+            mstorsjo/llvm-mingw:latest
+            mstorsjo/llvm-mingw:${{needs.prepare.outputs.TAG}}

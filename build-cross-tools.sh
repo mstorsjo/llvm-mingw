@@ -44,6 +44,9 @@ while [ $# -gt 0 ]; do
     --disable-make)
         NO_MAKE=1
         ;;
+    --thinlto|--lto|--pgo*)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
     *)
         if [ -z "$NATIVE" ]; then
             NATIVE="$1"
@@ -60,7 +63,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tool-extra] [--disable-mingw-w64-tools] [--disable-make]
+    echo $0 native prefix arch [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tool-extra] [--disable-mingw-w64-tools] [--disable-make] [--thinlto] [--lto] [--pgo[=profile]]
     exit 1
 fi
 

@@ -65,7 +65,7 @@ else
     esac
 fi
 
-export LLVM_DIR="$PREFIX"
+LLVM_DIR="$PREFIX"
 
 # Try to find/guess the builddir under the llvm buildtree next by.
 # If LLVM was built without LLVM_INSTALL_TOOLCHAIN_ONLY, and the LLVM
@@ -75,12 +75,32 @@ export LLVM_DIR="$PREFIX"
 LLVM_SRC="$(pwd)/llvm-project/llvm"
 if [ -d "$LLVM_SRC" ]; then
     SUFFIX=${HOST+-}$HOST
-    for base in build build-asserts; do
-        if [ -d "$LLVM_SRC/$base$SUFFIX" ]; then
-            export LLVM_DIR="$LLVM_SRC/$base$SUFFIX"
-            break
+    DIRS=""
+    cd llvm-project/llvm
+    for dir in build*$SUFFIX; do
+        if [ -z "$SUFFIX" ]; then
+            case $dir in
+            *linux*|*mingw32*)
+                continue
+                ;;
+            esac
+        fi
+        if [ -d "$dir" ]; then
+            DIRS="$DIRS $dir"
         fi
     done
+    if [ -n "$DIRS" ]; then
+        dir="$(ls -td $DIRS | head -1)"
+        LLVM_DIR="$LLVM_SRC/$dir"
+        echo Using $LLVM_DIR as LLVM build dir
+        break
+    else
+        # No build directory found; this is ok if the installed prefix is a
+        # full (development) install of LLVM. Warn that we didn't find what
+        # we were looking for.
+        echo Warning, did not find a suitable LLVM build dir, assuming $PREFIX contains LLVM development files >&2
+    fi
+    cd ../..
 fi
 
 if [ -n "$HOST" ]; then
@@ -101,13 +121,13 @@ if [ -n "$HOST" ]; then
         exit 1
         ;;
     esac
-
-    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$LLVM_DIR"
-    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
-    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
-    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
-    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
 fi
+
+CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$LLVM_DIR"
+CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
+CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
 
 if [ -n "$MACOS_REDIST" ]; then
     : ${MACOS_REDIST_ARCHS:=arm64 x86_64}
