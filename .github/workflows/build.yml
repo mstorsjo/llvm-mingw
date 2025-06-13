@@ -397,7 +397,7 @@ jobs:
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    needs: [linux-stage1, linux-profile, prepare]
+    needs: [linux, linux-profile, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -410,7 +410,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: linux-stage1-${{matrix.crt}}-x86_64-toolchain
+          name: linux-${{matrix.crt}}-x86_64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
