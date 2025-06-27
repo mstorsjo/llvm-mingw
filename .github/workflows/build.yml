@@ -257,7 +257,6 @@ jobs:
           retention-days: 7
 
   macos-stage1:
-    if: false
     needs: [prepare]
     runs-on: macos-latest
     steps:
