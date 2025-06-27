@@ -350,7 +350,7 @@ jobs:
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
     needs: [linux-stage1, linux-profile, prepare]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -362,7 +362,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: linux-stage1-${{matrix.crt}}-x86_64-toolchain
+          name: linux-stage1-${{matrix.crt}}-aarch64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
