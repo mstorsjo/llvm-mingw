@@ -173,7 +173,7 @@ jobs:
           retention-days: 7
 
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
-  # libraries that were built in the 'linux' step above.
+  # libraries that were built in the 'linux-stage1' step above.
   linux-cross-aarch64:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [linux-stage1, linux-profile, prepare]
