@@ -231,7 +231,7 @@ jobs:
   linux-asserts:
     if: github.event_name == 'schedule'
     needs: [prepare]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -251,7 +251,7 @@ jobs:
           tar -Jcf ../llvm-mingw-linux.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" llvm-mingw
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-asserts-x86_64-toolchain
+          name: linux-asserts-aarch64-toolchain
           path: |
             llvm-mingw-linux.tar.xz
           retention-days: 7
@@ -694,7 +694,7 @@ jobs:
   linux-test-cross-build-ffmpeg:
     if: github.event_name == 'schedule'
     needs: [linux-asserts]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -706,7 +706,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: linux-asserts-x86_64-toolchain
+          name: linux-asserts-aarch64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
