@@ -39,7 +39,6 @@ jobs:
           cat $GITHUB_OUTPUT
 
   test-llvm:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
     needs: [prepare]
     strategy:
       fail-fast: false
