@@ -66,13 +66,7 @@ jobs:
 
   linux-stage1:
     needs: [prepare]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { runner: ubuntu-22.04, arch: x86_64 }
-          - { runner: ubuntu-22.04-arm, arch: aarch64 }
-    runs-on: ${{matrix.runner}}
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -97,7 +91,7 @@ jobs:
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-stage1-ucrt-${{matrix.arch}}-toolchain
+          name: linux-stage1-ucrt-aarch64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
@@ -135,18 +129,12 @@ jobs:
   # Build a cross compiler for Linux, targeting Windows.
   linux:
     needs: [prepare, linux-stage1, linux-profile]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { runner: ubuntu-22.04, arch: x86_64 }
-          - { runner: ubuntu-22.04-arm, arch: aarch64 }
-    runs-on: ${{matrix.runner}}
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: linux-stage1-ucrt-${{matrix.arch}}-toolchain
+          name: linux-stage1-ucrt-aarch64-toolchain
       - name: Unpack stage1 Clang
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
@@ -176,7 +164,59 @@ jobs:
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-ucrt-${{matrix.arch}}-toolchain
+          name: linux-ucrt-aarch64-toolchain
+          path: |
+            llvm-mingw-*.tar.xz
+          retention-days: 7
+
+  # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
+  # libraries that were built in the 'linux-stage1' step above.
+  linux-cross-x86_64:
+    needs: [linux-stage1, linux-profile, prepare]
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-stage1-ucrt-aarch64-toolchain
+      - name: Unpack stage1 Clang
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          sudo mv llvm-mingw* /opt/llvm-mingw
+      - uses: actions/download-artifact@v4
+        with:
+          name: profile
+      - name: Build
+        env:
+          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
+          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
+        run: |
+          sudo apt-get update && sudo apt-get install g++-x86-64-linux-gnu
+          ./build-all.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw --no-runtimes --host=x86_64-linux-gnu --thinlto --pgo
+          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+      - name: Assemble the cross-built toolchain
+        run: |
+          ./prepare-cross-toolchain-unix.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw
+      - name: Test using the cross-built assembled toolchain
+        run: |
+          sudo apt-get update && sudo apt-get install qemu-user-static libc6-amd64-cross libstdc++6-amd64-cross
+          QEMU_LD_PREFIX=/usr/x86_64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
+          QEMU_LD_PREFIX=/usr/x86_64-linux-gnu ./run-tests.sh $(pwd)/install/llvm-mingw
+      - name: Package the toolchain
+        env:
+          TAG: ${{needs.prepare.outputs.TAG}}
+          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
+        run: |
+          cd install
+          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-x86_64
+          NAME=llvm-mingw-$TAG-ucrt-$DISTRO
+          mv llvm-mingw $NAME
+          tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-ucrt-x86_64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
@@ -747,7 +787,7 @@ jobs:
     if: github.event_name == 'schedule'
     permissions:
       contents: write
-    needs: [linux, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-x86_64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
