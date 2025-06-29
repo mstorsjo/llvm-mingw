@@ -71,6 +71,7 @@ while [ $# -gt 0 ]; do
         ;;
     --macos-native-tools)
         MACOS_NATIVE_TOOLS=1
+        unset CLEAN
         ;;
     --instrumented|--instrumented=*)
         INSTRUMENTED="${1#--instrumented}"
