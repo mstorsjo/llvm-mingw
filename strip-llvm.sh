@@ -33,6 +33,8 @@ if [ -z "$PREFIX" ]; then
     echo $0 [--host=triple] dir
     exit 1
 fi
+
+mkdir -p "$PREFIX"
 cd "$PREFIX"
 
 if [ -n "$FULL_LLVM" ]; then
