@@ -65,7 +65,6 @@ jobs:
           retention-days: 7
 
   linux-stage1:
-    if: false
     needs: [prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -129,6 +128,7 @@ jobs:
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
+    if: false
     needs: [prepare, linux-stage1, linux-profile]
     runs-on: ubuntu-22.04
     steps:
@@ -173,6 +173,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux-stage1' step above.
   linux-cross-aarch64:
+    if: false
     needs: [linux-stage1, linux-profile, prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -287,7 +288,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    needs: [prepare, macos-stage1]
+    needs: [prepare, macos-stage1, linux-profile]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -299,6 +300,9 @@ jobs:
           tar -Jxf llvm-*.tar.xz
           rm llvm-*.tar.xz
           mv llvm* $HOME/llvm
+      - uses: actions/download-artifact@v4
+        with:
+          name: profile
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -312,7 +316,7 @@ jobs:
           # form. Therefore, autodetection will pick them up, but linking
           # universal binaries fails as those libraries are unavailable in the
           # other (x86_64) architecture form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $HOME/llvm $(pwd)/install/llvm-mingw --thinlto
+          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $HOME/llvm $(pwd)/install/llvm-mingw --thinlto --pgo
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
