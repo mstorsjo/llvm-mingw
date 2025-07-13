@@ -124,7 +124,7 @@ if [ -z "$PREFIX" ]; then
     exit 1
 fi
 if [ -n "$PREFIX_PGO" ] && [ -z "$PGO" ] && [ -z "$FULL_PGO" ]; then
-    echo Unrecognized parameter $1
+    echo Unrecognized parameter $PREFIX_PGO
     exit 1
 fi
 
