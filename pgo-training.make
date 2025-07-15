@@ -38,7 +38,7 @@ libcxxtest-opt-%.exe: $(LIBCXXTEST)
 libcxxtest-%.exe: $(LIBCXXTEST)
 	$(CXX) -target $*-w64-mingw32 $(CFLAGS) $+ -o $@ -Illvm-project/libcxx/test/support
 
-ARCHS ?= i686 x86_64 armv7 aarch64
+ARCHS ?= i686 x86_64 armv7 aarch64 arm64ec
 
 TARGETS = hello-exception hello-exception-opt
 
