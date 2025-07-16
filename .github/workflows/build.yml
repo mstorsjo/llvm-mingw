@@ -448,7 +448,6 @@ jobs:
         arch:
           - x86_64
           - i686
-          - armv7
           - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
@@ -493,7 +492,6 @@ jobs:
         include:
           - { arch: x86_64,  target_arch: i686    }
           - { arch: x86_64,  target_arch: x86_64  }
-          - { arch: aarch64, target_arch: armv7   }
           - { arch: aarch64, target_arch: aarch64 }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
@@ -556,7 +554,6 @@ jobs:
         include:
           - { arch: i686, asmflag: }
           - { arch: x86_64, asmflag: -m64 }
-          - { arch: armv7 }
           - { arch: aarch64 }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
@@ -623,7 +620,6 @@ jobs:
         arch:
           - x86_64
           - i686
-          - armv7
           - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
