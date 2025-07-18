@@ -213,6 +213,10 @@ for arch in $ARCHS; do
         RUN="$RUN_ARM64EC"
         COPY="$COPY_ARM64EC"
         NATIVE="$NATIVE_ARM64EC"
+        if [ -z "$IS_UCRT" ]; then
+            # arm64ec msvcrt isn't working properly yet
+            continue
+        fi
         ;;
     esac
 
