@@ -107,7 +107,7 @@ jobs:
         with:
           ref: ${{inputs.ref}}
       - name: Download profile
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
