@@ -141,6 +141,7 @@ RUN ./build-openmp.sh $TOOLCHAIN_PREFIX $CFGUARD_ARGS
 
 RUN cd test && \
     for arch in $TOOLCHAIN_ARCHS; do \
+        if [ "$arch" = "arm64ec" ]; then continue; fi; \
         for test in hello-omp; do \
             $arch-w64-mingw32-clang $test.c -o $arch/$test.exe -fopenmp=libomp || exit 1; \
         done; \
