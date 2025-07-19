@@ -46,6 +46,8 @@ jobs:
         run: |
           rm -rf linux-asserts*
           rm -rf msys2*
+          rm -rf linux-stage1-*
+          rm -rf macos-llvm*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
       - name: Set environment
         run: |
