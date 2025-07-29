@@ -31,8 +31,8 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          ref: ${{inputs.ref}}
-          event: push
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
+          event: ${{github.event_name == 'workflow_dispatch' && 'push' || 'schedule'}}
           name: parameters
       - name: Get build parameters
         id: get-parameters
@@ -47,14 +47,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{inputs.ref}}
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          ref: ${{inputs.ref}}
-          event: push
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
+          event: ${{github.event_name == 'workflow_dispatch' && 'push' || 'schedule'}}
           name: linux-ucrt-x86_64-toolchain
       - name: Unpack original toolchain
         run: |
@@ -105,14 +105,14 @@ jobs:
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
         with:
-          ref: ${{inputs.ref}}
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
       - name: Download profile
         uses: dawidd6/action-download-artifact@v10
         with:
           workflow: build.yml
           workflow_conclusion: success
-          ref: ${{inputs.ref}}
-          event: push
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
+          event: ${{github.event_name == 'workflow_dispatch' && 'push' || 'schedule'}}
           name: profile
       - name: Build
         env:
@@ -169,14 +169,14 @@ jobs:
           echo /llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
         with:
-          ref: ${{inputs.ref}}
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
       - name: Run tests
         run: |
           ./run-tests.sh /llvm-mingw
           ./run-lldb-tests.sh /llvm-mingw
 
   upload:
-    if: ${{inputs.upload}}
+    if: ${{github.event_name == 'workflow_dispatch' && inputs.upload}}
     permissions:
       contents: write
     needs: [linux-msvcrt, linux-cross-windows, test-toolchain, prepare]
