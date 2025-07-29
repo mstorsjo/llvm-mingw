@@ -108,7 +108,7 @@ if [ -z "$CHECKOUT_ONLY" ]; then
         exit 1
     fi
 
-    if [ -z "$INSTRUMENTED" ]; then
+    if [ "$INSTRUMENTED" = "OFF" ]; then
         mkdir -p "$PREFIX"
         PREFIX="$(cd "$PREFIX" && pwd)"
     fi
