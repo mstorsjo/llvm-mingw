@@ -40,12 +40,12 @@ elseif(NOT CMAKE_SYSTEM_PROCESSOR)
 endif()
 
 set(_sysroot "${_prefix}${CMAKE_SYSTEM_PROCESSOR}-w64-mingw32")
+message("CMAKE_HOST_WIN32 ${CMAKE_HOST_WIN32}")
 if(NOT CMAKE_HOST_WIN32)
   # Not setting CMAKE_SYSROOT on Windows. In the case of toolchains on
   # Windows, the headers are in ${_prefix}include (and not symlinked into
   # ${_sysroot}include), and won't be found if we pass the sysroot parameter
   # to the compiler.
-  set(CMAKE_SYSROOT "${_sysroot}")
 endif()
 
 # cmake-style list of paths
