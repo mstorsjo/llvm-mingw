@@ -29,8 +29,8 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          ref: ${{github.event_name == 'schedule' && 'master' || inputs.ref}}
-          event: ${{github.event_name == 'schedule' && 'schedule' || inputs.pipeline_type}}
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
+          event: ${{github.event_name == 'workflow_dispatch' && inputs.pipeline_type || 'schedule'}}
           name: parameters
       - name: Get build parameters
         id: get-parameters
@@ -57,8 +57,8 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          ref: ${{github.event_name == 'schedule' && 'master' || inputs.ref}}
-          event: ${{github.event_name == 'schedule' && 'schedule' || inputs.pipeline_type}}
+          ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
+          event: ${{github.event_name == 'workflow_dispatch' && inputs.pipeline_type || 'schedule'}}
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
