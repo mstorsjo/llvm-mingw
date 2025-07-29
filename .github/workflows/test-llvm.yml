@@ -92,6 +92,7 @@ jobs:
             -DLLVM_WINDOWS_PREFER_FORWARD_SLASH=OFF `
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++ `
+            -DCMAKE_CXX_FLAGS="-D__USE_MINGW_ANSI_STDIO=${{startsWith(matrix.arch, 'a') && '0' || '1'}}" `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja test-depends
           cp c:\llvm-mingw\bin\libc++.dll bin
