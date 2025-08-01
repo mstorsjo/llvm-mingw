@@ -44,6 +44,11 @@ CLANG_VERSION=$(basename "$CLANG_RESOURCE_DIR")
 rm -rf $DEST/lib/clang/$CLANG_VERSION
 cp -a $CLANG_RESOURCE_DIR $DEST/lib/clang/$CLANG_VERSION
 
+# Remove the native Linux/macOS runtimes which aren't needed in
+# the final distribution.
+rm -rf $DEST/lib/clang/*/lib/darwin
+rm -rf $DEST/lib/clang/*/lib/linux
+
 # Copy all arch-specific subdirectories plus the "generic" one, as is.
 for arch in generic $ARCHS; do
     rm -rf $DEST/$arch-w64-mingw32
