@@ -65,6 +65,7 @@ jobs:
           retention-days: 7
 
   linux-stage1:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -259,6 +260,7 @@ jobs:
           retention-days: 7
 
   macos-stage1:
+    if: false
     needs: [prepare]
     runs-on: macos-14
     steps:
@@ -288,21 +290,19 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    needs: [prepare, macos-stage1, linux-profile]
+    needs: [prepare]
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-llvm
       - name: Unpack stage1 Clang
         run: |
+          curl -LO https://martin.st/temp/llvm-nightly-macos-arm64.tar.xz
           tar -Jxf llvm-*.tar.xz
           rm llvm-*.tar.xz
           mv llvm* $HOME/llvm
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
+      - name: Download profile
+        run: |
+          curl -L https://martin.st/temp/profile-nightly.profdata -o profile.profdata
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
