@@ -55,6 +55,7 @@ if [ ! -d $SQLITE ]; then
 fi
 
 rm -rf "$LLVM_PROFILE_DATA_DIR"
+export ARCHS
 $MAKE -f pgo-training.make PREFIX=$PREFIX STAGE1=$STAGE1 SQLITE=$SQLITE clean
 $MAKE -f pgo-training.make PREFIX=$PREFIX STAGE1=$STAGE1 SQLITE=$SQLITE -j$CORES
 
