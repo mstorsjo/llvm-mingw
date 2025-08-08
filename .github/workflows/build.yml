@@ -339,6 +339,49 @@ jobs:
             llvm-mingw-*.tar.xz
           retention-days: 7
 
+  macos-universal:
+    needs: [macos]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: macos-ucrt-*-toolchain
+          merge-multiple: true
+      - name: Merge
+        run: |
+          ./merge-macos-universal.sh llvm-mingw-*-macos-arm64.tar.xz llvm-mingw-*-macos-x86_64.tar.xz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-ucrt-universal-toolchain
+          path: |
+            llvm-mingw-*-universal.tar.xz
+          retention-days: 7
+
+  macos-test:
+    needs: [macos-universal]
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - macos-13
+          - macos-15
+    runs-on: ${{matrix.runner}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-ucrt-universal-toolchain
+      - name: Unpack toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mv llvm-mingw* llvm-mingw
+      - name: Test
+        run: |
+          ./test-libcxx-module.sh $(pwd)/llvm-mingw
+          ./run-tests.sh $(pwd)/llvm-mingw
+
   # Test building the toolchain on msys2. The binaries built here rely on the
   # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
@@ -799,7 +842,7 @@ jobs:
     if: github.event_name == 'schedule'
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-aarch64, macos-universal, macos-test, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -810,6 +853,7 @@ jobs:
           rm -rf msys2*
           rm -rf linux-stage1-*
           rm -rf macos-llvm*
+          rm -rf macos-*-arm64-toolchain macos-*-x86_64-toolchain
           rm -rf profile*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
       - name: Upload binaries
