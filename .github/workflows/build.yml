@@ -96,7 +96,8 @@ jobs:
             llvm-mingw-*.tar.xz
           retention-days: 7
 
-  linux-profile:
+  # Build a cross compiler for Linux, targeting Windows.
+  linux:
     needs: [prepare, linux-stage1]
     runs-on: ubuntu-22.04
     steps:
@@ -108,41 +109,8 @@ jobs:
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
           rm llvm-mingw-*.tar.xz
-          mv llvm-mingw* llvm-mingw-stage1
-      - name: Build
-        env:
-          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
-          TAG: ${{needs.prepare.outputs.TAG}}
-          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
-          BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
-        run: |
-          # Build LLVM in mostly the same way as it is going to be built in the
-          # final form.
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh --profile $(pwd)/llvm-mingw-stage1
-      - uses: actions/upload-artifact@v4
-        with:
-          name: profile
-          path: |
-            profile.profdata
-          retention-days: 7
-
-  # Build a cross compiler for Linux, targeting Windows.
-  linux:
-    needs: [prepare, linux-stage1, linux-profile]
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: linux-stage1-ucrt-x86_64-toolchain
-      - name: Unpack stage1 Clang
-        run: |
-          tar -Jxf llvm-mingw-*.tar.xz
-          rm llvm-mingw-*.tar.xz
           sudo mv llvm-mingw* /opt/llvm-mingw
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
+          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -150,10 +118,12 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
+          mkdir -p install
+          cp -a /opt/llvm-mingw install
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw --thinlto --pgo --llvm-only
+          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --with-clang --thinlto --llvm-only
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -172,7 +142,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
-    needs: [linux-stage1, linux-profile, prepare]
+    needs: [linux-stage1, prepare]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -184,9 +154,7 @@ jobs:
           tar -Jxf llvm-mingw-*.tar.xz
           rm llvm-mingw-*.tar.xz
           sudo mv llvm-mingw* /opt/llvm-mingw
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
+          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -194,7 +162,7 @@ jobs:
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
         run: |
           sudo apt-get update && sudo apt-get install g++-aarch64-linux-gnu
-          ./build-all.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu --thinlto --pgo
+          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu --with-clang --thinlto
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - name: Assemble the cross-built toolchain
         run: |
@@ -286,7 +254,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
-    needs: [prepare, macos-stage1, linux-profile]
+    needs: [prepare, macos-stage1]
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -298,9 +266,7 @@ jobs:
           tar -Jxf llvm-*.tar.xz
           rm llvm-*.tar.xz
           mv llvm* $HOME/llvm
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
+          echo $HOME/llvm/bin >> $GITHUB_PATH
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -314,7 +280,8 @@ jobs:
           # form. Therefore, autodetection will pick them up, but linking
           # universal binaries fails as those libraries are unavailable in the
           # other (x86_64) architecture form.
-          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $HOME/llvm $(pwd)/install/llvm-mingw --thinlto --pgo
+          export SDKROOT=$(xcrun --show-sdk-path)
+          MACOS_REDIST=1 LLVM_CMAKEFLAGS="-DLLVM_ENABLE_ZSTD=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --with-clang --thinlto
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -387,7 +354,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    needs: [linux-stage1, linux-profile, prepare]
+    needs: [linux-stage1, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -408,9 +375,6 @@ jobs:
           sudo mv llvm-mingw* /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
       - name: Cache downloads
         id: cache-tarballs
         uses: actions/cache@v4
@@ -431,7 +395,7 @@ jobs:
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install libltdl-dev swig autoconf-archive
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --with-busybox --thinlto --pgo
+          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --with-busybox --thinlto
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
@@ -798,7 +762,6 @@ jobs:
           rm -rf msys2*
           rm -rf linux-stage1-*
           rm -rf macos-llvm*
-          rm -rf profile*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
       - name: Upload binaries
         env:
