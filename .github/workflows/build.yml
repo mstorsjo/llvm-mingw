@@ -72,7 +72,6 @@ jobs:
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
-          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
@@ -80,20 +79,18 @@ jobs:
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --stage1
-          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
-          ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
-          ./run-tests.sh $(pwd)/install/llvm-mingw
+          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm --stage1 --llvm-only
+          .github/workflows/store-version.sh install/llvm/versions.txt
           cd install
           DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-$(uname -m)
-          NAME=llvm-mingw-stage1-$TAG-ucrt-$DISTRO
-          mv llvm-mingw $NAME
+          NAME=llvm-$TAG-$DISTRO
+          mv llvm $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-stage1-ucrt-x86_64-toolchain
+          name: linux-llvm-x86_64
           path: |
-            llvm-mingw-*.tar.xz
+            llvm-*.tar.xz
           retention-days: 7
 
   # Build a cross compiler for Linux, targeting Windows.
@@ -104,26 +101,25 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: linux-stage1-ucrt-x86_64-toolchain
+          name: linux-llvm-x86_64
       - name: Unpack stage1 Clang
         run: |
-          tar -Jxf llvm-mingw-*.tar.xz
-          rm llvm-mingw-*.tar.xz
-          sudo mv llvm-mingw* /opt/llvm-mingw
-          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
+          tar -Jxf llvm-*.tar.xz
+          rm llvm-*.tar.xz
+          sudo mv llvm* /opt/llvm
+          echo /opt/llvm/bin >> $GITHUB_PATH
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           TAG: ${{needs.prepare.outputs.TAG}}
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
-          mkdir -p install
-          cp -a /opt/llvm-mingw install
           # Skip dynamic library dependencies that might make it harder to
           # run the binaries on other distros (and that have little use within
           # llvm-mingw).
-          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --with-clang --thinlto --llvm-only
+          LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh $(pwd)/install/llvm-mingw --with-clang --thinlto
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
           ./run-tests.sh $(pwd)/install/llvm-mingw
@@ -142,19 +138,19 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
-    needs: [linux-stage1, prepare]
+    needs: [linux, linux-stage1, prepare]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: linux-stage1-ucrt-x86_64-toolchain
+          name: linux-llvm-x86_64
       - name: Unpack stage1 Clang
         run: |
-          tar -Jxf llvm-mingw-*.tar.xz
-          rm llvm-mingw-*.tar.xz
-          sudo mv llvm-mingw* /opt/llvm-mingw
-          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
+          tar -Jxf llvm-*.tar.xz
+          rm llvm-*.tar.xz
+          sudo mv llvm* /opt/llvm
+          echo /opt/llvm/bin >> $GITHUB_PATH
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -164,9 +160,17 @@ jobs:
           sudo apt-get update && sudo apt-get install g++-aarch64-linux-gnu
           ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu --with-clang --thinlto
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-ucrt-x86_64-toolchain
+      - name: Unpack native toolchain
+        run: |
+          tar -Jxf llvm-mingw-*.tar.xz
+          rm llvm-mingw-*.tar.xz
+          mv llvm-mingw* llvm-mingw-native
       - name: Assemble the cross-built toolchain
         run: |
-          ./prepare-cross-toolchain-unix.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw
+          ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
       - name: Test using the cross-built assembled toolchain
         run: |
           sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
@@ -354,7 +358,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    needs: [linux-stage1, prepare]
+    needs: [linux, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -367,7 +371,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: linux-stage1-${{matrix.crt}}-x86_64-toolchain
+          name: linux-${{matrix.crt}}-x86_64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
@@ -760,7 +764,7 @@ jobs:
         run: |
           rm -rf linux-asserts*
           rm -rf msys2*
-          rm -rf linux-stage1-*
+          rm -rf linux-llvm-*
           rm -rf macos-llvm*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
       - name: Upload binaries
