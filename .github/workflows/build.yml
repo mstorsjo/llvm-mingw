@@ -170,7 +170,7 @@ jobs:
           retention-days: 7
 
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
-  # libraries that were built in the 'linux-stage1' step above.
+  # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
     needs: [linux-stage1, linux-profile, prepare]
     runs-on: ubuntu-22.04
