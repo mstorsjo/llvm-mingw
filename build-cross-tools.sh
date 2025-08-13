@@ -63,7 +63,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--disable-mingw-w64-tools] [--disable-make] [--thinlto] [--lto] [--pgo[=profile]]
+    echo $0 native prefix arch [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--disable-mingw-w64-tools] [--disable-make] [--no-llvm-tool-reuse] [--thinlto] [--lto] [--pgo[=profile]]
     exit 1
 fi
 

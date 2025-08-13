@@ -104,7 +104,7 @@ done
 BUILDDIR="$BUILDDIR$ASSERTSSUFFIX"
 if [ -z "$CHECKOUT_ONLY" ]; then
     if [ -z "$PREFIX" ]; then
-        echo $0 [--enable-asserts] [--with-clang] [--thinlto] [--lto] [--instrumented[=type]] [--pgo[=profile]] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] [--macos-native-tools] dest
+        echo $0 [--enable-asserts] [--with-clang] [--thinlto] [--lto] [--instrumented[=type]] [--pgo[=profile]] [--disable-dylib] [--full-llvm] [--with-python] [--disable-lldb] [--disable-clang-tools-extra] [--host=triple] [--no-llvm-tool-reuse] [--macos-native-tools] dest
         exit 1
     fi
 
