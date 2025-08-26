@@ -334,7 +334,7 @@ jobs:
   # the host environment (libstdc++ or libc++).
   msys2:
     needs: [prepare]
-    runs-on: windows-latest
+    runs-on: windows-2025
     defaults:
       run:
         shell: msys2 {0}
@@ -449,7 +449,7 @@ jobs:
           - x86_64
           - i686
           - aarch64
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-2025'}}
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -492,7 +492,7 @@ jobs:
           - { arch: x86_64,  target_arch: i686    }
           - { arch: x86_64,  target_arch: x86_64  }
           - { arch: aarch64, target_arch: aarch64 }
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-2025'}}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -550,7 +550,7 @@ jobs:
           - { arch: i686, asmflag: }
           - { arch: x86_64, asmflag: -m64 }
           - { arch: aarch64 }
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-2025'}}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -612,7 +612,7 @@ jobs:
           - x86_64
           - i686
           - aarch64
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-2025'}}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -725,7 +725,7 @@ jobs:
   # for scheduled builds.
   test-ffmpeg:
     needs: [linux-cross-windows]
-    runs-on: windows-latest
+    runs-on: windows-2025
     defaults:
       run:
         shell: msys2 {0}

@@ -47,7 +47,7 @@ jobs:
         arch:
           - x86_64
           - aarch64
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-2025'}}
     steps:
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v10
