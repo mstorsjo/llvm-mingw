@@ -52,7 +52,7 @@ download() {
 }
 
 if [ ! -d make-$MAKE_VERSION ]; then
-    download https://ftp.gnu.org/gnu/make/make-$MAKE_VERSION.tar.gz
+    download https://ftpmirror.gnu.org/gnu/make/make-$MAKE_VERSION.tar.gz
     tar -zxf make-$MAKE_VERSION.tar.gz
 fi
 
