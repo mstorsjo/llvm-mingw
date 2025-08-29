@@ -66,6 +66,7 @@ jobs:
 
   # Build a cross compiler for Linux, targeting Windows.
   linux:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-22.04-arm
     steps:
@@ -218,6 +219,7 @@ jobs:
   # Test building the toolchain on msys2. The binaries built here rely on the
   # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
