@@ -291,7 +291,13 @@ jobs:
   # Build a cross compiler for macOS, targeting Windows.
   macos:
     needs: [prepare]
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - macos-14
+          - macos-15
+    runs-on: ${{matrix.runner}}
     steps:
       - uses: actions/checkout@v4
       - name: Unpack stage1 Clang
@@ -326,7 +332,7 @@ jobs:
           gtar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-ucrt-toolchain
+          name: ${{matrix.runner}}-ucrt-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
