@@ -172,6 +172,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux-stage1' step above.
   linux-cross-aarch64:
+    if: false
     needs: [linux-stage1, linux-profile, prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -257,6 +258,7 @@ jobs:
           retention-days: 7
 
   macos-stage1:
+    if: false
     needs: [prepare]
     runs-on: macos-14
     steps:
@@ -333,6 +335,7 @@ jobs:
   # environments). The binaries built here rely on the runtime libraries from
   # the host environment (libstdc++ or libc++).
   msys2:
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
