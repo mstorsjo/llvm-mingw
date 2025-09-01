@@ -1,0 +1,163 @@
+From 8967a80b4fb214c650090e9b7bfb02d1c8350a33 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 1 Sep 2025 14:18:57 +0300
+Subject: [PATCH 3/3] crt: Expose math functions on arm64ec that we normally
+ skip on x86
+
+We don't build the replacement functions for arm64ec, as we only
+build the same source files as we build for regular aarch64.
+---
+ mingw-w64-crt/def-include/func.def.in  |  6 ++++
+ mingw-w64-crt/lib-common/msvcrt.def.in | 46 +++++++++++++-------------
+ 2 files changed, 29 insertions(+), 23 deletions(-)
+
+diff --git a/mingw-w64-crt/def-include/func.def.in b/mingw-w64-crt/def-include/func.def.in
+index c1327d7f7..6635118f0 100644
+--- a/mingw-w64-crt/def-include/func.def.in
++++ b/mingw-w64-crt/def-include/func.def.in
+@@ -16,15 +16,18 @@
+ #define F64(x) x
+ #define F_X64(x) x
+ #define F_X86_ANY(x) x
++#define F_X86_SKIP_MATH_FUNC DATA
+ #define F_NON_I386(x) x
+ #define F_NON_ARM64(x) x
+ #if defined(__arm64ec__)
+ #define F_ARM_ANY(x) x
++#undef F_X86_SKIP_MATH_FUNC
+ #endif
+ #elif defined(__i386__)
+ #define F32(x) x
+ #define F_I386(x) x
+ #define F_X86_ANY(x) x
++#define F_X86_SKIP_MATH_FUNC DATA
+ #define F_NON_X64(x) x
+ #define F_NON_ARM64(x) x
+ #elif defined(__arm__)
+@@ -53,6 +56,9 @@
+ #ifndef F_X86_ANY
+ #define F_X86_ANY(x)
+ #endif
++#ifndef F_X86_SKIP_MATH_FUNC
++#define F_X86_SKIP_MATH_FUNC
++#endif
+ #ifndef F_I386
+ #define F_I386(x)
+ #endif
+diff --git a/mingw-w64-crt/lib-common/msvcrt.def.in b/mingw-w64-crt/lib-common/msvcrt.def.in
+index dbaac22aa..9ff20b035 100644
+--- a/mingw-w64-crt/lib-common/msvcrt.def.in
++++ b/mingw-w64-crt/lib-common/msvcrt.def.in
+@@ -938,23 +938,23 @@ acos
+ asctime
+ asin
+ atan
+-atan2 F_X86_ANY(DATA)
++atan2 F_X86_SKIP_MATH_FUNC
+ _crt_atexit == atexit ; rename atexit to _crt_atexit for compatibility with UCRT, real atexit function provided by mingw-w64
+ atof
+ atoi
+ atol
+ bsearch
+ calloc
+-ceil F_X86_ANY(DATA)
++ceil F_X86_SKIP_MATH_FUNC
+ clearerr
+ clock
+-cos F_X86_ANY(DATA)
++cos F_X86_SKIP_MATH_FUNC
+ cosh
+ ctime
+ difftime
+ div
+ exit
+-exp F_X86_ANY(DATA)
++exp F_X86_SKIP_MATH_FUNC
+ fabs DATA
+ fclose
+ feof
+@@ -965,8 +965,8 @@ fgetpos
+ fgets
+ fgetwc
+ fgetws
+-floor F_X86_ANY(DATA)
+-fmod F_X86_ANY(DATA)
++floor F_X86_SKIP_MATH_FUNC
++fmod F_X86_SKIP_MATH_FUNC
+ fopen
+ fprintf
+ fputc
+@@ -976,7 +976,7 @@ fputws
+ fread
+ free
+ freopen
+-frexp F_X86_ANY(DATA)
++frexp F_X86_SKIP_MATH_FUNC
+ fscanf
+ fseek
+ fsetpos
+@@ -1018,11 +1018,11 @@ iswupper
+ iswxdigit
+ isxdigit
+ labs
+-ldexp F_X86_ANY(DATA)
++ldexp F_X86_SKIP_MATH_FUNC
+ ldiv
+ localeconv
+ localtime
+-log F_X86_ANY(DATA)
++log F_X86_SKIP_MATH_FUNC
+ log10
+ longjmp
+ malloc
+@@ -1056,7 +1056,7 @@ setbuf
+ setlocale
+ setvbuf
+ signal
+-sin F_X86_ANY(DATA)
++sin F_X86_SKIP_MATH_FUNC
+ sinh ; if we implement sinh, we can set it DATA only.
+ sprintf
+ sqrt DATA
+@@ -1262,25 +1262,25 @@ F_NON_I386(_logbf)
+ F_X64(_nextafterf)
+ F_X64(_scalbf)
+ F_NON_I386(_setjmpex)
+-F_NON_I386(acosf F_X86_ANY(DATA)) ; i386 acosf provided by emu
+-F_NON_I386(asinf F_X86_ANY(DATA)) ; i386 asinf provided by emu
+-F_NON_I386(atan2f F_X86_ANY(DATA)) ; i386 atan2f provided by emu
+-F_NON_I386(atanf F_X86_ANY(DATA)) ; i386 atanf provided by emu
+-F_NON_I386(ceilf F_X86_ANY(DATA)) ; i386 ceilf provided by emu
+-F_NON_I386(cosf F_X86_ANY(DATA)) ; i386 cosf provided by emu
++F_NON_I386(acosf F_X86_SKIP_MATH_FUNC) ; i386 acosf provided by emu
++F_NON_I386(asinf F_X86_SKIP_MATH_FUNC) ; i386 asinf provided by emu
++F_NON_I386(atan2f F_X86_SKIP_MATH_FUNC) ; i386 atan2f provided by emu
++F_NON_I386(atanf F_X86_SKIP_MATH_FUNC) ; i386 atanf provided by emu
++F_NON_I386(ceilf F_X86_SKIP_MATH_FUNC) ; i386 ceilf provided by emu
++F_NON_I386(cosf F_X86_SKIP_MATH_FUNC) ; i386 cosf provided by emu
+ F_NON_I386(coshf DATA) ; i386 coshf provided by emu
+-F_NON_I386(expf F_X86_ANY(DATA)) ; i386 expf provided by emu
+-F_NON_I386(floorf F_X86_ANY(DATA)) ; i386 floorf provided by emu
+-F_NON_I386(fmodf F_X86_ANY(DATA)) ; i386 fmodf provided by emu
+-F_NON_I386(log10f F_X86_ANY(DATA)) ; i386 log10f provided by emu
+-F_NON_I386(logf F_X86_ANY(DATA)) ; i386 logf provided by emu
++F_NON_I386(expf F_X86_SKIP_MATH_FUNC) ; i386 expf provided by emu
++F_NON_I386(floorf F_X86_SKIP_MATH_FUNC) ; i386 floorf provided by emu
++F_NON_I386(fmodf F_X86_SKIP_MATH_FUNC) ; i386 fmodf provided by emu
++F_NON_I386(log10f F_X86_SKIP_MATH_FUNC) ; i386 log10f provided by emu
++F_NON_I386(logf F_X86_SKIP_MATH_FUNC) ; i386 logf provided by emu
+ F_NON_I386(modff DATA) ; i386 modff provided by emu
+ F_NON_I386(powf DATA) ; i386 powf provided by emu
+ F_NON_I386(F_NON_ARM64(setjmp))
+-F_NON_I386(sinf F_X86_ANY(DATA)) ; i386 sinf provided by emu
++F_NON_I386(sinf F_X86_SKIP_MATH_FUNC) ; i386 sinf provided by emu
+ F_NON_I386(sinhf DATA) ; i386 sinhf provided by emu
+ F_NON_I386(sqrtf DATA) ; i386 sqrtf provided by emu
+-F_NON_I386(tanf F_X86_ANY(DATA)) ; i386 tanf provided by emu
++F_NON_I386(tanf F_X86_SKIP_MATH_FUNC) ; i386 tanf provided by emu
+ 
+ ; These symbols were added in Windows Vista OS system version of msvcrt.dll
+ #ifdef __i386__
+-- 
+2.43.0
+

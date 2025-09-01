@@ -1,0 +1,33 @@
+From 87deb98a80c097b1f77aa6056e87077efbdca6e5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Mon, 1 Sep 2025 14:25:41 +0300
+Subject: [PATCH 2/3] crt: Use wcstok_s and _fseeki64 on arm64ec msvcrt.dll
+
+These are available since Windows Vista - so we can rely on them
+existing on arm64ec, just like on arm/aarch64.
+
+This fixes linking the wcstok and fseeko64 functions, as the
+helper functions provided on x86 aren't built in an arm64ec build
+of the mingw-w64-crt.
+---
+ mingw-w64-crt/lib-common/msvcrt.def.in | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/mingw-w64-crt/lib-common/msvcrt.def.in b/mingw-w64-crt/lib-common/msvcrt.def.in
+index 5c31c7916..dbaac22aa 100644
+--- a/mingw-w64-crt/lib-common/msvcrt.def.in
++++ b/mingw-w64-crt/lib-common/msvcrt.def.in
+@@ -1928,7 +1928,9 @@ F_I386(_libm_sse2_tan_precise)
+ ; i386 strtoll, strtoull, strtoimax, strtoumax, wcstoll, wcstoull, wcstoimax and wcstoumax aliases provided by emu
+ #define WITH_STRTO64_ALIAS
+ #endif
+-#if defined(__arm__) || defined(__aarch64__)
++#if defined(__arm__) || defined(__aarch64__) || defined(__arm64ec__)
++; This uses functions that are available since Vista. ARM/AArch64/ARM64EC
++; can assume that thos fucntions always are available.
+ #define USE_WCSTOK_S_FOR_WCSTOK
+ #define WITH_FSEEKO64_ALIAS
+ #endif
+-- 
+2.43.0
+
