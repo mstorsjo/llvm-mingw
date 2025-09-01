@@ -1372,7 +1372,7 @@ void test_math_inspect_manipulate() {
     TEST_FREXP(frexp);
     TEST_FREXP(frexpf);
     TEST_FREXP(frexpl);
-#if !defined(MSVCRT_DLL) || !(defined(__arm__) || defined(__aarch64__))
+#if !defined(MSVCRT_DLL) || !(defined(__arm__) || defined(__aarch64__) || defined(__arm64ec__))
     // On msvcrt.dll on arm, frexp*(INFINITY) returns NAN, not INFINITY.
     TEST_FREXP_INF(frexp);
     TEST_FREXP_INF(frexpf);
