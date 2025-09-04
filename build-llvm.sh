@@ -92,6 +92,10 @@ while [ $# -gt 0 ]; do
         BUILDDIR="$BUILDDIR-pgo"
         ;;
     *)
+        if [ -n "$PREFIX" ]; then
+            echo Unrecognized parameter $1
+            exit 1
+        fi
         PREFIX="$1"
         ;;
     esac
