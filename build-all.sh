@@ -24,7 +24,7 @@ HOST_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    --enable-asserts|--disable-dylib|--with-clang|--thinlto)
+    --enable-asserts|--disable-dylib|--with-clang|--thinlto|--use-linker=*)
         LLVM_ARGS="$LLVM_ARGS $1"
         ;;
     --host-clang|--host-clang=*)
@@ -120,7 +120,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$PREFIX" ]; then
-    echo "$0 [--host-clang[=clang]] [--enable-asserts] [--disable-dylib] [--with-clang] [--thinlto] [--full-llvm] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--llvm-only] [--no-tools] [--wipe-runtimes] [--clean-runtimes] [--stage1] [--profile[=type]] [--pgo[=profile]] [--full-pgo[=type]] dest [pgo-dest]"
+    echo "$0 [--host-clang[=clang]] [--enable-asserts] [--disable-dylib] [--with-clang] [--use-linker=linker] [--thinlto] [--full-llvm] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--host=triple] [--with-default-win32-winnt=0x601] [--with-default-msvcrt=ucrt] [--enable-cfguard|--disable-cfguard] [--no-runtimes] [--llvm-only] [--no-tools] [--wipe-runtimes] [--clean-runtimes] [--stage1] [--profile[=type]] [--pgo[=profile]] [--full-pgo[=type]] dest [pgo-dest]"
     exit 1
 fi
 if [ -n "$PREFIX_PGO" ] && [ -z "$PGO" ] && [ -z "$FULL_PGO" ]; then
