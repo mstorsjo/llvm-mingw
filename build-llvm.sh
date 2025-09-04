@@ -81,12 +81,8 @@ while [ $# -gt 0 ]; do
         # A fixed BUILDDIR is set at the end for this case.
         ;;
     --pgo|--pgo=*)
-        case "$1" in
-        --pgo=*)
-            LLVM_PROFDATA_FILE="${1#--pgo}"
-            LLVM_PROFDATA_FILE="${LLVM_PROFDATA_FILE#=}"
-            ;;
-        esac
+        LLVM_PROFDATA_FILE="${1#--pgo}"
+        LLVM_PROFDATA_FILE="${LLVM_PROFDATA_FILE#=}"
         LLVM_PROFDATA_FILE="${LLVM_PROFDATA_FILE:-profile.profdata}"
         if [ ! -e "$LLVM_PROFDATA_FILE" ]; then
             echo Profile \"$LLVM_PROFDATA_FILE\" not found
