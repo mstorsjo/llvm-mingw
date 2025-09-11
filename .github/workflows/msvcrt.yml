@@ -1,5 +1,6 @@
 name: Build msvcrt toolchains
 on:
+  push:
   workflow_dispatch:
     inputs:
       ref:
