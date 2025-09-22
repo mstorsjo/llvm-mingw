@@ -329,9 +329,8 @@ jobs:
             llvm-mingw-*.tar.xz
           retention-days: 7
 
-  # Test building the toolchain on msys2 (in the mingw64 and clang64
-  # environments). The binaries built here rely on the runtime libraries from
-  # the host environment (libstdc++ or libc++).
+  # Test building the toolchain on msys2. The binaries built here rely on the
+  # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
     needs: [prepare]
     runs-on: windows-latest
@@ -342,7 +341,6 @@ jobs:
       fail-fast: false
       matrix:
         sys:
-          - mingw64
           - clang64
     steps:
       - uses: msys2/setup-msys2@v2
