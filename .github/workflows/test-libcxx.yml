@@ -1,5 +1,6 @@
 name: Run libcxx/libcxxabi/libunwind tests
 on:
+  push:
   workflow_dispatch:
     inputs:
       ref:
