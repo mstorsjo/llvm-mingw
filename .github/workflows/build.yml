@@ -410,7 +410,7 @@ jobs:
           TAG: bisect
         run: |
           sudo apt-get update && sudo apt-get install libltdl-dev swig autoconf-archive
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python
+          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --disable-lldb --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
