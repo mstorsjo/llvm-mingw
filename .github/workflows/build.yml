@@ -184,7 +184,7 @@ jobs:
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install g++-riscv64-linux-gnu
-          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=riscv64-linux-gnu
+          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=riscv64-linux-gnu --disable-lldb --disable-clang-tools-extra
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - name: Assemble the cross-built toolchain
         run: |
