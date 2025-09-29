@@ -171,7 +171,7 @@ jobs:
 
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux-stage1' step above.
-  linux-cross-aarch64:
+  linux-cross-riscv64:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -183,29 +183,29 @@ jobs:
           sudo mv llvm-mingw* /opt/llvm-mingw
       - name: Build
         run: |
-          sudo apt-get update && sudo apt-get install g++-aarch64-linux-gnu
-          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu
+          sudo apt-get update && sudo apt-get install g++-riscv64-linux-gnu
+          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=riscv64-linux-gnu
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - name: Assemble the cross-built toolchain
         run: |
           ./prepare-cross-toolchain-unix.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw
       - name: Test using the cross-built assembled toolchain
         run: |
-          sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
-          QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
-          QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./run-tests.sh $(pwd)/install/llvm-mingw
+          sudo apt-get update && sudo apt-get install qemu-user-static libc6-riscv64-cross libstdc++6-riscv64-cross
+          QEMU_LD_PREFIX=/usr/riscv64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
+          QEMU_LD_PREFIX=/usr/riscv64-linux-gnu ./run-tests.sh $(pwd)/install/llvm-mingw
       - name: Package the toolchain
         env:
           TAG: test
         run: |
           cd install
-          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
+          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-riscv64
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-ucrt-aarch64-toolchain
+          name: linux-ucrt-riscv64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
@@ -765,7 +765,7 @@ jobs:
     if: github.event_name == 'schedule'
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-riscv64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
