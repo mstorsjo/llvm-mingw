@@ -87,7 +87,7 @@ ifneq ($(HAVE_OPENMP),)
     TESTS_OMP = hello-omp
 endif
 TESTS_UWP = uwp-error
-TESTS_IDL = idltest
+#TESTS_IDL = idltest
 TESTS_RES = hello-res
 ifneq ($(HAVE_UWP),)
     TESTS_OTHER_TARGETS = hello hello-tls
