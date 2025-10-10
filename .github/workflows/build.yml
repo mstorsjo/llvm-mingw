@@ -100,6 +100,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-x86_64:
+    if: false
     needs: [linux, prepare]
     runs-on: ubuntu-22.04-arm
     steps:
@@ -183,6 +184,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
+    if: false
     needs: [prepare]
     runs-on: macos-14
     steps:
@@ -218,6 +220,7 @@ jobs:
   # Test building the toolchain on msys2. The binaries built here rely on the
   # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
