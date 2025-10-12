@@ -67,7 +67,7 @@ jobs:
   # Build a cross compiler for Linux, targeting Windows.
   linux:
     needs: [prepare]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -92,16 +92,16 @@ jobs:
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-ucrt-x86_64-toolchain
+          name: linux-ucrt-aarch64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
 
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
-  linux-cross-aarch64:
+  linux-cross-x86_64:
     needs: [linux, prepare]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -110,12 +110,12 @@ jobs:
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
         run: |
-          sudo apt-get update && sudo apt-get install g++-aarch64-linux-gnu
-          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=aarch64-linux-gnu
+          sudo apt-get update && sudo apt-get install g++-x86-64-linux-gnu
+          ./build-all.sh $(pwd)/install/llvm-mingw --no-runtimes --host=x86_64-linux-gnu
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
       - uses: actions/download-artifact@v4
         with:
-          name: linux-ucrt-x86_64-toolchain
+          name: linux-ucrt-aarch64-toolchain
       - name: Unpack native toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
@@ -126,22 +126,22 @@ jobs:
           ./prepare-cross-toolchain-unix.sh $(pwd)/llvm-mingw-native $(pwd)/install/llvm-mingw
       - name: Test using the cross-built assembled toolchain
         run: |
-          sudo apt-get update && sudo apt-get install qemu-user-static libc6-arm64-cross libstdc++6-arm64-cross
-          QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
-          QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ./run-tests.sh $(pwd)/install/llvm-mingw
+          sudo apt-get update && sudo apt-get install qemu-user-static libc6-amd64-cross libstdc++6-amd64-cross
+          QEMU_LD_PREFIX=/usr/x86_64-linux-gnu ./test-libcxx-module.sh $(pwd)/install/llvm-mingw
+          QEMU_LD_PREFIX=/usr/x86_64-linux-gnu ./run-tests.sh $(pwd)/install/llvm-mingw
       - name: Package the toolchain
         env:
           TAG: ${{needs.prepare.outputs.TAG}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           cd install
-          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-aarch64
+          DISTRO=ubuntu-$(grep DISTRIB_RELEASE /etc/lsb-release | cut -f 2 -d =)-x86_64
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-ucrt-aarch64-toolchain
+          name: linux-ucrt-x86_64-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
@@ -274,7 +274,7 @@ jobs:
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
     needs: [linux, prepare]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -286,7 +286,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: linux-${{matrix.crt}}-x86_64-toolchain
+          name: linux-${{matrix.crt}}-aarch64-toolchain
       - name: Unpack cross toolchain
         run: |
           tar -Jxf llvm-mingw-*.tar.xz
@@ -659,7 +659,7 @@ jobs:
     if: github.event_name == 'schedule'
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-x86_64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
