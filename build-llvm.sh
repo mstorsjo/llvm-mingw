@@ -152,7 +152,6 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
             ;;
         esac
     fi
-    GIT_COMMITTER_NAME="temp" GIT_COMMITTER_EMAIL="temp" git am -3 --keep-non-patch ../patches/llvm-project/*.patch
     cd ..
 fi
 
