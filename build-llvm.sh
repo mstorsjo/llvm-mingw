@@ -25,6 +25,7 @@ ASSERTSSUFFIX=""
 LLDB=ON
 CLANG_TOOLS_EXTRA=ON
 INSTRUMENTED=OFF
+LLVM_REPOSITORY='https://github.com/llvm/llvm-project.git'
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -56,6 +57,12 @@ while [ $# -gt 0 ]; do
         ;;
     --full-llvm)
         FULL_LLVM=1
+        ;;
+    --llvm-repository=*)
+        LLVM_REPOSITORY="${1#*=}"
+        ;;
+    --llvm-version=*)
+        LLVM_VERSION="${1#*=}"
         ;;
     --host=*)
         HOST="${1#*=}"
@@ -121,7 +128,7 @@ if [ ! -d llvm-project ]; then
     mkdir llvm-project
     cd llvm-project
     git init
-    git remote add origin https://github.com/llvm/llvm-project.git
+    git remote add origin "${LLVM_REPOSITORY}"
     cd ..
     CHECKOUT=1
 fi
