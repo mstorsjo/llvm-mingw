@@ -24,7 +24,7 @@ HOST_ARGS=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    --enable-asserts|--disable-dylib|--with-clang|--thinlto|--use-linker=*)
+    --enable-asserts|--disable-dylib|--with-clang|--thinlto|--use-linker=*|--llvm-repository=*|--llvm-version=*)
         LLVM_ARGS="$LLVM_ARGS $1"
         ;;
     --host-clang|--host-clang=*)
