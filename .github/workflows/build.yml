@@ -19,7 +19,7 @@ jobs:
   # slightly more, when we know a separate build of the same version but with
   # assertions enabled, has passed some amount of tests.
   prepare:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     runs-on: ubuntu-latest
     outputs:
       LLVM_VERSION: ${{steps.get-versions.outputs.LLVM_VERSION}}
@@ -387,7 +387,6 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    needs: [linux-stage1, linux-profile, prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -398,30 +397,24 @@ jobs:
           - { arch: armv7, crt: ucrt }
           - { arch: aarch64, crt: ucrt }
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: linux-stage1-${{matrix.crt}}-x86_64-toolchain
       - name: Unpack cross toolchain
         run: |
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20251118/llvm-mingw-20251118-ucrt-ubuntu-22.04-x86_64.tar.xz
           tar -Jxf llvm-mingw-*.tar.xz
           rm llvm-mingw-*.tar.xz
           sudo mv llvm-mingw* /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: profile
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
           MINGW_W64_VERSION: ${{needs.prepare.outputs.MINGW_W64_VERSION}}
           PYTHON_VERSION_MINGW: ${{needs.prepare.outputs.PYTHON_VERSION_MINGW}}
           TAG: ${{needs.prepare.outputs.TAG}}
-          SOURCE_DATE_EPOCH: ${{needs.prepare.outputs.COMMIT_DATE_UNIX}}
           BUILD_DATE: ${{needs.prepare.outputs.BUILD_DATE}}
         run: |
           sudo apt-get update && sudo apt-get install libltdl-dev swig autoconf-archive
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --thinlto --pgo
+          ./build-make.sh $(pwd)/install/llvm-mingw --host=${{matrix.arch}}-w64-mingw32
           .github/workflows/store-version.sh install/llvm-mingw/versions.txt
           cd install
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
@@ -436,6 +429,7 @@ jobs:
 
   # Run llvm-mingw's tests with the cross-built toolchains from above.
   test-toolchain:
+    if: false
     needs: [linux-cross-windows]
     defaults:
       run:
@@ -541,7 +535,7 @@ jobs:
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
+    if: false
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -604,7 +598,7 @@ jobs:
   # also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
+    if: false
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -726,7 +720,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: github.event_name == 'schedule'
+    if: false
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
