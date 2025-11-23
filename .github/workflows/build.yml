@@ -411,6 +411,8 @@ jobs:
         with:
           path: /opt/cache
           key: tarballs-${{ hashFiles('build-make.sh') }}
+          restore-keys: |
+            tarballs
       - name: Restore cache
         if: steps.cache-tarballs.outputs.cache-hit != ''
         run: |
