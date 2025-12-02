@@ -596,7 +596,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++ `
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
             -DLIBOMP_ASMFLAGS=${{matrix.asmflag}} `
-            -DLLVM_LIT_ARGS="-v --time-tests"
+            -DOPENMP_LIT_ARGS="-v --time-tests"
           ninja
           ninja check-openmp
 
