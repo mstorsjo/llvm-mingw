@@ -55,8 +55,8 @@ jobs:
           push: ${{inputs.push}}
           file: ./Dockerfile.dev
           tags: |
-            mstorsjo/llvm-mingw:dev
-            mstorsjo/llvm-mingw:dev-${{needs.prepare.outputs.TAG}}
+            revise473/llvm-mingw:dev
+            revise473/llvm-mingw:dev-${{needs.prepare.outputs.TAG}}
       - name: Inspect Docker images
         run: |
           docker images
@@ -96,5 +96,5 @@ jobs:
           push: ${{inputs.push}}
           file: ./Dockerfile.toolchain
           tags: |
-            mstorsjo/llvm-mingw:latest
-            mstorsjo/llvm-mingw:${{needs.prepare.outputs.TAG}}
+            revise473/llvm-mingw:latest
+            revise473/llvm-mingw:${{needs.prepare.outputs.TAG}}
