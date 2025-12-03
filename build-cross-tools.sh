@@ -21,6 +21,9 @@ while [ $# -gt 0 ]; do
     --with-python)
         PYTHON=1
         ;;
+    --with-busybox)
+        BUSYBOX=1
+        ;;
     --disable-lldb)
         LLVM_ARGS="$LLVM_ARGS $1"
         NO_LLDB=1
@@ -63,7 +66,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--disable-mingw-w64-tools] [--disable-make] [--no-llvm-tool-reuse] [--thinlto] [--lto] [--pgo[=profile]]
+    echo $0 native prefix arch [--with-python] [--with-busybox] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--disable-mingw-w64-tools] [--disable-make] [--no-llvm-tool-reuse] [--thinlto] [--lto] [--pgo[=profile]]
     exit 1
 fi
 
@@ -102,4 +105,7 @@ fi
 ./prepare-cross-toolchain.sh $NATIVE $PREFIX $CROSS_ARCH
 if [ -z "$NO_MAKE" ]; then
     ./build-make.sh $PREFIX --host=$HOST
+fi
+if [ -n "$BUSYBOX" ]; then
+    ./build-busybox.sh $PREFIX/busybox --host=$HOST
 fi
