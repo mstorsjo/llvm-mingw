@@ -772,14 +772,25 @@ jobs:
           repository: ffmpeg/ffmpeg
           ref: n6.1.2
           path: ffmpeg
-      - name: Build & test ffmpeg
+      - name: Configure
         run: |
           export PATH=/llvm-mingw/bin:$PATH
           mkdir ffmpeg-build
           cd ffmpeg-build
           ../ffmpeg/configure --samples=../fate-samples --enable-gpl
+      - name: Build
+        run: |
+          export PATH=/llvm-mingw/bin:$PATH
+          cd ffmpeg-build
           make -j$(nproc)
+      - name: Fetch test samples
+        run: |
+          cd ffmpeg-build
           make fate-rsync || make fate-rsync
+      - name: Test
+        run: |
+          export PATH=/llvm-mingw/bin:$PATH
+          cd ffmpeg-build
           make -j$(nproc) fate
 
   upload-nightly:
