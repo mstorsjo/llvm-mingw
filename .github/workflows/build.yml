@@ -518,9 +518,9 @@ jobs:
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
-          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "c:\llvm-mingw\bin" >> $Env:GITHUB_PATH
+          echo "c:\llvm-mingw\python\bin" >> $Env:GITHUB_PATH
+          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" >> $Env:GITHUB_ENV
       - uses: actions/checkout@v4
       - name: Checkout llvm-project
         env:
@@ -577,9 +577,9 @@ jobs:
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
-          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "c:\llvm-mingw\bin" >> $Env:GITHUB_PATH
+          echo "c:\llvm-mingw\python\bin" >> $Env:GITHUB_PATH
+          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" >> $Env:GITHUB_ENV
       - uses: actions/checkout@v4
       - name: Checkout llvm-project
         env:
@@ -598,7 +598,7 @@ jobs:
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++
           ninja not FileCheck
-          echo "TOOLS=$PWD\bin" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "TOOLS=$PWD\bin" >> $Env:GITHUB_ENV
       - name: Build and test OpenMP
         run: |
           cd llvm-project
@@ -640,9 +640,9 @@ jobs:
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
-          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "c:\llvm-mingw\bin" >> $Env:GITHUB_PATH
+          echo "c:\llvm-mingw\python\bin" >> $Env:GITHUB_PATH
+          echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" >> $Env:GITHUB_ENV
       - uses: actions/checkout@v4
       - name: Checkout llvm-project
         env:
@@ -662,8 +662,8 @@ jobs:
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++
           ninja not FileCheck llvm-config KillTheDoctor count split-file
-          echo "LLVM_CONFIG=$PWD\bin\llvm-config.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-          echo "CMAKE_DIR=$PWD\lib\cmake\llvm" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LLVM_CONFIG=$PWD\bin\llvm-config.exe" >> $Env:GITHUB_ENV
+          echo "CMAKE_DIR=$PWD\lib\cmake\llvm" >> $Env:GITHUB_ENV
       - name: Build and test compiler-rt
         # Skipping libfuzzer; all tests fail since the clang mingw driver
         # doesn't support -fsanitize=fuzzer.
