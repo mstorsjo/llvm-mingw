@@ -34,7 +34,7 @@ if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
 
-case $(uname -s) in
+case $(uname) in
 Darwin)
     ;;
 *)
