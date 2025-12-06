@@ -49,7 +49,7 @@ trap cleanup EXIT INT TERM
 for arch in i686 x86_64 armv7 aarch64; do
     temp=$(uuidgen)
     temp_images="$temp_images $temp"
-    time docker build -f Dockerfile.cross --build-arg BASE=mstorsjo/llvm-mingw:dev --build-arg CROSS_ARCH=$arch --build-arg TAG=$TAG-ucrt- --build-arg WITH_PYTHON=1 -t $temp .
+    time docker build -f Dockerfile.cross --build-arg BASE=mstorsjo/llvm-mingw:dev --build-arg CROSS_ARCH=$arch --build-arg TAG=$TAG-ucrt- --build-arg WITH_PYTHON=1 --build-arg WITH_BUSYBOX=1 -t $temp .
     ./extract-docker.sh $temp /llvm-mingw-$TAG-ucrt-$arch.zip
 done
 
