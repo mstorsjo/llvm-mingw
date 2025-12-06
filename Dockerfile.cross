@@ -68,7 +68,10 @@ ARG WITH_BUSYBOX
 
 COPY build-busybox.sh .
 RUN if [ -n "$WITH_BUSYBOX" ]; then \
-        ./build-busybox.sh $CROSS_TOOLCHAIN_PREFIX/busybox --host=$HOST; \
+        ./build-busybox.sh $CROSS_TOOLCHAIN_PREFIX/busybox --host=$HOST && \
+        cp $CROSS_TOOLCHAIN_PREFIX/bin/mingw32-make.exe $CROSS_TOOLCHAIN_PREFIX/busybox/bin/make.exe && \
+        mkdir -p $CROSS_TOOLCHAIN_PREFIX/busybox/share && \
+        cp -a $CROSS_TOOLCHAIN_PREFIX/share/make $CROSS_TOOLCHAIN_PREFIX/busybox/share; \
     fi
 
 ARG TAG

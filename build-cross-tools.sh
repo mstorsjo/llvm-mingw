@@ -108,4 +108,9 @@ if [ -z "$NO_MAKE" ]; then
 fi
 if [ -n "$BUSYBOX" ]; then
     ./build-busybox.sh $PREFIX/busybox --host=$HOST
+    if [ -z "$NO_MAKE" ]; then
+        cp $PREFIX/bin/mingw32-make.exe $PREFIX/busybox/bin/make.exe
+        mkdir -p $PREFIX/busybox/share
+        cp -a $PREFIX/share/make $PREFIX/busybox/share
+    fi
 fi
