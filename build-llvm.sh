@@ -16,6 +16,7 @@
 
 set -e
 
+: ${LLVM_REPOSITORY:=https://github.com/llvm/llvm-project.git}
 : ${LLVM_VERSION:=llvmorg-21.1.7}
 ASSERTS=OFF
 unset HOST
@@ -121,7 +122,7 @@ if [ ! -d llvm-project ]; then
     mkdir llvm-project
     cd llvm-project
     git init
-    git remote add origin https://github.com/llvm/llvm-project.git
+    git remote add origin "${LLVM_REPOSITORY}"
     cd ..
     CHECKOUT=1
 fi
