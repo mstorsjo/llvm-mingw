@@ -16,7 +16,7 @@ WORKDIR /build
 
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 
-ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64 arm64ec"
+ARG TOOLCHAIN_ARCHS="x86_64"
 
 ARG DEFAULT_CRT=ucrt
 
