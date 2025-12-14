@@ -334,7 +334,7 @@ jobs:
       matrix:
         arch:
           - x86_64
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-latest'}}
     steps:
       - uses: msys2/setup-msys2@v2
         with:

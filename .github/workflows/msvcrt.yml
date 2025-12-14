@@ -91,7 +91,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arch: i686, crt: msvcrt }
           - { arch: x86_64, crt: msvcrt }
     steps:
       - uses: actions/download-artifact@v4
@@ -149,7 +148,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arch: i686, crt: msvcrt }
           - { arch: x86_64, crt: msvcrt }
     steps:
       - uses: msys2/setup-msys2@v2

@@ -44,10 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { arch: x86_64,  target_arch: i686    }
           - { arch: x86_64,  target_arch: x86_64  }
-          - { arch: aarch64, target_arch: aarch64 }
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-latest'}}
     steps:
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v10
