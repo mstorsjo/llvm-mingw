@@ -113,6 +113,16 @@ jobs:
           ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
           event: ${{github.event_name == 'workflow_dispatch' && 'push' || 'schedule'}}
           name: profile
+      - name: Cache downloads
+        id: cache-tarballs
+        uses: actions/cache@v4
+        with:
+          path: /opt/cache
+          key: tarballs-${{ hashFiles('build-make.sh') }}
+      - name: Restore cache
+        if: steps.cache-tarballs.outputs.cache-hit != ''
+        run: |
+          ln -s /opt/cache/*.tar.* .
       - name: Build
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
@@ -129,6 +139,13 @@ jobs:
           NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
           mv llvm-mingw $NAME
           zip -9rq ../$NAME.zip $NAME
+      - name: Save cache
+        if: steps.cache-tarballs.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /opt/cache
+          for i in make-*.tar.*; do
+              if [ ! -L $i ]; then cp -a $i /opt/cache; fi
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain

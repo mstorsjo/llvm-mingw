@@ -34,7 +34,7 @@ if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
 
-case $(uname -s) in
+case $(uname) in
 Darwin)
     ;;
 *)
@@ -158,7 +158,7 @@ if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$R
         ;;
     Linux)
         if [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-            # On WSL, inspect the architecture.
+            # On WSL, inspect the architecture and build number.
             winbuild="$(PATH=$PATH:/mnt/c/Windows/System32 cmd.exe /c ver 2>/dev/null | cut -s -d . -f 3)"
             set_native "$(uname -m)" "$winbuild"
         elif command -v wine >/dev/null; then
