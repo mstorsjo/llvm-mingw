@@ -49,7 +49,7 @@ RUN ./build-lldb-mi.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 COPY strip-llvm.sh .
 RUN ./strip-llvm.sh $CROSS_TOOLCHAIN_PREFIX --host=$HOST
 
-ARG TOOLCHAIN_ARCHS="x86_64"
+ARG TOOLCHAIN_ARCHS="i686 x86_64 armv7 aarch64 arm64ec"
 
 COPY build-mingw-w64.sh build-mingw-w64-tools.sh ./
 RUN ./build-mingw-w64-tools.sh $CROSS_TOOLCHAIN_PREFIX --skip-include-triplet-prefix --host=$HOST
