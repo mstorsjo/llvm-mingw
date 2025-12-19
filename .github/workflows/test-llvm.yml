@@ -45,7 +45,8 @@ jobs:
       matrix:
         arch:
           - x86_64
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-latest'}}
+          - aarch64
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Download toolchain
         uses: dawidd6/action-download-artifact@v10
@@ -83,7 +84,7 @@ jobs:
             -DLLVM_HOST_TRIPLE=${{matrix.arch}}-w64-windows-gnu `
             -DCMAKE_SYSTEM_PROCESSOR=${{matrix.arch}} `
             -DCMAKE_SYSTEM_NAME=Windows `
-            -DLLVM_TARGETS_TO_BUILD="X86" `
+            -DLLVM_TARGETS_TO_BUILD="AArch64;X86" `
             -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" `
             -DLLVM_WINDOWS_PREFER_FORWARD_SLASH=OFF `
             -DCMAKE_C_COMPILER=clang `
