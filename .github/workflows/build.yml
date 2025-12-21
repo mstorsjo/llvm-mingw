@@ -19,7 +19,7 @@ jobs:
   # slightly more, when we know a separate build of the same version but with
   # assertions enabled, has passed some amount of tests.
   prepare:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: (github.event_name != 'schedule') || (github.repository == '0xd6cb6d73/llvm-mingw')
     runs-on: ubuntu-latest
     outputs:
       LLVM_VERSION: ${{steps.get-versions.outputs.LLVM_VERSION}}
