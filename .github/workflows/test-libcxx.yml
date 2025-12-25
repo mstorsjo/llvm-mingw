@@ -60,9 +60,9 @@ jobs:
       - name: Unpack toolchain
         run: |
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
-          Remove-Item -Path '.\lib\cmake' -Recurse
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
+          Remove-Item -Path 'c:\llvm-mingw\lib\cmake' -Recurse
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
