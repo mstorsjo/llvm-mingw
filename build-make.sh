@@ -71,3 +71,5 @@ cd build$CROSS_NAME
 ../configure --prefix="$PREFIX" $CONFIGFLAGS --program-prefix=mingw32- --enable-job-server LDFLAGS="-Wl,-s"
 make -j$CORES
 make install-binPROGRAMS
+mkdir -p "$PREFIX/share/make"
+install -m644 ../COPYING "$PREFIX/share/make/COPYING.txt"
