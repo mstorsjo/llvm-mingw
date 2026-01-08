@@ -365,7 +365,7 @@ fi
 
 cd llvm-project/llvm
 
-PROJECTS="clang;lld"
+PROJECTS="clang;lld;flang"
 if [ -n "$LLDB" ]; then
     PROJECTS="$PROJECTS;lldb"
 fi
