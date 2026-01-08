@@ -20,10 +20,15 @@ vpath %.idl $(SRC_PATH)
 vpath %.rc $(SRC_PATH)
 
 ifneq ($(filter %-mingw32, $(MAKE_HOST)),)
-    # If we're running as mingw32-make, we're executing everything in
-    # cmd.exe, so adapt/filter out things that require a POSIX shell.
-    CMD = 1
     NATIVE = 1
+endif
+
+ifeq ($(wildcard $(SHELL)),)
+    # If $(SHELL) doesn't point at an existing file, we're running as
+    # mingw32-make with no sh.exe found, and using cmd.exe as shell.
+    # Thus adapt/filter out things that require a POSIX shell, and use
+    # cmd.exe builtins.
+    CMD = 1
     TOUCH_TARGET =
     RM_F = del
 else

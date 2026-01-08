@@ -33,6 +33,13 @@ MAKE=make
 if command -v gmake >/dev/null; then
     MAKE=gmake
 fi
+if [ "$(uname)" = "Windows_NT" ]; then
+    # In busybox, prefer our mingw32-make. The plain "make" may be busybox's
+    # primitive make (although in our builds of busybox, we disable that),
+    # and "gmake" can be a different build from e.g. Strawberry Perl further
+    # back in PATH.
+    MAKE=mingw32-make
+fi
 
 case $(uname) in
 Darwin)
@@ -155,6 +162,19 @@ if [ -z "$RUN_X86_64" ] && [ -z "$RUN_I686" ] && [ -z "$RUN_ARMV7" ] && [ -z "$R
         else
             set_native x86_64
         fi
+        ;;
+    Windows_NT) # Busybox
+        case $(uname -m) in
+        i386|i686|x86_64)
+            # Assume that any current x86 machine is capable of running 64 bit
+            # binaries.
+            set_native x86_64
+            ;;
+        armv7|aarch64)
+            # Busybox uname -v prints the plain build number, like "22000".
+            set_native aarch64 "$(uname -v)"
+            ;;
+        esac
         ;;
     Linux)
         if [ -e /proc/sys/fs/binfmt_misc/WSLInterop ]; then
