@@ -114,7 +114,7 @@ cd build${CROSS_NAME}
 $MAKE -j$CORES
 $MAKE install-strip
 mkdir -p "$PREFIX/share/gendef"
-install -m644 ../COPYING "$PREFIX/share/gendef"
+install -m644 ../COPYING "$PREFIX/share/gendef/COPYING.txt"
 cd ../../widl
 [ -z "$CLEAN" ] || rm -rf build${CROSS_NAME}
 mkdir -p build${CROSS_NAME}
@@ -123,7 +123,7 @@ cd build${CROSS_NAME}
 $MAKE -j$CORES
 $MAKE install-strip
 mkdir -p "$PREFIX/share/widl"
-install -m644 ../../../COPYING "$PREFIX/share/widl"
+install -m644 ../../../COPYING "$PREFIX/share/widl/COPYING.txt"
 cd ..
 cd "$PREFIX/bin"
 # The build above produced $ANY_ARCH-w64-mingw32-widl, add symlinks to it
