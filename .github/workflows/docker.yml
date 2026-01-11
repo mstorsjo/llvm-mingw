@@ -32,6 +32,7 @@ jobs:
           else
             echo "REF=${{ inputs.ref }}" >> $GITHUB_ENV
           fi
+          cat ${{ env.REF }}
       - name: Download build parameters
         uses: dawidd6/action-download-artifact@v10
         with:
@@ -91,7 +92,7 @@ jobs:
           flavor: |
             latest=false
             prefix=dev-
-            suffix=${{ needs.prepare.outputs.TAG }}
+            suffix=.${{ needs.prepare.outputs.TAG }}
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
@@ -180,7 +181,7 @@ jobs:
           flavor: |
             latest=true
             prefix=
-            suffix=${{ needs.prepare.outputs.TAG }}
+            suffix=.${{ needs.prepare.outputs.TAG }}
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
