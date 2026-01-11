@@ -134,6 +134,8 @@ cd $BUILDDIR
 ../configure --prefix="$PREFIX" --host=$HOST --disable-symvers --disable-docs
 $MAKE -j$CORES
 $MAKE install
+mkdir -p "$PREFIX/share/libffi"
+install -m644 ../LICENSE "$PREFIX/share/libffi/LICENSE.txt"
 cd ../..
 
 cd cpython-mingw
@@ -165,5 +167,7 @@ find $PREFIX/lib/python* -name __pycache__ | xargs rm -rf
 # (for python3, python3w, python3-config, idle3 and pydoc3) after installing
 # a Python version that is supposed to be the primary Python.
 cp -a $PREFIX/bin/python3.exe $PREFIX/bin/python.exe
+
+install -m644 ../LICENSE "$PREFIX/LICENSE.txt"
 
 cd ../..
