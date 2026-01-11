@@ -80,7 +80,7 @@ jobs:
             ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}
           flavor: |
             latest=false
-            prefix=dev
+            prefix=dev-
             suffix=
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
