@@ -28,9 +28,9 @@ jobs:
       - name: Set ref
         run: |
           if ${{github.event_name == 'schedule'}}; then
-            echo "REF=master" >> $GITHUB_ENV
+              echo "REF=master" >> $GITHUB_ENV
           else
-            echo "REF=${{ inputs.ref }}" >> $GITHUB_ENV
+              echo "REF=${{ inputs.ref }}" >> $GITHUB_ENV
           fi
           cat ${{ env.REF }}
       - name: Download build parameters
@@ -49,6 +49,12 @@ jobs:
   docker-build-dev:
     needs: [prepare]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -127,6 +133,12 @@ jobs:
   docker-build:
     needs: [prepare]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
