@@ -28,9 +28,9 @@ jobs:
       - name: Set ref
         run: |
           if ${{github.event_name == 'schedule'}}; then
-            echo "REF=master" >> $GITHUB_ENV
+              echo "REF=master" >> $GITHUB_ENV
           else
-            echo "REF=${{ inputs.ref }}" >> $GITHUB_ENV
+              echo "REF=${{ inputs.ref }}" >> $GITHUB_ENV
           fi
           cat ${{ env.REF }}
       - name: Download build parameters
