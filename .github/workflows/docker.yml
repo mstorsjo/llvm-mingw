@@ -77,9 +77,7 @@ jobs:
         with:
           images: |
             ${{ env.GHCR }}/${{ env.IMAGE_NAME }}:dev-${{ needs.prepare.outputs.TAG }}
-            ${{ env.GHCR }}/${{ env.IMAGE_NAME }}:dev
             ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:dev-${{ needs.prepare.outputs.TAG }}
-            ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:dev
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
@@ -164,9 +162,7 @@ jobs:
         with:
           images: |
             ${{ env.GHCR }}/${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.TAG }}
-            ${{ env.GHCR }}/${{ env.IMAGE_NAME }}:latest
             ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.prepare.outputs.TAG }}
-            ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:latest
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
