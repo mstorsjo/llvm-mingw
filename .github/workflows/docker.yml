@@ -76,8 +76,16 @@ jobs:
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
           images: |
-            ${{ env.GHCR }}/${{ env.IMAGE_NAME }}:dev-${{ needs.prepare.outputs.TAG }}
-            ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:dev-${{ needs.prepare.outputs.TAG }}
+            ${{ env.GHCR }}/${{ env.IMAGE_NAME }}
+            ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}
+          tags: |
+            # branch event
+            type=ref,enable=true,priority=600,prefix=dev-,suffix=,event=branch
+            # tag event
+            type=ref,enable=true,priority=600,prefix=dev-,suffix=,event=tag
+            # pull request event
+            type=ref,enable=true,priority=600,prefix=dev-,suffix=,event=pr
+            type=schedule,enable=true,priority=1000,prefix=dev-,suffix=,pattern=nightly
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
@@ -161,8 +169,8 @@ jobs:
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
           images: |
-            ${{ env.GHCR }}/${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.TAG }}
-            ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.prepare.outputs.TAG }}
+            ${{ env.GHCR }}/${{ env.IMAGE_NAME }}
+            ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
