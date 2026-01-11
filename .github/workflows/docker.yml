@@ -22,13 +22,6 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
-      id-token: write
-      
     outputs:
       TAG: ${{steps.get-parameters.outputs.TAG}}
     steps:
@@ -56,6 +49,12 @@ jobs:
   docker-build-dev:
     needs: [prepare]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -134,6 +133,12 @@ jobs:
   docker-build:
     needs: [prepare]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
