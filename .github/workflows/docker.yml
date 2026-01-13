@@ -18,6 +18,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   REPO_NAME: 'llvm-mingw'
   REF: ''
+  PUSH: ${{ (github.event_name != 'pull_request' && inputs.push)  || github.event_name == 'schedule' }}
 
 jobs:
   prepare:
@@ -106,7 +107,7 @@ jobs:
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' && inputs.push }}
+          push: ${{ env.PUSH }}
           file: ./Dockerfile.dev
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -118,7 +119,7 @@ jobs:
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
       - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' && inputs.push }}
+        if: ${{ env.PUSH }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
           TAGS: ${{ steps.meta.outputs.tags }}
@@ -202,7 +203,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' && inputs.push }}
+          push: ${{ env.PUSH }}
           file: ./Dockerfile.toolchain
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -214,7 +215,7 @@ jobs:
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
       - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' && inputs.push }}
+        if: ${{ env.PUSH }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
           TAGS: ${{ steps.meta.outputs.tags }}
