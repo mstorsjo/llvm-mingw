@@ -54,7 +54,7 @@ jobs:
         run: |
           echo LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}') >> $GITHUB_OUTPUT
           echo MINGW_W64_VERSION=$(git ls-remote https://github.com/mingw-w64/mingw-w64.git | grep 'refs/heads/master$' | awk '{print $1}') >> $GITHUB_OUTPUT
-          echo PYTHON_VERSION_MINGW=$(git ls-remote https://github.com/msys2-contrib/cpython-mingw.git | grep 'refs/heads/mingw-v3.12.9$' | awk '{print $1}') >> $GITHUB_OUTPUT
+          echo PYTHON_VERSION_MINGW=$(git ls-remote https://github.com/msys2-contrib/cpython-mingw.git | grep 'refs/heads/mingw-v3.13.11$' | awk '{print $1}') >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT >> parameters.txt
       - uses: actions/upload-artifact@v4
