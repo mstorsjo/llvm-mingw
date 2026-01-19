@@ -92,5 +92,5 @@ for i in $(cat applets.txt); do
         continue
         ;;
     esac
-    ln -s busybox-wrapper.exe $PREFIX/bin/$i.exe
+    ln -sf busybox-wrapper.exe $PREFIX/bin/$i.exe
 done
