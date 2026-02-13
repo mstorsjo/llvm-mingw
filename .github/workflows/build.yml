@@ -260,7 +260,7 @@ jobs:
 
   macos-stage1:
     needs: [prepare]
-    runs-on: macos-14
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -289,7 +289,7 @@ jobs:
   # Build a cross compiler for macOS, targeting Windows.
   macos:
     needs: [prepare, macos-stage1, linux-profile]
-    runs-on: macos-14
+    runs-on: macos-26
     strategy:
       fail-fast: false
       matrix:
