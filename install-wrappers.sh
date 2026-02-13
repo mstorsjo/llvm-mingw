@@ -97,7 +97,7 @@ if [ -n "${HOST_CLANG}" ]; then
     llvmexec="$PATH:$llvmdir/bin"
 
     for exec in ld.lld llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-strip llvm-rc llvm-cvtres \
-                llvm-addr2line llvm-dlltool llvm-readelf llvm-size llvm-strings llvm-addr2line llvm-windres llvm-ml llvm-lib; do
+                llvm-addr2line llvm-dlltool llvm-readelf llvm-size llvm-strings llvm-addr2line llvm-windres llvm-windmc llvm-ml llvm-lib; do
         execpath=$(PATH=$llvmexec command -v $exec) && ln -sf $execpath $PREFIX/bin/$exec
     done
 fi
@@ -174,6 +174,7 @@ for arch in $ARCHS; do
         # windres and dlltool can't use llvm-wrapper, as that loses the original
         # target arch prefix.
         ln -sf llvm-windres$EXEEXT $arch-w64-$target_os-windres$EXEEXT
+        ln -sf llvm-windmc$EXEEXT $arch-w64-$target_os-windmc$EXEEXT
         ln -sf llvm-dlltool$EXEEXT $arch-w64-$target_os-dlltool$EXEEXT
         for exec in ld objdump; do
             ln -sf $exec-wrapper.sh $arch-w64-$target_os-$exec
@@ -195,7 +196,7 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres clang-scan-deps; do
+        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres windmc clang-scan-deps; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
         for exec in cc c99 c11; do

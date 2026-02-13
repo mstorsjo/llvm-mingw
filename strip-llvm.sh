@@ -89,7 +89,7 @@ for i in amdgpu-arch bugpoint c-index-test clang-* clangd clangd-* darwin-debug 
             rm -f $i
         fi
         ;;
-    llvm-ar|llvm-cvtres|llvm-dlltool|llvm-nm|llvm-objdump|llvm-ranlib|llvm-rc|llvm-readobj|llvm-strings|llvm-pdbutil|llvm-objcopy|llvm-strip|llvm-cov|llvm-profdata|llvm-addr2line|llvm-symbolizer|llvm-wrapper|llvm-windres|llvm-ml|llvm-readelf|llvm-size|llvm-cxxfilt|llvm-lib)
+    llvm-ar|llvm-cvtres|llvm-dlltool|llvm-nm|llvm-objdump|llvm-ranlib|llvm-rc|llvm-readobj|llvm-strings|llvm-pdbutil|llvm-objcopy|llvm-strip|llvm-cov|llvm-profdata|llvm-addr2line|llvm-symbolizer|llvm-wrapper|llvm-windres|llvm-windmc|llvm-ml|llvm-readelf|llvm-size|llvm-cxxfilt|llvm-lib)
         ;;
     ld64.lld|wasm-ld)
         if [ -e $i ]; then
