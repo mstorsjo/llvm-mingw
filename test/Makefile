@@ -101,7 +101,7 @@ ifneq ($(HAVE_CFGUARD),)
     TESTS_CFGUARD = cfguard-test
     TESTS_ASAN_CFGUARD = $(TESTS_ASAN)
 endif
-TESTS_ATOMIC = atomic-helpers
+TESTS_ATOMIC = atomic-helpers atomic-load-store
 
 TARGETS_C = $(addsuffix $(EXEEXT), $(TESTS_C))
 TARGETS_C_DLL = $(addsuffix $(DLLEXT), $(TESTS_C_DLL))
