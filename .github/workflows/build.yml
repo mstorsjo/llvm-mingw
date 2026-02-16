@@ -289,13 +289,17 @@ jobs:
   # Build a cross compiler for macOS, targeting Windows.
   macos:
     needs: [prepare, macos-stage1, linux-profile]
-    runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
         arch:
           - x86_64
           - arm64
+        runner:
+          - macos-14
+          - macos-15
+          - macos-26
+    runs-on: ${{matrix.runner}}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -334,12 +338,13 @@ jobs:
           gtar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-ucrt-${{matrix.arch}}-toolchain
+          name: ${{matrix.runner}}-ucrt-${{matrix.arch}}-toolchain
           path: |
             llvm-mingw-*.tar.xz
           retention-days: 7
 
   macos-universal:
+    if: false
     needs: [macos]
     runs-on: macos-latest
     steps:
