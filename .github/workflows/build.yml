@@ -294,7 +294,6 @@ jobs:
       matrix:
         arch:
           - x86_64
-          - arm64
         runner:
           - macos-14
           - macos-15
