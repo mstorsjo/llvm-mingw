@@ -598,7 +598,7 @@ jobs:
           cd llvm-project
           mkdir build-openmp
           cd build-openmp
-          cmake ../openmp `
+          cmake ../runtimes `
             -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
@@ -606,6 +606,7 @@ jobs:
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++ `
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
+            -DLLVM_ENABLE_RUNTIMES="openmp" `
             -DLIBOMP_ASMFLAGS=${{matrix.asmflag}} `
             -DOPENMP_LIT_ARGS="-v --time-tests"
           ninja
