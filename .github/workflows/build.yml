@@ -588,7 +588,7 @@ jobs:
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++
           ninja not FileCheck
-          echo "TOOLS=$PWD\bin" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          echo "TOOLS=$PWD" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build and test OpenMP
         run: |
           cd llvm-project
@@ -598,7 +598,7 @@ jobs:
             -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
-            -DOPENMP_LLVM_TOOLS_DIR="$Env:TOOLS" `
+            -DLLVM_BINARY_DIR="$Env:TOOLS" `
             -DCMAKE_C_COMPILER=clang `
             -DCMAKE_CXX_COMPILER=clang++ `
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
