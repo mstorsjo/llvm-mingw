@@ -604,7 +604,7 @@ jobs:
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
             -DLLVM_ENABLE_RUNTIMES="openmp" `
             -DLIBOMP_ASMFLAGS=${{matrix.asmflag}} `
-            -DOPENMP_LIT_ARGS="-v --time-tests"
+            -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
           ninja check-openmp
 
