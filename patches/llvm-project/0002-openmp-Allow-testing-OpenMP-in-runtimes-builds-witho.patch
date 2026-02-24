@@ -1,8 +1,8 @@
-From 376943fc4ad0db9605f21d20b47cba2dcdc9757e Mon Sep 17 00:00:00 2001
+From 0d6f14f22d2e0acb5255dd49f45017f080856cb0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
 Date: Tue, 24 Feb 2026 14:51:06 +0200
-Subject: [PATCH] [openmp] Allow testing OpenMP in runtimes builds without a
- full clang build tree
+Subject: [PATCH 2/2] [openmp] Allow testing OpenMP in runtimes builds without
+ a full clang build tree
 
 Having a build tree with "not" and "FileCheck" is still required, but if
 Clang/Flang isn't configured in that build, run the tests with the same
