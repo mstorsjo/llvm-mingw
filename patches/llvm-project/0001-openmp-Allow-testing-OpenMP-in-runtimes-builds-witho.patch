@@ -1,0 +1,107 @@
+From 376943fc4ad0db9605f21d20b47cba2dcdc9757e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Martin=20Storsj=C3=B6?= <martin@martin.st>
+Date: Tue, 24 Feb 2026 14:51:06 +0200
+Subject: [PATCH] [openmp] Allow testing OpenMP in runtimes builds without a
+ full clang build tree
+
+Having a build tree with "not" and "FileCheck" is still required, but if
+Clang/Flang isn't configured in that build, run the tests with the same
+compiler CMake uses. This is how testing worked in the standalone build
+configurations that now have been removed.
+
+This is a manually adapted backport of
+48a5119d8e7d7236a28c14d06ec215ef3366ef90 / #182470 to the 22.x
+release branch.
+
+This allows testing OpenMP in the same way on both git main
+and the 22.x release branch.
+---
+ openmp/CMakeLists.txt            | 33 ++++++++++++++++++--------------
+ openmp/cmake/OpenMPTesting.cmake |  8 ++++++--
+ 2 files changed, 25 insertions(+), 16 deletions(-)
+
+diff --git a/openmp/CMakeLists.txt b/openmp/CMakeLists.txt
+index df568419824a..cfe01daaa80d 100644
+--- a/openmp/CMakeLists.txt
++++ b/openmp/CMakeLists.txt
+@@ -71,13 +71,26 @@ else()
+         "Path where built OpenMP libraries should be installed.")
+   endif()
+ 
+-  if (NOT MSVC)
+-    set(OPENMP_TEST_C_COMPILER ${LLVM_TOOLS_BINARY_DIR}/clang)
+-    set(OPENMP_TEST_CXX_COMPILER ${LLVM_TOOLS_BINARY_DIR}/clang++)
+-  else()
+-    set(OPENMP_TEST_C_COMPILER ${LLVM_TOOLS_BINARY_DIR}/clang.exe)
+-    set(OPENMP_TEST_CXX_COMPILER ${LLVM_TOOLS_BINARY_DIR}/clang++.exe)
++  set(OPENMP_TEST_C_COMPILER_default "${LLVM_TOOLS_BINARY_DIR}/clang${CMAKE_EXECUTABLE_SUFFIX}")
++  set(OPENMP_TEST_CXX_COMPILER_default "${LLVM_TOOLS_BINARY_DIR}/clang++${CMAKE_EXECUTABLE_SUFFIX}")
++  set(OPENMP_TEST_Fortran_COMPILER_default "${LLVM_TOOLS_BINARY_DIR}/flang${CMAKE_EXECUTABLE_SUFFIX}")
++  if (NOT TARGET "clang")
++    set(OPENMP_TEST_C_COMPILER_default "${CMAKE_C_COMPILER}")
++    set(OPENMP_TEST_CXX_COMPILER_default "${CMAKE_CXX_COMPILER}")
++  endif()
++  if (NOT TARGET "flang")
++    if (CMAKE_Fortran_COMPILER)
++      set(OPENMP_TEST_Fortran_COMPILER_default "${CMAKE_Fortran_COMPILER}")
++    else()
++      unset(OPENMP_TEST_Fortran_COMPILER_default)
++    endif()
+   endif()
++  set(OPENMP_TEST_C_COMPILER "${OPENMP_TEST_C_COMPILER_default}" CACHE STRING
++    "C compiler to use for testing OpenMP runtime libraries.")
++  set(OPENMP_TEST_CXX_COMPILER "${OPENMP_TEST_CXX_COMPILER_default}" CACHE STRING
++    "C++ compiler to use for testing OpenMP runtime libraries.")
++  set(OPENMP_TEST_Fortran_COMPILER "${OPENMP_TEST_Fortran_COMPILER_default}" CACHE STRING
++    "Fortran compiler to use for testing OpenMP runtime libraries.")
+ 
+   # Set fortran test compiler if flang is found
+   if (EXISTS "${OPENMP_TEST_Fortran_COMPILER}")
+@@ -116,14 +129,6 @@ math(EXPR LIBOMP_VERSION_BUILD_MONTH_DAY "${LIBOMP_VERSION_BUILD}%10000")
+ set(LIBOMP_BUILD_DATE "No_Timestamp")
+ 
+ 
+-# Check for flang
+-set(OPENMP_TEST_Fortran_COMPILER_default "")
+-if (CMAKE_Fortran_COMPILER)
+-  set(OPENMP_TEST_Fortran_COMPILER_default "${CMAKE_Fortran_COMPILER}")
+-endif ()
+-set(OPENMP_TEST_Fortran_COMPILER "${OPENMP_TEST_Fortran_COMPILER_default}" CACHE STRING
+-  "Fortran compiler to use for testing OpenMP runtime libraries.")
+-
+ set(LIBOMP_FORTRAN_MODULES FALSE CACHE BOOL
+   "Create Fortran module files? (requires fortran compiler)")
+ 
+diff --git a/openmp/cmake/OpenMPTesting.cmake b/openmp/cmake/OpenMPTesting.cmake
+index 262ea968c835..f46ff4268b73 100644
+--- a/openmp/cmake/OpenMPTesting.cmake
++++ b/openmp/cmake/OpenMPTesting.cmake
+@@ -221,19 +221,23 @@ function(add_openmp_testsuite target comment)
+       USES_TERMINAL
+     )
+   else()
++    set(EXTRA_CHECK_DEPENDS "")
++    if (TARGET "clang")
++      list(APPEND EXTRA_CHECK_DEPENDS clang)
++    endif()
+     if (ARG_EXCLUDE_FROM_CHECK_ALL)
+       add_lit_testsuite(${target}
+         ${comment}
+         ${ARG_UNPARSED_ARGUMENTS}
+         EXCLUDE_FROM_CHECK_ALL
+-        DEPENDS clang FileCheck not ${ARG_DEPENDS}
++        DEPENDS ${EXTRA_CHECK_DEPENDS} FileCheck not ${ARG_DEPENDS}
+         ARGS ${ARG_ARGS}
+       )
+     else()
+       add_lit_testsuite(${target}
+         ${comment}
+         ${ARG_UNPARSED_ARGUMENTS}
+-        DEPENDS clang FileCheck not ${ARG_DEPENDS}
++        DEPENDS ${EXTRA_CHECK_DEPENDS} FileCheck not ${ARG_DEPENDS}
+         ARGS ${ARG_ARGS}
+       )
+     endif()
+-- 
+2.43.0
+

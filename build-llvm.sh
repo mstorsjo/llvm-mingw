@@ -153,6 +153,9 @@ if [ -n "$SYNC" ] || [ -n "$CHECKOUT" ]; then
             ;;
         esac
     fi
+    git config --global user.name "LLVM MinGW"
+    git config --global user.email root@localhost
+    git am -3 ../patches/llvm-project/*.patch
     cd ..
 fi
 
