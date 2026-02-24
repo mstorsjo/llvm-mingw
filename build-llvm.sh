@@ -17,7 +17,7 @@
 set -e
 
 : ${LLVM_REPOSITORY:=https://github.com/llvm/llvm-project.git}
-: ${LLVM_VERSION:=llvmorg-22.1.0}
+: ${LLVM_VERSION:=7af05aebad78728c19e609d16505e2a67e54ce59}
 ASSERTS=OFF
 unset HOST
 BUILDDIR="build"
