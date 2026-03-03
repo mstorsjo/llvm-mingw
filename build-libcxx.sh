@@ -77,6 +77,16 @@ for arch in $ARCHS; do
     mkdir -p build-$arch
     cd build-$arch
     [ -n "$NO_RECONF" ] || rm -rf CMake*
+
+    EXTRA_CFLAGS=""
+    case $arch in
+    i686|x86_64)
+        # Force using the mingw stdio functions, for correct long double
+        # printing.
+        EXTRA_CFLAGS="-D__USE_MINGW_ANSI_STDIO=1"
+        ;;
+    esac
+
     cmake \
         ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
@@ -107,8 +117,8 @@ for arch in $ARCHS; do
         -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
         -DLIBCXXABI_ENABLE_SHARED=OFF \
         -DLIBCXXABI_LIBDIR_SUFFIX="" \
-        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS" \
-        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS" \
+        -DCMAKE_C_FLAGS_INIT="$CFGUARD_CFLAGS $EXTRA_CFLAGS" \
+        -DCMAKE_CXX_FLAGS_INIT="$CFGUARD_CFLAGS $EXTRA_CFLAGS" \
         ..
 
     cmake --build . ${CORES:+-j${CORES}}
