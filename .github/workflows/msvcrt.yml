@@ -45,7 +45,7 @@ jobs:
     needs: [prepare]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
       - name: Download toolchain
@@ -103,7 +103,7 @@ jobs:
           rm llvm-mingw-*.tar.xz
           sudo mv llvm-mingw* /opt/llvm-mingw
           echo /opt/llvm-mingw/bin >> $GITHUB_PATH
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
       - name: Download profile
@@ -184,7 +184,7 @@ jobs:
           rm llvm-mingw-*.zip
           mv llvm-mingw-* /llvm-mingw
           echo /llvm-mingw/bin >> $GITHUB_PATH
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
       - name: Run tests
