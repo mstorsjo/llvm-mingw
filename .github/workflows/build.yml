@@ -785,10 +785,9 @@ jobs:
           make -j$(nproc) fate
 
   upload-nightly:
-    if: github.event_name == 'schedule'
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -801,7 +800,11 @@ jobs:
           rm -rf macos-llvm*
           rm -rf profile*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
+      - name: Inspect files
+        run: |
+          ls
       - name: Upload binaries
+        if: false
         env:
           GITHUB_TOKEN: ${{github.token}}
         run: |
