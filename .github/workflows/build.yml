@@ -413,7 +413,7 @@ jobs:
           name: profile
       - name: Cache downloads
         id: cache-tarballs
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /opt/cache
           key: tarballs-${{ hashFiles('build-make.sh') }}
