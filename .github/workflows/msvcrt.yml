@@ -77,7 +77,7 @@ jobs:
           NAME=llvm-mingw-$TAG-msvcrt-$DISTRO
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: linux-msvcrt-x86_64-toolchain
           path: |
@@ -147,7 +147,7 @@ jobs:
           for i in make-*.tar.*; do
               if [ ! -L $i ]; then cp -a $i /opt/cache; fi
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
           path: |
