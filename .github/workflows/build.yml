@@ -57,7 +57,7 @@ jobs:
           echo PYTHON_VERSION_MINGW=$(git ls-remote https://github.com/msys2-contrib/cpython-mingw.git | grep 'refs/heads/mingw-v3.13.11$' | awk '{print $1}') >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT >> parameters.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: parameters
           path: |
@@ -89,7 +89,7 @@ jobs:
           NAME=llvm-mingw-stage1-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: linux-stage1-ucrt-x86_64-toolchain
           path: |
@@ -119,7 +119,7 @@ jobs:
           # Build LLVM in mostly the same way as it is going to be built in the
           # final form.
           LLVM_CMAKEFLAGS="-DLLVM_ENABLE_LIBXML2=OFF -DLLDB_ENABLE_PYTHON=OFF" ./build-all.sh --profile $(pwd)/llvm-mingw-stage1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: profile
           path: |
@@ -162,7 +162,7 @@ jobs:
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: linux-ucrt-x86_64-toolchain
           path: |
@@ -214,7 +214,7 @@ jobs:
           NAME=llvm-mingw-$TAG-ucrt-$DISTRO
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: linux-ucrt-aarch64-toolchain
           path: |
@@ -249,7 +249,7 @@ jobs:
           ./run-tests.sh $(pwd)/install/llvm-mingw
           cd install
           tar -Jcf ../llvm-mingw-linux.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" llvm-mingw
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: linux-asserts-x86_64-toolchain
           path: |
@@ -277,7 +277,7 @@ jobs:
           NAME=llvm-$TAG-macos-$(uname -m)
           mv llvm $NAME
           gtar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: macos-llvm
           path: |
@@ -322,7 +322,7 @@ jobs:
           NAME=llvm-mingw-$TAG-ucrt-macos-universal
           mv llvm-mingw $NAME
           gtar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: macos-ucrt-toolchain
           path: |
@@ -376,7 +376,7 @@ jobs:
           NAME=llvm-mingw-$TAG-ucrt-msys2-${{matrix.sys}}
           mv llvm-mingw $NAME
           tar -Jcf ../$NAME.tar.xz --format=ustar --numeric-owner --owner=0 --group=0 --sort=name --mtime="$BUILD_DATE" $NAME
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: msys2-${{matrix.sys}}-toolchain
           path: |
@@ -444,7 +444,7 @@ jobs:
           for i in make-*.tar.*; do
               if [ ! -L $i ]; then cp -a $i /opt/cache; fi
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
           path: |
