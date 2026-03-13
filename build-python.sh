@@ -92,7 +92,7 @@ if [ -z "$HOST" ]; then
     [ -z "$CLEAN" ] || rm -rf $BUILDDIR
     mkdir -p $BUILDDIR
     cd $BUILDDIR
-    ../configure --prefix="$PREFIX" --disable-symvers --disable-docs
+    ../configure --prefix="$PREFIX" --disable-symvers --disable-docs --disable-shared
     $MAKE -j$CORES
     $MAKE install
     cd ../..
