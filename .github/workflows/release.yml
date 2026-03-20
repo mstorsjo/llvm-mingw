@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: dawidd6/action-download-artifact@v10
+        uses: dawidd6/action-download-artifact@v19
         with:
           workflow: build.yml
           workflow_conclusion: success

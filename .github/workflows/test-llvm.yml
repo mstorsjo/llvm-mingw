@@ -25,7 +25,7 @@ jobs:
       LLVM_VERSION: ${{steps.get-parameters.outputs.LLVM_VERSION}}
     steps:
       - name: Download build parameters
-        uses: dawidd6/action-download-artifact@v10
+        uses: dawidd6/action-download-artifact@v19
         with:
           workflow: build.yml
           workflow_conclusion: success
@@ -49,7 +49,7 @@ jobs:
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Download toolchain
-        uses: dawidd6/action-download-artifact@v10
+        uses: dawidd6/action-download-artifact@v19
         with:
           workflow: build.yml
           workflow_conclusion: success
