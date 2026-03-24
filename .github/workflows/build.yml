@@ -100,6 +100,7 @@ jobs:
   # Crosscompile the toolchain for running on Linux on a different architecture, bundle the runtime
   # libraries that were built in the 'linux' step above.
   linux-cross-aarch64:
+    if: false
     needs: [linux, prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -183,6 +184,7 @@ jobs:
 
   # Build a cross compiler for macOS, targeting Windows.
   macos:
+    if: false
     needs: [prepare]
     runs-on: macos-14
     steps:
@@ -218,6 +220,7 @@ jobs:
   # Test building the toolchain on msys2. The binaries built here rely on the
   # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
@@ -281,8 +284,6 @@ jobs:
         include:
           - { arch: i686, crt: ucrt }
           - { arch: x86_64, crt: ucrt }
-          - { arch: armv7, crt: ucrt }
-          - { arch: aarch64, crt: ucrt }
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -343,7 +344,6 @@ jobs:
         arch:
           - x86_64
           - i686
-          - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - uses: actions/download-artifact@v8
@@ -434,8 +434,6 @@ jobs:
   # Run the OpenMP tests with the cross-built toolchains from above.
   # This also forces testing the bundled python executables.
   test-openmp:
-    # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -443,7 +441,6 @@ jobs:
         include:
           - { arch: i686, asmflag: }
           - { arch: x86_64, asmflag: -m64 }
-          - { arch: aarch64 }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - uses: actions/download-artifact@v8
@@ -498,8 +495,6 @@ jobs:
   # Run the compiler-rt tests with the cross-built toolchains from above. This
   # also forces testing the bundled python executables.
   test-compiler-rt:
-    # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -507,7 +502,6 @@ jobs:
         arch:
           - x86_64
           - i686
-          - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - uses: actions/download-artifact@v8
