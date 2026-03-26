@@ -19,7 +19,7 @@ jobs:
   # slightly more, when we know a separate build of the same version but with
   # assertions enabled, has passed some amount of tests.
   prepare:
-    if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
+    if: false
     runs-on: ubuntu-latest
     outputs:
       LLVM_VERSION: ${{steps.get-versions.outputs.LLVM_VERSION}}
@@ -616,8 +616,7 @@ jobs:
   # also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
-    needs: [linux-cross-windows, prepare]
+    if: true
     strategy:
       fail-fast: false
       matrix:
@@ -627,11 +626,9 @@ jobs:
           - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
-      - uses: actions/download-artifact@v8
-        with:
-          name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20260324/llvm-mingw-20260324-ucrt-${{matrix.arch}}.zip
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
@@ -641,7 +638,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Checkout llvm-project
         env:
-          LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
+          LLVM_VERSION: b95b902bb7dd8875efe75a6955a8a4b4c7063d25
         run: |
           git config --global core.autocrlf false
           bash -c "CHECKOUT_ONLY=1 ./build-llvm.sh"
