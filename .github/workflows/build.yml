@@ -559,11 +559,12 @@ jobs:
           - { arch: i686, asmflag: }
           - { arch: x86_64, asmflag: -m64 }
           - { arch: aarch64 }
+          - { arch: arm64ec }
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Unpack toolchain
         run: |
-          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch}}.zip
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch == 'arm64ec' && 'aarch64' || matrix.arch}}.zip
           Expand-Archive llvm-mingw-*.zip -DestinationPath .
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
@@ -599,10 +600,11 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release `
             -DPython3_EXECUTABLE="$Env:PYTHON_EXE" `
             -DLLVM_BINARY_DIR="$Env:TOOLS" `
-            -DCMAKE_C_COMPILER=clang `
-            -DCMAKE_CXX_COMPILER=clang++ `
+            -DCMAKE_C_COMPILER=${{matrix.arch}}-w64-mingw32-clang `
+            -DCMAKE_CXX_COMPILER=${{matrix.arch}}-w64-mingw32-clang++ `
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
             -DLLVM_ENABLE_RUNTIMES="openmp" `
+            -DOPENMP_TEST_FLAGS="-static-libstdc++ -static-libgcc" `
             -DLIBOMP_ASMFLAGS=${{matrix.asmflag}} `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
