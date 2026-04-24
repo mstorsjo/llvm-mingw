@@ -115,10 +115,6 @@ const char *context = "";
 #define NAN_MATCHING_SIGNS(a, b) (1)
 #endif
 
-// Use TEST_FLT_NAN with F(NAN) or -F(NAN) as the expect parameter.
-// On Glibc, F(-NAN), i.e. strtod("-NAN", NULL), returns a positive NAN.
-// On MSVC, the NAN literal is negative, but strtod("NAN", NULL) returns a
-// positive one.
 #define TEST_FLT_NAN(x, expect) do { \
         tests++; \
         long double val = (x); \
