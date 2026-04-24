@@ -800,11 +800,6 @@ void test_environment() {
 }
 
 void test_math_rounding() {
-    // The plain "NAN" constant in MSVC is negative, while it is positive
-    // in other environments.
-    double pNAN = int_to_double(0x7ff8000000000000ULL);
-    double nNAN = int_to_double(0xfff8000000000000ULL);
-
     int i;
 
 #define TEST_FLOOR(floor) \
