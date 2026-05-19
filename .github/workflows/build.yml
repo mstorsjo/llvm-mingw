@@ -473,7 +473,12 @@ jobs:
       - name: Run tests
         shell: sh
         run: |
-          ARCHS="${{matrix.arch}}" ./run-tests.sh c:/llvm-mingw
+          i=0
+          while [ $i -lt 100 ]; do
+              echo $i
+              ARCHS="${{matrix.arch}}" ./run-tests.sh c:/llvm-mingw || exit 1
+              i=$(($i+1))
+          done
 
   # Run libcxx's tests with the cross-built toolchains from above.
   # (This builds its own copy of libcxx, but it should be pretty much
