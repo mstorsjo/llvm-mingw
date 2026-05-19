@@ -58,7 +58,7 @@ jobs:
           name: windows-ucrt-${{matrix.arch}}-toolchain
       - name: Unpack toolchain
         run: |
-          Expand-Archive llvm-mingw-*.zip -DestinationPath .
+          7z x llvm-mingw-*.zip
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
