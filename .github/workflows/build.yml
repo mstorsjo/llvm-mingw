@@ -463,7 +463,7 @@ jobs:
       - name: Unpack toolchain
         run: |
           curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch}}.zip
-          Expand-Archive llvm-mingw-*.zip -DestinationPath .
+          7z x llvm-mingw-*.zip
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
           echo "c:\llvm-mingw\busybox\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
