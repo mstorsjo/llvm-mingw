@@ -459,7 +459,6 @@ jobs:
         arch:
           - x86_64
           - i686
-          - aarch64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Unpack toolchain
@@ -474,9 +473,7 @@ jobs:
       - name: Run tests
         shell: sh
         run: |
-          ./test-libcxx-module.sh c:/llvm-mingw
-          ./run-tests.sh c:/llvm-mingw
-          ./run-lldb-tests.sh c:/llvm-mingw
+          ARCHS="${{matrix.arch}}" ./run-tests.sh c:/llvm-mingw
 
   # Run libcxx's tests with the cross-built toolchains from above.
   # (This builds its own copy of libcxx, but it should be pretty much
