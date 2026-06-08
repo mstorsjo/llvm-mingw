@@ -89,8 +89,6 @@ if [ -n "$PYTHON" ]; then
     ./build-python.sh $PYTHON_NATIVE_PREFIX
     export PATH="$PYTHON_NATIVE_PREFIX/bin:$PATH"
     ./build-python.sh $PREFIX/python --host=$HOST
-    mkdir -p $PREFIX/bin
-    cp $PREFIX/python/bin/*.dll $PREFIX/bin
     LLVM_ARGS="$LLVM_ARGS --with-python"
 fi
 
