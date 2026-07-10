@@ -458,7 +458,6 @@ jobs:
       fail-fast: false
       matrix:
         arch:
-          - x86_64
           - i686
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
