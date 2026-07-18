@@ -51,6 +51,10 @@ rm -rf $DEST/lib/clang/*/lib/linux
 
 # Copy all arch-specific subdirectories plus the "generic" one, as is.
 for arch in generic $ARCHS; do
+    case $arch in
+    arm64ec) continue ;;
+    esac
+
     rm -rf $DEST/$arch-w64-mingw32
     cp -a $SRC/$arch-w64-mingw32 $DEST/$arch-w64-mingw32
 done
