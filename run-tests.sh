@@ -210,6 +210,7 @@ for arch in $ARCHS; do
     unset HAVE_ASAN
     HAVE_UBSAN=1
     HAVE_OPENMP=1
+    prefix_arch="$arch"
     case $arch in
     i686)
         RUN="$RUN_I686"
@@ -242,6 +243,7 @@ for arch in $ARCHS; do
         RUN="$RUN_ARM64EC"
         COPY="$COPY_ARM64EC"
         NATIVE="$NATIVE_ARM64EC"
+        prefix_arch="aarch64"
         ;;
     esac
 
@@ -261,8 +263,8 @@ for arch in $ARCHS; do
     [ -z "$CLEAN" ] || rm -rf $TEST_DIR
     mkdir -p $TEST_DIR
     cd $TEST_DIR
-    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_ASAN=$HAVE_ASAN HAVE_UBSAN=$HAVE_UBSAN HAVE_OPENMP=$HAVE_OPENMP NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin clean
-    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_ASAN=$HAVE_ASAN HAVE_UBSAN=$HAVE_UBSAN HAVE_OPENMP=$HAVE_OPENMP NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$arch-w64-mingw32/bin RUN="$RUN" $COPYARG $MAKEOPTS -j$CORES $TARGET
+    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_ASAN=$HAVE_ASAN HAVE_UBSAN=$HAVE_UBSAN HAVE_OPENMP=$HAVE_OPENMP NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$prefix_arch-w64-mingw32/bin clean
+    $MAKE -f ../Makefile ARCH=$arch HAVE_UWP=$HAVE_UWP HAVE_CFGUARD=$HAVE_CFGUARD HAVE_ASAN=$HAVE_ASAN HAVE_UBSAN=$HAVE_UBSAN HAVE_OPENMP=$HAVE_OPENMP NATIVE=$NATIVE RUNTIMES_SRC=$PREFIX/$prefix_arch-w64-mingw32/bin RUN="$RUN" $COPYARG $MAKEOPTS -j$CORES $TARGET
     cd ..
 done
 echo All tests succeeded
