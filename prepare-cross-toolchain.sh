@@ -61,6 +61,10 @@ mkdir -p $DEST/include
 # individual architectures.
 cp -a $SRC/generic-w64-mingw32/include/. $DEST/include
 for arch in $ARCHS; do
+    case $arch in
+    arm64ec) continue ;;
+    esac
+
     mkdir -p $DEST/$arch-w64-mingw32
     for subdir in bin lib share; do
         cp -a $SRC/$arch-w64-mingw32/$subdir $DEST/$arch-w64-mingw32
