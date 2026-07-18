@@ -54,6 +54,20 @@ if [ ! -d $SQLITE ]; then
     unzip sqlite-amalgamation-$SQLITE_VERSION.zip
 fi
 
+# pgo-training.make uses an explicit --sysroot pointing to the top of the llvm-mingw
+# installation (rather than the specific target prefix). This is currently not
+# supported by the Clang driver for arm64ec, which cannot use the arm64x prefix in
+# this configuration. Ideally, this should be fixed in Clang, but arm64ec provides
+# little additional profiling data compared to aarch64 anyway, so disable it for now.
+ORIG_ARCHS="$ARCHS"
+ARCHS=""
+for arch in $ORIG_ARCHS; do
+    case $arch in
+        arm64ec) continue ;;
+        *) ARCHS="$ARCHS $arch" ;;
+    esac
+done
+
 rm -rf "$LLVM_PROFILE_DATA_DIR"
 export ARCHS
 $MAKE -f pgo-training.make PREFIX=$PREFIX STAGE1=$STAGE1 SQLITE=$SQLITE clean
