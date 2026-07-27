@@ -608,7 +608,6 @@ jobs:
             -DCMAKE_CXX_COMPILER=${{matrix.arch}}-w64-mingw32-clang++ `
             -DCMAKE_ASM_MASM_COMPILER=llvm-ml `
             -DLLVM_ENABLE_RUNTIMES="openmp" `
-            -DOPENMP_TEST_FLAGS="-static-libstdc++ -static-libgcc" `
             -DLIBOMP_ASMFLAGS=${{matrix.asmflag}} `
             -DLLVM_LIT_ARGS="-v --time-tests"
           ninja
