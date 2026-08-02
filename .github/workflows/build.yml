@@ -6,6 +6,7 @@ on:
   pull_request:
   schedule:
     - cron: '0 0 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -36,7 +37,7 @@ jobs:
       - name: Select build tag
         id: get-tag
         run: |
-          if ${{github.event_name == 'schedule'}}; then
+          if ${{github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'}}; then
               TAG=nightly
           else
               TAG=$(TZ=UTC date +%Y%m%d)
@@ -49,7 +50,7 @@ jobs:
           cat $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT >> parameters.txt
       - name: Check latest version
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         id: get-versions
         run: |
           echo LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}') >> $GITHUB_OUTPUT
@@ -229,7 +230,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -552,7 +553,7 @@ jobs:
   # This also forces testing the bundled python executables.
   test-openmp:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -618,7 +619,7 @@ jobs:
   # also forces testing the bundled python executables.
   test-compiler-rt:
     # Only running these tests in scheduled builds.
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [linux-cross-windows, prepare]
     strategy:
       fail-fast: false
@@ -695,7 +696,7 @@ jobs:
   # enabled, to catch code generation bugs that might trigger asserts, to
   # find such regressions early.
   linux-test-cross-build-ffmpeg:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [linux-asserts]
     runs-on: ubuntu-latest
     strategy:
@@ -740,7 +741,7 @@ jobs:
   # compiler itself, but that only show up at runtime. This is only done
   # for scheduled builds.
   test-ffmpeg:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [linux-cross-windows]
     runs-on: windows-latest
     defaults:
@@ -787,7 +788,7 @@ jobs:
           make -j$(nproc) fate
 
   upload-nightly:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
     needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
