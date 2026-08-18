@@ -57,6 +57,11 @@ typedef char TCHAR;
 #define TS "%s"
 #endif
 
+#ifdef NO_PSEUDO_RELOCS
+void _pei386_runtime_relocator(void) {
+}
+#endif
+
 #ifdef _WIN32
 static inline const TCHAR *escape(const TCHAR *str) {
     // If we don't need to escape anything, just return the input string
