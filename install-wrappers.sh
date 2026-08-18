@@ -102,6 +102,7 @@ if [ -n "${HOST_CLANG}" ]; then
     done
 fi
 
+WRAPPER_FLAGS="$WRAPPER_FLAGS -O2 -Wl,-s"
 if [ -n "$MACOS_REDIST" ]; then
     : ${MACOS_REDIST_ARCHS:=arm64 x86_64}
     : ${MACOS_REDIST_VERSION:=10.12}
@@ -136,9 +137,9 @@ if [ -n "$HOST" ] && [ -n "$EXEEXT" ]; then
         cat $i | sed 's/^DEFAULT_TARGET=.*/DEFAULT_TARGET='$HOST/ > "$PREFIX/bin/$(basename $i)"
     done
 fi
-$CC wrappers/clang-target-wrapper.c -o "$PREFIX/bin/clang-target-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
-$CC wrappers/clang-scan-deps-wrapper.c -o "$PREFIX/bin/clang-scan-deps-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
-$CC wrappers/llvm-wrapper.c -o "$PREFIX/bin/llvm-wrapper$EXEEXT" -O2 -Wl,-s $WRAPPER_FLAGS
+$CC wrappers/clang-target-wrapper.c -o "$PREFIX/bin/clang-target-wrapper$EXEEXT" $WRAPPER_FLAGS
+$CC wrappers/clang-scan-deps-wrapper.c -o "$PREFIX/bin/clang-scan-deps-wrapper$EXEEXT" $WRAPPER_FLAGS
+$CC wrappers/llvm-wrapper.c -o "$PREFIX/bin/llvm-wrapper$EXEEXT" $WRAPPER_FLAGS
 if [ -n "$EXEEXT" ]; then
     # For Windows, we should prefer the executable wrapper, which also works
     # when invoked from outside of MSYS.
