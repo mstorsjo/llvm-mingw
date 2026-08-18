@@ -133,6 +133,7 @@ if [ -n "$EXEEXT" ]; then
     WRAPPER_FLAGS="$WRAPPER_FLAGS -ffunction-sections -fdata-sections -Wl,--gc-sections"
     # -fno-auto-import is supported only by Clang, not GCC.
     WRAPPER_FLAGS="$WRAPPER_FLAGS -fno-auto-import"
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -DNO_PSEUDO_RELOCS"
 fi
 
 mkdir -p "$PREFIX/bin"
