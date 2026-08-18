@@ -102,7 +102,16 @@ if [ -n "${HOST_CLANG}" ]; then
     done
 fi
 
-WRAPPER_FLAGS="$WRAPPER_FLAGS -O2 -Wl,-s"
+if [ -n "$EXEEXT" ]; then
+    # Assume that if building for Windows, we're building with Clang, and
+    # Clang supports -Oz.
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -Oz"
+else
+    # Use -Os instead of -Oz, if building for unix with any unknown host
+    # compiler. GCC only supports -Oz since GCC 12.
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -Os"
+fi
+WRAPPER_FLAGS="$WRAPPER_FLAGS -Wl,-s"
 if [ -n "$MACOS_REDIST" ]; then
     : ${MACOS_REDIST_ARCHS:=arm64 x86_64}
     : ${MACOS_REDIST_VERSION:=10.12}
@@ -120,6 +129,10 @@ if [ -n "$EXEEXT" ]; then
     # needs full ansi compliance - prefer leaner binaries by using the CRT
     # implementations.
     WRAPPER_FLAGS="$WRAPPER_FLAGS -D__USE_MINGW_ANSI_STDIO=0"
+    # Shrink the binaries as much as possible
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -ffunction-sections -fdata-sections -Wl,--gc-sections"
+    # -fno-auto-import is supported only by Clang, not GCC.
+    WRAPPER_FLAGS="$WRAPPER_FLAGS -fno-auto-import"
 fi
 
 mkdir -p "$PREFIX/bin"
