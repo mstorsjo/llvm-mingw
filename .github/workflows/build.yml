@@ -520,7 +520,17 @@ jobs:
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "c:\llvm-mingw\python\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "PYTHON_EXE=c:/llvm-mingw/python/bin/python3.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: msys
+          install: >-
+            git
+            make
       - uses: actions/checkout@v6
+      - name: Rebuild mingw-w64
+        shell: msys2 {0}
+        run: |
+          ./build-mingw-w64.sh /c/llvm-mingw
       - name: Checkout llvm-project
         env:
           LLVM_VERSION: ${{needs.prepare.outputs.LLVM_VERSION}}
