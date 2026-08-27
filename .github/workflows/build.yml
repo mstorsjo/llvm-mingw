@@ -459,6 +459,15 @@ jobs:
       matrix:
         arch:
           - i686
+          - i686
+          - i686
+          - i686
+          - i686
+          - i686
+          - i686
+          - i686
+          - i686
+          - i686
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Unpack toolchain
@@ -474,7 +483,7 @@ jobs:
         shell: sh
         run: |
           i=0
-          while [ $i -lt 100 ]; do
+          while [ $i -lt 10 ]; do
               echo $i
               ARCHS="${{matrix.arch}}" ./run-tests.sh c:/llvm-mingw || exit 1
               i=$(($i+1))
