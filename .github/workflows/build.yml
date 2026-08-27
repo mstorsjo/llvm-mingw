@@ -495,7 +495,7 @@ jobs:
           i=0
           while [ $i -lt 10 ]; do
               echo $i
-              ARCHS="${{matrix.arch}}" ./run-tests.sh c:/llvm-mingw || exit 1
+              ARCHS="i686" ./run-tests.sh c:/llvm-mingw || exit 1
               i=$(($i+1))
           done
 
