@@ -31,7 +31,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           ref: ${{github.event_name == 'workflow_dispatch' && inputs.ref || 'master'}}
-          event: ${{github.event_name == 'workflow_dispatch' && inputs.pipeline_type || 'schedule'}}
+          event: ${{github.event_name == 'workflow_dispatch' && inputs.pipeline_type || 'push'}}
           name: parameters
       - name: Get build parameters
         id: get-parameters
