@@ -468,6 +468,16 @@ jobs:
           - i686
           - i686
           - i686
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
+          - x86_64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Unpack toolchain
