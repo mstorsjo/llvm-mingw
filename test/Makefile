@@ -351,7 +351,7 @@ $(FAILURE_TEST_TARGETS): .failtested.%$(EXEEXT): %$(EXEEXT) .copied.%$(EXEEXT) $
 			exit 1; \
 			;; \
 		esac; \
-		rm -f $$OUT; \
+		rm -f $$OUT || true; \
 	fi
 	@touch $@
 
