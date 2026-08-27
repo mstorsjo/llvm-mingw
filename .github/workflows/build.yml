@@ -454,6 +454,9 @@ jobs:
 
   # Run llvm-mingw's tests with the cross-built toolchains from above.
   test-toolchain:
+    defaults:
+      run:
+        shell: msys2 {0}
     strategy:
       fail-fast: false
       matrix:
@@ -480,22 +483,25 @@ jobs:
           - x86_64
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: msys
+          install: >-
+            unzip
+            make
       - name: Unpack toolchain
         run: |
           curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch}}.zip
-          7z x llvm-mingw-*.zip
-          del llvm-mingw-*.zip
-          mv llvm-mingw-* c:\llvm-mingw
-          echo "c:\llvm-mingw\busybox\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          unzip -q llvm-mingw-*.zip
+          rm llvm-mingw-*.zip
+          mv llvm-mingw-* /llvm-mingw
       - uses: actions/checkout@v6
       - name: Run tests
-        shell: sh
         run: |
           i=0
           while [ $i -lt 10 ]; do
               echo $i
-              ARCHS="${{matrix.arch}}" ./run-tests.sh c:/llvm-mingw || exit 1
+              ARCHS="${{matrix.arch}}" ./run-tests.sh /llvm-mingw || exit 1
               i=$(($i+1))
           done
 
