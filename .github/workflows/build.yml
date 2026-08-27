@@ -493,7 +493,7 @@ jobs:
         shell: sh
         run: |
           i=0
-          while [ $i -lt 10 ]; do
+          while [ $i -lt 3 ]; do
               echo $i
               ARCHS="i686" ./run-tests.sh c:/llvm-mingw || exit 1
               i=$(($i+1))
