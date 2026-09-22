@@ -21,7 +21,7 @@ jobs:
   # assertions enabled, has passed some amount of tests.
   prepare:
     if: (github.event_name != 'schedule') || (github.repository == 'mstorsjo/llvm-mingw')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       LLVM_VERSION: ${{steps.get-versions.outputs.LLVM_VERSION}}
       MINGW_W64_VERSION: ${{steps.get-versions.outputs.MINGW_W64_VERSION}}
@@ -232,7 +232,7 @@ jobs:
   linux-asserts:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [prepare]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v6
       - name: Build
@@ -389,7 +389,7 @@ jobs:
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
     needs: [linux-stage1, linux-profile, prepare]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -697,7 +697,7 @@ jobs:
   linux-test-cross-build-ffmpeg:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [linux-asserts]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -791,7 +791,7 @@ jobs:
     permissions:
       contents: write
     needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v8
