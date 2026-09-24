@@ -252,9 +252,10 @@ if [ -n "$HOST" ]; then
         PYTHON_RELATIVE_PATH="$(cd "$PREFIX" && echo python/lib/python*/site-packages)"
         PYTHON_INCLUDE_DIR="$(echo $PREFIX/python/include/python*)"
         PYTHON_LIB="$(echo $PREFIX/python/lib/libpython3.*.dll.a)"
+        PYTHON_SABI_LIB="$(echo $PREFIX/python/lib/libpython3.dll.a)"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_ENABLE_PYTHON=ON"
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_EMBED_PYTHON_HOME=OFF"
-        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_ENABLE_PYTHON_LIMITED_API=OFF"
+        CMAKEFLAGS="$CMAKEFLAGS -DLLDB_ENABLE_PYTHON_LIMITED_API=ON"
         # Relative to the lldb install root
         CMAKEFLAGS="$CMAKEFLAGS -DLLDB_PYTHON_RELATIVE_PATH=$PYTHON_RELATIVE_PATH"
         # Relative to the liblldb DLL
@@ -265,6 +266,7 @@ if [ -n "$HOST" ]; then
 
         CMAKEFLAGS="$CMAKEFLAGS -DPython3_INCLUDE_DIRS=$PYTHON_INCLUDE_DIR"
         CMAKEFLAGS="$CMAKEFLAGS -DPython3_LIBRARIES=$PYTHON_LIB"
+        CMAKEFLAGS="$CMAKEFLAGS -DPython3_SABI_LIBRARIES=$PYTHON_SABI_LIB"
     fi
 elif [ -n "$WITH_CLANG" ]; then
     # Build using clang and lld (from $PATH), rather than the system default
