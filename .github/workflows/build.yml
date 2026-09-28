@@ -783,7 +783,7 @@ jobs:
           cd ffmpeg-build
           ../ffmpeg/configure --samples=../fate-samples --enable-gpl
           make -j$(nproc)
-          make fate-rsync
+          make fate-rsync || make fate-rsync
           make -j$(nproc) fate
 
   upload-nightly:
