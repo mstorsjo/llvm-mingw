@@ -772,6 +772,11 @@ jobs:
           repository: ffmpeg/ffmpeg
           ref: n6.1.2
           path: ffmpeg
+      - name: Cache FATE samples
+        uses: actions/cache@v5
+        with:
+          path: fate-samples
+          key: fate-samples
       - name: Build & test ffmpeg
         run: |
           export PATH=/llvm-mingw/bin:$PATH
