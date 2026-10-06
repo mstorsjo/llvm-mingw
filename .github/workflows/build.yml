@@ -753,7 +753,7 @@ jobs:
           git config --global core.autocrlf false
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: mingw64
+          msystem: ucrt64
           install: >-
             unzip
             make
