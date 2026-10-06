@@ -746,6 +746,10 @@ jobs:
         arch:
           - x86_64
           - aarch64
+        try:
+          - 1
+          - 2
+          - 3
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     defaults:
       run:
@@ -806,6 +810,10 @@ jobs:
         arch:
           - x86_64
           - aarch64
+        try:
+          - 1
+          - 2
+          - 3
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
     steps:
       - name: Install prerequisites
