@@ -799,6 +799,59 @@ jobs:
           cd ffmpeg-build
           make -j$(nproc) fate
 
+  test-ffmpeg-busybox:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - aarch64
+    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
+    steps:
+      - name: Install prerequisites
+        run: |
+          choco install nasm
+          echo "C:\Program Files\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          choco install rsync
+      - name: Avoid git checking out files with CRLF
+        run: |
+          git config --global core.autocrlf false
+      - name: Unpack toolchain
+        run: |
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch}}.zip
+          7z x llvm-mingw-*.zip
+          del llvm-mingw-*.zip
+          mv llvm-mingw-* c:\llvm-mingw
+          echo "c:\llvm-mingw\busybox\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Checkout ffmpeg
+        uses: actions/checkout@v6
+        with:
+          repository: ffmpeg/ffmpeg
+          ref: n9.0.2
+          path: ffmpeg
+      - name: Configure
+        shell: sh
+        run: |
+          mkdir ffmpeg-build
+          cd ffmpeg-build
+          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --arch=${{matrix.arch}} --target-os=mingw32
+      - name: Build
+        shell: sh
+        run: |
+          cd ffmpeg-build
+          make -j$(nproc)
+      - name: Fetch test samples
+        shell: sh
+        run: |
+          cd ffmpeg-build
+          make fate-rsync
+      - name: Test
+        shell: sh
+        run: |
+          cd ffmpeg-build
+          make -j$(nproc) fate
+
   upload-nightly:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     permissions:
