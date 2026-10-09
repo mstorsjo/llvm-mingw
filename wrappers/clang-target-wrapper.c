@@ -53,18 +53,42 @@ int _tmain(int argc, TCHAR* argv[]) {
     int max_arg = argc + 18;
     const TCHAR **exec_argv = malloc((max_arg + 1) * sizeof(*exec_argv));
     int arg = 0;
+    int is_flang = 0;
     if (getenv("CCACHE"))
         exec_argv[arg++] = _T("ccache");
-    exec_argv[arg++] = concat(dir, _T(CLANG));
-    exec_argv[arg++] = _T("--start-no-unused-arguments");
 
     // If changing this wrapper, change clang-target-wrapper.sh accordingly.
-    if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++")))
+    if (!_tcscmp(exe, _T("clang++")) || !_tcscmp(exe, _T("g++")) || !_tcscmp(exe, _T("c++"))) {
+        exec_argv[arg++] = concat(dir, _T(CLANG));
+        exec_argv[arg++] = _T("--start-no-unused-arguments");
         exec_argv[arg++] = _T("--driver-mode=g++");
-    else if (!_tcscmp(exe, _T("c99")))
+    } else if (!_tcscmp(exe, _T("flang")) || !_tcscmp(exe, _T("gfortran"))) {
+        // Use flang directly instead of clang --driver-mode=flang
+        // If called with -fc1, pass through directly without adding flags (frontend invocation)
+        if (argc > 1 && !_tcscmp(argv[1], _T("-fc1"))) {
+            exec_argv[arg++] = concat(dir, _T("flang"));
+            for (int i = 1; i < argc; i++)
+                exec_argv[arg++] = argv[i];
+            exec_argv[arg] = NULL;
+            return run_final(exec_argv[0], exec_argv);
+        }
+        // Use --no-default-config to avoid reading clang config files with C++-specific flags
+        exec_argv[arg++] = concat(dir, _T("flang"));
+        exec_argv[arg++] = _T("--no-default-config");
+        exec_argv[arg++] = _T("-rtlib=compiler-rt");
+        is_flang = 1;
+    } else if (!_tcscmp(exe, _T("c99"))) {
+        exec_argv[arg++] = concat(dir, _T(CLANG));
+        exec_argv[arg++] = _T("--start-no-unused-arguments");
         exec_argv[arg++] = _T("-std=c99");
-    else if (!_tcscmp(exe, _T("c11")))
+    } else if (!_tcscmp(exe, _T("c11"))) {
+        exec_argv[arg++] = concat(dir, _T(CLANG));
+        exec_argv[arg++] = _T("--start-no-unused-arguments");
         exec_argv[arg++] = _T("-std=c11");
+    } else {
+        exec_argv[arg++] = concat(dir, _T(CLANG));
+        exec_argv[arg++] = _T("--start-no-unused-arguments");
+    }
 
     if (target_os && !_tcscmp(target_os, _T("mingw32uwp"))) {
         // the UWP target is for Windows 10
@@ -80,7 +104,8 @@ int _tmain(int argc, TCHAR* argv[]) {
 
     exec_argv[arg++] = _T("-target");
     exec_argv[arg++] = target;
-    exec_argv[arg++] = _T("--end-no-unused-arguments");
+    if (!is_flang)
+        exec_argv[arg++] = _T("--end-no-unused-arguments");
 
     for (int i = 1; i < argc; i++)
         exec_argv[arg++] = argv[i];
