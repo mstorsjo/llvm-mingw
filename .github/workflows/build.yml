@@ -751,14 +751,16 @@ jobs:
           - 2
           - 3
     runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
-    defaults:
-      run:
-        shell: msys2 {0}
     steps:
       - name: Avoid git checking out files with CRLF
         shell: cmd
         run: |
           git config --global core.autocrlf false
+      - name: Install prerequisites
+        run: |
+          choco install nasm
+          echo "C:\Program Files\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          choco install rsync
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ucrt64
@@ -772,65 +774,9 @@ jobs:
       - name: Unpack toolchain
         run: |
           curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch}}.zip
-          unzip -q llvm-mingw-*.zip
-          rm llvm-mingw-*.zip
-          mv llvm-mingw-* /llvm-mingw
-          echo /llvm-mingw/bin >> $GITHUB_PATH
-      - name: Checkout ffmpeg
-        uses: actions/checkout@v6
-        with:
-          repository: ffmpeg/ffmpeg
-          ref: n9.0.2
-          path: ffmpeg
-      - name: Configure
-        run: |
-          export PATH=/llvm-mingw/bin:$PATH
-          mkdir ffmpeg-build
-          cd ffmpeg-build
-          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --arch=${{matrix.arch}}
-      - name: Build
-        run: |
-          export PATH=/llvm-mingw/bin:$PATH
-          cd ffmpeg-build
-          make -j$(nproc)
-      - name: Fetch test samples
-        run: |
-          cd ffmpeg-build
-          make fate-rsync || make fate-rsync
-      - name: Test
-        run: |
-          export PATH=/llvm-mingw/bin:$PATH
-          cd ffmpeg-build
-          make -j$(nproc) fate
-
-  test-ffmpeg-busybox:
-    strategy:
-      fail-fast: false
-      matrix:
-        arch:
-          - x86_64
-          - aarch64
-        try:
-          - 1
-          - 2
-          - 3
-    runs-on: ${{startsWith(matrix.arch, 'a') && 'windows-11-arm' || 'windows-latest'}}
-    steps:
-      - name: Install prerequisites
-        run: |
-          choco install nasm
-          echo "C:\Program Files\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          choco install rsync
-      - name: Avoid git checking out files with CRLF
-        run: |
-          git config --global core.autocrlf false
-      - name: Unpack toolchain
-        run: |
-          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/nightly/llvm-mingw-nightly-ucrt-${{matrix.arch}}.zip
           7z x llvm-mingw-*.zip
           del llvm-mingw-*.zip
           mv llvm-mingw-* c:\llvm-mingw
-          echo "c:\llvm-mingw\busybox\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
           echo "c:\llvm-mingw\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
       - name: Checkout ffmpeg
         uses: actions/checkout@v6
@@ -838,26 +784,48 @@ jobs:
           repository: ffmpeg/ffmpeg
           ref: n9.0.2
           path: ffmpeg
-      - name: Configure
-        shell: sh
+      - name: Configure msys2
+        shell: msys2 {0}
         run: |
+          export PATH=/c/llvm-mingw/bin:$PATH
           mkdir ffmpeg-build
           cd ffmpeg-build
-          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --arch=${{matrix.arch}} --target-os=mingw32
-      - name: Build
-        shell: sh
+          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --arch=${{matrix.arch}}
+      - name: Build msys2
+        shell: msys2 {0}
         run: |
+          export PATH=/c/llvm-mingw/bin:$PATH
           cd ffmpeg-build
           make -j$(nproc)
       - name: Fetch test samples
-        shell: sh
+        shell: msys2 {0}
         run: |
           cd ffmpeg-build
-          make fate-rsync
-      - name: Test
+          make fate-rsync || make fate-rsync
+      - name: Test msys2
+        shell: msys2 {0}
+        run: |
+          export PATH=/c/llvm-mingw/bin:$PATH
+          cd ffmpeg-build
+          make -j$(nproc) fate
+      - name: Add busybox to path
+        run: |
+          echo "c:\llvm-mingw\busybox\bin" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Configure busybox
         shell: sh
         run: |
-          cd ffmpeg-build
+          mkdir ffmpeg-build-busybox
+          cd ffmpeg-build-busybox
+          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --arch=${{matrix.arch}} --target-os=mingw32
+      - name: Build busybox
+        shell: sh
+        run: |
+          cd ffmpeg-build-busybox
+          make -j$(nproc)
+      - name: Test busybox
+        shell: sh
+        run: |
+          cd ffmpeg-build-busybox
           make -j$(nproc) fate
 
   upload-nightly:
