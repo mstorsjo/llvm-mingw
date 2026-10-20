@@ -728,7 +728,7 @@ jobs:
           # Make sure we exit in a reasonable time instead of waiting for
           # the whole github actions timeout of 6h before exiting.
           ulimit -t 180
-          ../ffmpeg/configure --arch=${{matrix.arch}} --target-os=mingw32 --cross-prefix=${{matrix.arch}}-w64-mingw32- --enable-gpl
+          ../ffmpeg/configure --arch=${{matrix.arch}} --target-os=mingw32 --cross-prefix=${{matrix.arch}}-w64-mingw32- --enable-gpl --disable-doc
           make -j$(nproc)
 
   # Test building ffmpeg for natively on x86_64 Windows and run its tests,
@@ -773,7 +773,7 @@ jobs:
           export PATH=/llvm-mingw/bin:$PATH
           mkdir ffmpeg-build
           cd ffmpeg-build
-          ../ffmpeg/configure --samples=../fate-samples --enable-gpl
+          ../ffmpeg/configure --samples=../fate-samples --enable-gpl --disable-doc
           make -j$(nproc)
           make fate-rsync || make fate-rsync
           make -j$(nproc) fate
