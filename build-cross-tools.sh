@@ -31,6 +31,9 @@ while [ $# -gt 0 ]; do
     --disable-lldb-mi)
         NO_LLDB_MI=1
         ;;
+    --disable-dylib)
+        LLVM_ARGS="$LLVM_ARGS $1"
+        ;;
     --disable-clang-tools-extra)
         LLVM_ARGS="$LLVM_ARGS $1"
         ;;
@@ -66,7 +69,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 if [ -z "$CROSS_ARCH" ]; then
-    echo $0 native prefix arch [--with-python] [--with-busybox] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--disable-mingw-w64-tools] [--disable-make] [--no-llvm-tool-reuse] [--thinlto] [--lto] [--pgo[=profile]]
+    echo $0 native prefix arch [--with-python] [--with-busybox] [--disable-lldb] [--disable-lldb-mi] [--disable-clang-tools-extra] [--disable-dylib] [--disable-mingw-w64-tools] [--disable-make] [--no-llvm-tool-reuse] [--thinlto] [--lto] [--pgo[=profile]]
     exit 1
 fi
 
