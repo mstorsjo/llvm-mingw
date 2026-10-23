@@ -53,12 +53,26 @@ if [ -n "$CCACHE" ]; then
 fi
 
 # If changing this wrapper, change clang-target-wrapper.c accordingly.
-CLANG="$DIR/clang"
+DRIVER="$DIR/clang"
 FLAGS=""
-FLAGS="$FLAGS --start-no-unused-arguments"
+IS_FLANG=0
 case $EXE in
 clang++|g++|c++)
     FLAGS="$FLAGS --driver-mode=g++"
+    ;;
+flang|gfortran)
+    # Use flang directly instead of clang --driver-mode=flang
+    # Use --no-default-config to avoid reading clang config files with C++-specific flags
+    DRIVER="$DIR/flang"
+    # If called with -fc1, pass through directly without adding flags (frontend invocation)
+    case "$1" in
+    -fc1)
+        exec "$DRIVER" "$@"
+        ;;
+    esac
+    FLAGS="$FLAGS --no-default-config"
+    FLAGS="$FLAGS -rtlib=compiler-rt"
+    IS_FLANG=1
     ;;
 c99)
     FLAGS="$FLAGS -std=c99"
@@ -67,6 +81,9 @@ c11)
     FLAGS="$FLAGS -std=c11"
     ;;
 esac
+if [ "$IS_FLANG" -eq 0 ]; then
+    FLAGS="--start-no-unused-arguments $FLAGS"
+fi
 LINKER_FLAGS=""
 case $TARGET_OS in
 mingw32uwp)
@@ -93,6 +110,8 @@ mingw32uwp)
 esac
 
 FLAGS="$FLAGS -target $TARGET"
-FLAGS="$FLAGS --end-no-unused-arguments"
+if [ "$IS_FLANG" -eq 0 ]; then
+    FLAGS="$FLAGS --end-no-unused-arguments"
+fi
 
-$CCACHE "$CLANG" $FLAGS "$@" $LINKER_FLAGS
+$CCACHE "$DRIVER" $FLAGS "$@" $LINKER_FLAGS

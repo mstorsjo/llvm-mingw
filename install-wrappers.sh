@@ -90,6 +90,13 @@ if [ -n "${HOST_CLANG}" ]; then
     ln -sf clang $PREFIX/bin/clang++
     ln -sf clang $PREFIX/bin/clang-cpp
 
+    HOST_FLANG_EXE=$(PATH=$llvmexec command -v flang-new || true)
+    if [ -n "$HOST_FLANG_EXE" ]; then
+        printf '#!/bin/sh\nsr=$(dirname "$(dirname "$(readlink -f "$0")")")\nexec %s -resource-dir="$sr"%s --sysroot="$sr" --config-system-dir="$sr"/bin "$@"\n' "$HOST_FLANG_EXE" "$clangres" > $PREFIX/bin/flang
+        chmod 755 $PREFIX/bin/flang
+        echo "Using existing flang $HOST_FLANG_EXE"
+    fi
+
     echo "Using existing clang $HOST_CLANG_EXE ($HOST_CLANG_VER)"
     $PREFIX/bin/clang -v
 
@@ -152,7 +159,7 @@ fi
 cd "$PREFIX/bin"
 for arch in $ARCHS; do
     for target_os in $TARGET_OSES; do
-        for exec in clang clang++ gcc g++ c++ as; do
+        for exec in clang clang++ gcc g++ c++ as flang gfortran; do
             ln -sf clang-target-wrapper$CTW_SUFFIX $arch-w64-$target_os-$exec$CTW_LINK_SUFFIX
         done
         ln -sf $CSDW $arch-w64-$target_os-clang-scan-deps$CTW_LINK_SUFFIX
@@ -195,7 +202,7 @@ if [ -n "$EXEEXT" ]; then
     # we are installing wrappers for.
     case $ARCHS in
     *$HOST_ARCH*)
-        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres clang-scan-deps; do
+        for exec in clang clang++ gcc g++ c++ addr2line ar dlltool ranlib nm objcopy readelf size strings strip windres clang-scan-deps flang gfortran; do
             ln -sf $HOST-$exec$EXEEXT $exec$EXEEXT
         done
         for exec in cc c99 c11; do
