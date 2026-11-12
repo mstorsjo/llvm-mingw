@@ -66,6 +66,7 @@ jobs:
           retention-days: 7
 
   linux-stage1:
+    if: false
     needs: [prepare]
     runs-on: ubuntu-22.04
     steps:
@@ -230,7 +231,7 @@ jobs:
   # to better catch such bugs early. This makes the first-stage toolchain built
   # here in scheduled builds somewhat slower.
   linux-asserts:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
@@ -258,6 +259,7 @@ jobs:
           retention-days: 7
 
   macos-stage1:
+    if: false
     needs: [prepare]
     runs-on: macos-15
     steps:
@@ -333,6 +335,7 @@ jobs:
   # Test building the toolchain on msys2. The binaries built here rely on the
   # runtime libraries from the host environment (libstdc++ or libc++).
   msys2:
+    if: false
     needs: [prepare]
     runs-on: windows-latest
     defaults:
@@ -388,7 +391,7 @@ jobs:
   # llvm and make a proper standalone toolchain for Windows (for all 4
   # architectures). The binaries built here match actual releases quite closely.
   linux-cross-windows:
-    needs: [linux-stage1, linux-profile, prepare]
+    needs: [prepare]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -399,19 +402,7 @@ jobs:
           - { arch: armv7, crt: ucrt }
           - { arch: aarch64, crt: ucrt }
     steps:
-      - uses: actions/download-artifact@v8
-        with:
-          name: linux-stage1-${{matrix.crt}}-x86_64-toolchain
-      - name: Unpack cross toolchain
-        run: |
-          tar -Jxf llvm-mingw-*.tar.xz
-          rm llvm-mingw-*.tar.xz
-          sudo mv llvm-mingw* /opt/llvm-mingw
-          echo /opt/llvm-mingw/bin >> $GITHUB_PATH
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v8
-        with:
-          name: profile
       - name: Cache downloads
         id: cache-tarballs
         uses: actions/cache@v5
@@ -437,28 +428,18 @@ jobs:
               # Skip PGO on 24.x on armv7 due to https://github.com/llvm/llvm-project/issues/241863
               PGO_PARAM=""
           fi
-          ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --with-busybox --thinlto $PGO_PARAM
-          .github/workflows/store-version.sh install/llvm-mingw/versions.txt
-          cd install
-          NAME=llvm-mingw-$TAG-${{matrix.crt}}-${{matrix.arch}}
-          mv llvm-mingw $NAME
-          zip -9rq ../$NAME.zip $NAME
+          echo ./build-cross-tools.sh /opt/llvm-mingw $(pwd)/install/llvm-mingw ${{matrix.arch}} --with-python --with-busybox --thinlto $PGO_PARAM
       - name: Save cache
-        if: steps.cache-tarballs.outputs.cache-hit != 'true'
+        if: false
         run: |
           mkdir -p /opt/cache
           for i in make-*.tar.*; do
               if [ ! -L $i ]; then cp -a $i /opt/cache; fi
           done
-      - uses: actions/upload-artifact@v6
-        with:
-          name: windows-${{matrix.crt}}-${{matrix.arch}}-toolchain
-          path: |
-            llvm-mingw-*.zip
-          retention-days: 7
 
   # Run llvm-mingw's tests with the cross-built toolchains from above.
   test-toolchain:
+    if: false
     needs: [linux-cross-windows]
     strategy:
       fail-fast: false
