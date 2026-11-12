@@ -50,7 +50,6 @@ jobs:
           cat $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT >> parameters.txt
       - name: Check latest version
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         id: get-versions
         run: |
           echo LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}') >> $GITHUB_OUTPUT
