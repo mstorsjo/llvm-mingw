@@ -149,7 +149,7 @@ rm -f *.dll.a
 rm -f lib*.a
 for i in *.so* *.dylib* cmake; do
     case $i in
-    liblldb*|libclang-cpp*|libLLVM*)
+    liblldb*|libclang-cpp*|libLLVM*|libMLIR*|libFortran*|libflang*)
         ;;
     *)
         rm -rf $i
