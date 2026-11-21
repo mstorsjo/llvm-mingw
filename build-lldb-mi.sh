@@ -131,7 +131,7 @@ fi
 
 if [ -n "$MACOS_REDIST" ]; then
     : ${MACOS_REDIST_ARCHS:=arm64 x86_64}
-    : ${MACOS_REDIST_VERSION:=10.12}
+    : ${MACOS_REDIST_VERSION:=10.13}
     ARCH_LIST=""
     NATIVE=
     for arch in $MACOS_REDIST_ARCHS; do
