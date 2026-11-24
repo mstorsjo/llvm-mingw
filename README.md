@@ -57,6 +57,14 @@ available from [Docker Hub](https://hub.docker.com/r/mstorsjo/llvm-mingw/).
 There are also [nightly builds](https://github.com/mstorsjo/llvm-mingw/releases/tag/nightly)
 with the very latest versions of LLVM and mingw-w64 from git.
 
+The toolchain packages are built in GitHub Actions, and come with signed
+[build provenance attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations).
+These attest which workflow run, in which repository and from which
+commit, each file was built. They can be verified with the
+[GitHub CLI](https://cli.github.com/):
+
+    gh attestation verify llvm-mingw-<version>-ucrt-x86_64.zip --repo mstorsjo/llvm-mingw
+
 Building from source
 --------------------
 
