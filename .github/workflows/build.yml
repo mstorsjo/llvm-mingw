@@ -786,11 +786,45 @@ jobs:
           make fate-rsync || make fate-rsync
           make -j$(nproc) fate
 
+  # Generate signed build provenance attestations for the toolchain packages
+  # that get published (as nightly builds here, or as releases via
+  # release.yml). These can be verified by users with
+  # "gh attestation verify <file> --repo mstorsjo/llvm-mingw".
+  #
+  # Done as a separate job, so that the jobs that build and run code don't
+  # need id-token / attestations permissions.
+  attest:
+    if: github.event_name != 'pull_request'
+    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows]
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download toolchains
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*-ucrt-*toolchain'
+          merge-multiple: true
+          path: dist
+      - name: Skip intermediate toolchains
+        run: |
+          rm -f dist/llvm-mingw-stage1-*
+          ls -l dist
+          sha256sum dist/*
+      - name: Generate build provenance attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/*.tar.xz
+            dist/*.zip
+
   upload-nightly:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
-    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
+    needs: [linux, linux-cross-aarch64, macos, linux-cross-windows, attest, test-toolchain, linux-test-cross-build-ffmpeg, test-ffmpeg]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts

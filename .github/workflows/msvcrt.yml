@@ -196,6 +196,8 @@ jobs:
     if: ${{github.event_name == 'workflow_dispatch' && inputs.upload}}
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     needs: [linux-msvcrt, linux-cross-windows, test-toolchain, prepare]
     runs-on: ubuntu-latest
     steps:
@@ -205,6 +207,12 @@ jobs:
         run: |
           rm -rf linux-asserts*
           mv *-toolchain/*.zip *-toolchain/*.tar.xz .
+      - name: Generate build provenance attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            *.tar.xz
+            *.zip
       - name: Upload binaries
         env:
           GITHUB_TOKEN: ${{github.token}}
